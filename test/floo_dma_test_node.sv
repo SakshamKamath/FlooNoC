@@ -137,6 +137,7 @@ module floo_dma_test_node  #(
     MaxMstTrans:        128,
     FallThrough:        1,
     LatencyMode:        axi_pkg::CUT_ALL_PORTS,
+    PipelineStages:     1,
     AxiIdWidthSlvPorts: AxiIdOutWidth,
     AxiIdUsedSlvPorts:  AxiIdOutWidth,
     UniqueIds:          0,
