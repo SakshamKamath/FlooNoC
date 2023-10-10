@@ -9,16 +9,18 @@ package:
     - "Tim Fischer <fischeti@iis.ee.ethz.ch>"
 
 dependencies:
-  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.29.0 }
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.32.0 }
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2 }
-  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.39.0 }
-  idma: { git: "https://github.com/pulp-platform/iDMA.git", version: 0.4.2 }
+  axi_kurth: { path: "./top_fpga/axi_kurth" }
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.39.1 }
+  idma: { git: "https://github.com/pulp-platform/iDMA.git", version: 0.5.1 }
 
 export_include_dirs:
   - include
 
 sources:
   # Level 0
+  - output/my_noc.sv
   - src/floo_axi_flit_pkg.sv
   - src/floo_narrow_wide_flit_pkg.sv
   - src/floo_pkg.sv
@@ -38,6 +40,24 @@ sources:
   - src/floo_narrow_wide_chimney.sv
   - src/floo_router.sv
   - src/floo_narrow_wide_router.sv
+  - top_fpga/richie_noc.sv
+
+  - target: any(synthesis,spyglass)
+    files:
+      # Level 0
+      - src/synth/floo_synth_axi_chimney.sv
+      - src/synth/floo_synth_narrow_wide_chimney.sv
+      - src/synth/floo_synth_router.sv
+      - src/synth/floo_synth_router_simple.sv
+      - src/synth/floo_synth_narrow_wide_router.sv
+      - src/synth/floo_synth_endpoint.sv
+
+  - target: fpga
+    files:
+      # Level 0
+      - top_fpga/richie_noc_wrapper.sv
+      - top_fpga/richie_noc_ooc.sv
+      - top_fpga/richie_noc_ip.v
 
   - target: test
     files:
@@ -60,13 +80,4 @@ sources:
       - test/tb_floo_dma_chimney.sv
       - test/tb_floo_dma_nw_chimney.sv
       - test/tb_floo_dma_mesh.sv
-
-  - target: any(synthesis,spyglass)
-    files:
-      # Level 0
-      - src/synth/floo_synth_axi_chimney.sv
-      - src/synth/floo_synth_narrow_wide_chimney.sv
-      - src/synth/floo_synth_router.sv
-      - src/synth/floo_synth_router_simple.sv
-      - src/synth/floo_synth_narrow_wide_router.sv
-      - src/synth/floo_synth_endpoint.sv
+      - test/tb_richie_floo_noc.sv
