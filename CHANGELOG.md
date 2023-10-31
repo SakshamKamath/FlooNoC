@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 ### Added
 
 - Added Chimney Parameters `EnMgrPort` and `EnSbrPort` to properly parametrize Manager resp. Subordinate-only instances of a chimney
+- `floo_narrow_wide_join` which joins a narrow and a wide AXI bus
 
 ## [0.2.1] - 2023-10-13
 
