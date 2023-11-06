@@ -124,7 +124,10 @@ def main():
     cfg['rsvd_bits'] = rsvd_bits
 
     tpl = templates.get_template("floo_flit_pkg.sv.tpl")
-    print(tpl.render_unicode(cfg=cfg))
+    # print(tpl.render_unicode(cfg=cfg))
+
+    with open("../src/floo_axi_flit_pkg.sv", "w") as f:
+        f.write(tpl.render_unicode(cfg=cfg))
 
 
 if __name__ == "__main__":

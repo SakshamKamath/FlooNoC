@@ -7,8 +7,8 @@
 {
     name: "axi",
     axi_channels: [
-      {name: 'axi_in', params: {dw: 64, aw: 32, iw: 3, uw: 1 }},
-      {name: 'axi_out', params: {dw: 64, aw: 32, iw: 3, uw: 1 }},
+      {name: 'axi_in', params: {dw: 64, aw: 64, iw: 9, uw: 4 }},
+      {name: 'axi_out', params: {dw: 64, aw: 64, iw: 9, uw: 4 }},
     ]
     phys_channels: [
       'req',
@@ -20,10 +20,11 @@
     },
     meta: {
       rob_req: 1,
-      rob_idx: 6,
-      dst_id: 6,
-      src_id: 6,
+      rob_idx: 1,
+      dst_id: 1,
+      src_id: 1,
       last: 1,
       atop: 1,
     }
 }
+
