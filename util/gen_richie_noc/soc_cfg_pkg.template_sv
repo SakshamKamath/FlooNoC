@@ -1,0 +1,141 @@
+<%
+# =====================================================================
+# Project:      SoC package
+# Title:        soc_package.template_sv
+# Description:  SoC package
+#
+# $Date:        13.10.2023
+#
+# Generator:    generate_soc
+# =====================================================================
+#
+# Copyright (C) 2023 University of Modena and Reggio Emilia.
+#
+# Author: Gianluca Bellocchi, University of Modena and Reggio Emilia.
+# =====================================================================
+%>
+
+/* =====================================================================
+ * Project:      SoC package
+ * Title:        soc_package.sv
+ * Description:  Configuration package for SoC
+ *
+ * $Date:        13.10.2023
+ *
+ * Design generated with GenOv
+ *
+ * Generator:    generate_soc
+ * ===================================================================== */
+/*
+ * Copyright (C) 2023 University of Modena and Reggio Emilia.
+ * Author: Gianluca Bellocchi, University of Modena and Reggio Emilia.
+ *
+ */
+
+package automatic soc_cfg_pkg;
+
+  <%
+    # Import other packages
+  %>
+
+  import floo_pkg::*;
+
+  <%
+    # Definition of parameters for clock domain
+  %>
+
+  // -- Decoupling of cluster clock domain
+  localparam bit          ASYNC = 1'b0;
+  localparam int unsigned DC_BUF_W = 8;
+
+  <%
+    # Definition of parameters for AXI interfaces
+  %>
+
+  // -- AXI
+  localparam int unsigned AXI_AW = ${aw}; // [bit]
+  localparam int unsigned AXI_DW = ${dw}; // [bit]
+  localparam int unsigned AXI_IW_MST = 6; // [bit]; do not change, seems to break instruction cache
+  localparam int unsigned AXI_IW_SLV = 4; // [bit]
+  localparam int unsigned AXI_IW_SB_INP = 3;
+  localparam int unsigned AXI_UW = ${uw}; // [bit]
+
+  // -- AXI-Lite
+  localparam int unsigned AXI_LITE_AW = 32;
+  localparam int unsigned AXI_LITE_DW = 32;
+
+  <%
+    # Definition of parameters for NoC
+  %>
+
+  // -- Tiles
+  localparam int unsigned N_TILES               = ${n_tiles};
+  localparam int unsigned N_TILES_X             = ${n_tiles_x};
+  localparam int unsigned N_TILES_Y             = ${n_tiles_y};
+
+  // -- Routing
+  localparam int unsigned NumRoutes             = 5;  
+                                                      // Number of IO ports of a single router:
+                                                      //        --> 1 for local tile + 
+                                                      //            4 for cardinal directions (N, S, E, W)
+  localparam int unsigned NumVirtChannels       = 1;
+  localparam int unsigned NumPhysChannels       = 1;
+
+  localparam floo_pkg::route_algo_e RouteAlgo   = XYRouting;  // see floo_pkg
+
+  // -- Buffering
+  localparam int unsigned ChannelFifoDepth      = 4;
+
+  <%
+    # Definition of parameters for clusters
+  %>
+
+  // -- Cluster
+  localparam int unsigned N_CLUSTERS = ${n_clusters};
+
+  <%
+    # Definition of parameters for memory hierarchy
+  %>
+
+  // WIP: To add once integrated in richie
+
+  <%
+    # Definition of parameters for SoC bus
+  %>
+
+  // WIP: To add once integrated in richie
+
+  <%
+    # Definition of data types
+  %>
+
+  typedef logic             [5:0] cluster_id_t;
+  typedef logic      [AXI_DW-1:0] data_t;
+  typedef logic    [DC_BUF_W-1:0] dc_buf_t;
+  
+  // AXI Interface Types
+  typedef logic [AXI_AW-1:0]          addr_t;
+  typedef logic [AXI_IW_MST-1:0]      id_mst_t;
+  // typedef logic [AXI_IW_SLV-1:0]      id_slv_t;
+  typedef logic [AXI_IW_SB_INP-1:0]   id_slv_t;
+  typedef logic [AXI_UW-1:0]          user_t;
+  typedef logic [AXI_DW/8-1:0]        strb_t;
+
+  // AXI-Lite Interface Types
+  typedef logic [AXI_LITE_AW-1:0]   lite_addr_t;
+  typedef logic [AXI_LITE_DW-1:0]   lite_data_t;
+  typedef logic [AXI_LITE_DW/8-1:0] lite_strb_t;
+
+  <%
+    # Definition of functions
+  %>
+
+  function int unsigned oup_id_w(input int unsigned n_clusters, inp_id_w);
+    return inp_id_w + cf_math_pkg::clog2(n_slaves(n_clusters));
+  endfunction
+
+  function int unsigned axi_iw_sb_oup(input int unsigned n_clusters);
+    return oup_id_w(n_clusters, AXI_IW_SB_INP);
+  endfunction
+
+endpackage

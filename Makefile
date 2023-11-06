@@ -69,12 +69,26 @@ endif
 FLIT_CFG ?= $(shell find util -name "*.hjson")
 FLIT_SRC ?= $(patsubst util/%_cfg.hjson,src/floo_%_flit_pkg.sv,$(FLIT_CFG))
 
-.PHONY: sources clean-sources
+.PHONY: sources clean-sources gen_richie_noc
+
+gen_richie_noc:
+	@cd $(ROOT)/util && python flit_gen.py -c $(ROOT)/util/axi_cfg.hjson > $(RTL_SRC_PATH)/floo_axi_flit_pkg.sv
+	@# $(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
+	@cd $(ROOT)/util/$@ && python $@.py axi_cfg.template_hjson > $(ROOT)/util/axi_cfg.hjson
+	@cd $(ROOT)/util/$@ && python $@.py soc_cfg_pkg.template_sv > $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
+	@cd $(ROOT)/util/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
+	@cd $(ROOT)/util/$@ && python $@.py richie_noc_ooc.template_sv > $(FPGA_SRC_PATH)/richie_noc_ooc.sv
+	@cd $(ROOT)/util/$@ && python $@.py richie_noc_wrapper.template_sv > $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
+	@cd $(ROOT)/util/$@ && python $@.py richie_noc.template_sv > $(FPGA_SRC_PATH)/richie_noc.sv
+	@cd $(ROOT)/util/$@ && python $@.py soc_bus.template_sv > $(FPGA_SRC_PATH)/soc_bus.sv
+	@cd $(ROOT)/util/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
+	@cd $(ROOT)/util/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
+	@cd $(ROOT)/util/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/richie/synth_noc.tcl
 
 sources: $(FLIT_SRC)
 src/floo_%_flit_pkg.sv: util/%_cfg.hjson
-	./util/flit_gen.py -c $< > $@
-	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
+	python util/flit_gen.py -c $< > $@
+	# $(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
 
 clean-sources:
 	rm -f src/floo_*_flit_pkg.sv
@@ -103,7 +117,7 @@ scripts/compile_vsim.tcl: Bender.yml sources
 	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" $(BENDER_FLAGS) | grep -v "set ROOT" >> scripts/compile_vsim.tcl
 	echo >> scripts/compile_vsim.tcl
 
-compile-sim: scripts/compile_vsim.tcl
+compile-sim: scripts/compile_vsim.tcl gen_richie_noc
 	$(VSIM) -64 -c -do "source scripts/compile_vsim.tcl; quit"
 
 run-sim:

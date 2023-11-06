@@ -1,0 +1,192 @@
+# =====================================================================
+# Project:      FPGA build
+# Title:        crate_noc_ip.tcl
+# Description:  Create NoC IP.
+# =====================================================================
+
+source fpga_noc_params.tcl
+
+#
+# CREATE NOC IP
+# 
+
+# Create project
+create_project $PRJ_IP_NAME ./$PRJ_IP_NAME -part $PL_PART_NAME
+set_property board_part $BOARD_PART_NAME [current_project]
+# set_property part $PL_PART_NAME [current_project]
+
+source ./define_sources.tcl
+add_files -norecurse -fileset [current_fileset] ./richie_noc_ip.v
+source ./define_defines_includes.tcl
+add_files -norecurse -fileset constrs_1 {./richie_noc_txilzu9eg_synth.xdc ./richie_noc_txilzu9eg_impl.xdc}
+set_property used_in_implementation false [get_files ./richie_noc_txilzu9eg_synth.xdc]
+set_property used_in_synthesis false [get_files ./richie_noc_txilzu9eg_impl.xdc]
+
+# Select top
+set_property top richie_noc_ip [current_fileset]
+
+# Set synthesis properties
+set_param synth.elaboration.rodinMoreOptions "rt::set_parameter var_size_limit 20000000"
+
+# RTL synthesis
+synth_design -rtl -name rtl_1
+
+# IP packaging
+ipx::package_project -root_dir . -vendor ethz.ch -library user -taxonomy /UserIP \
+  -set_current true
+
+# Ports and Interfaces
+
+# Clock
+ipx::add_bus_interface clk [ipx::current_core]
+set clk [ipx::get_bus_interfaces clk -of_objects [ipx::current_core]]
+set_property abstraction_type_vlnv xilinx.com:signal:clock_rtl:1.0 $clk
+set_property bus_type_vlnv xilinx.com:signal:clock:1.0 $clk
+set_property interface_mode slave $clk
+ipx::add_bus_parameter FREQ_HZ $clk
+ipx::add_port_map CLK $clk
+set_property physical_name clk_i [ipx::get_port_maps CLK -of_objects $clk]
+
+# Reset
+ipx::add_bus_interface rst_n [ipx::current_core]
+set rst [ipx::get_bus_interfaces rst_n -of_objects [ipx::current_core]]
+set_property abstraction_type_vlnv xilinx.com:signal:reset_rtl:1.0 $rst
+set_property bus_type_vlnv xilinx.com:signal:reset:1.0 $rst
+ipx::add_port_map RST $rst
+set_property physical_name rst_ni [ipx::get_port_maps RST -of_objects $rst]
+
+% for i in range(n_tiles): 
+# AXI Master ${i}
+ipx::add_bus_interface mst_${i} [ipx::current_core]
+set mst_${i} [ipx::get_bus_interfaces mst_${i} -of_objects [ipx::current_core]]
+set_property abstraction_type_vlnv xilinx.com:interface:aximm_rtl:1.0 $mst_${i}
+set_property bus_type_vlnv xilinx.com:interface:aximm:1.0 $mst_${i}
+set_property interface_mode master $mst_${i}
+ipx::add_bus_parameter NUM_READ_OUTSTANDING $mst_${i}
+ipx::add_bus_parameter NUM_WRITE_OUTSTANDING $mst_${i}
+set portmap_${i} {
+  {AWID mst_${i}_aw_id_o}
+  {AWADDR mst_${i}_aw_addr_o}
+  {AWLEN mst_${i}_aw_len_o}
+  {AWSIZE mst_${i}_aw_size_o}
+  {AWBURST mst_${i}_aw_burst_o}
+  {AWLOCK mst_${i}_aw_lock_o}
+  {AWCACHE mst_${i}_aw_cache_o}
+  {AWPROT mst_${i}_aw_prot_o}
+  {AWQOS mst_${i}_aw_qos_o}
+  {AWUSER mst_${i}_aw_user_o}
+  {AWVALID mst_${i}_aw_valid_o}
+  {AWREADY mst_${i}_aw_ready_i}
+  {WDATA mst_${i}_w_data_o}
+  {WSTRB mst_${i}_w_strb_o}
+  {WLAST mst_${i}_w_last_o}
+  {WVALID mst_${i}_w_valid_o}
+  {WREADY mst_${i}_w_ready_i}
+  {BID mst_${i}_b_id_i}
+  {BRESP mst_${i}_b_resp_i}
+  {BVALID mst_${i}_b_valid_i}
+  {BREADY mst_${i}_b_ready_o}
+  {ARID mst_${i}_ar_id_o}
+  {ARADDR mst_${i}_ar_addr_o}
+  {ARLEN mst_${i}_ar_len_o}
+  {ARSIZE mst_${i}_ar_size_o}
+  {ARBURST mst_${i}_ar_burst_o}
+  {ARLOCK mst_${i}_ar_lock_o}
+  {ARCACHE mst_${i}_ar_cache_o}
+  {ARPROT mst_${i}_ar_prot_o}
+  {ARQOS mst_${i}_ar_qos_o}
+  {ARUSER mst_${i}_ar_user_o}
+  {ARVALID mst_${i}_ar_valid_o}
+  {ARREADY mst_${i}_ar_ready_i}
+  {RID mst_${i}_r_id_i}
+  {RDATA mst_${i}_r_data_i}
+  {RRESP mst_${i}_r_resp_i}
+  {RLAST mst_${i}_r_last_i}
+  {RVALID mst_${i}_r_valid_i}
+  {RREADY mst_${i}_r_ready_o}
+}
+foreach pair $portmap_${i} {
+  set theirs [lindex $pair 0]
+  set ours [lindex $pair 1]
+  ipx::add_port_map $theirs $mst_${i}
+  set_property physical_name $ours [ipx::get_port_maps $theirs -of_objects $mst_${i}]
+}
+ipx::associate_bus_interfaces -busif mst_${i} -clock clk [ipx::current_core]
+% endfor
+
+% for i in range(n_tiles): 
+# AXI Slave ${i}
+ipx::add_bus_interface slv_${i} [ipx::current_core]
+set slv_${i} [ipx::get_bus_interfaces slv_${i} -of_objects [ipx::current_core]]
+set_property abstraction_type_vlnv xilinx.com:interface:aximm_rtl:1.0 $slv_${i}
+set_property bus_type_vlnv xilinx.com:interface:aximm:1.0 $slv_${i}
+set_property interface_mode slave $slv_${i}
+ipx::add_bus_parameter NUM_READ_OUTSTANDING $slv_${i}
+ipx::add_bus_parameter NUM_WRITE_OUTSTANDING $slv_${i}
+set portmap_${i} {
+  {AWID slv_${i}_aw_id_i}
+  {AWADDR slv_${i}_aw_addr_i}
+  {AWLEN slv_${i}_aw_len_i}
+  {AWSIZE slv_${i}_aw_size_i}
+  {AWBURST slv_${i}_aw_burst_i}
+  {AWLOCK slv_${i}_aw_lock_i}
+  {AWCACHE slv_${i}_aw_cache_i}
+  {AWPROT slv_${i}_aw_prot_i}
+  {AWQOS slv_${i}_aw_qos_i}
+  {AWUSER slv_${i}_aw_user_i}
+  {AWVALID slv_${i}_aw_valid_i}
+  {AWREADY slv_${i}_aw_ready_o}
+  {WDATA slv_${i}_w_data_i}
+  {WSTRB slv_${i}_w_strb_i}
+  {WLAST slv_${i}_w_last_i}
+  {WVALID slv_${i}_w_valid_i}
+  {WREADY slv_${i}_w_ready_o}
+  {BID slv_${i}_b_id_o}
+  {BRESP slv_${i}_b_resp_o}
+  {BVALID slv_${i}_b_valid_o}
+  {BREADY slv_${i}_b_ready_i}
+  {ARID slv_${i}_ar_id_i}
+  {ARADDR slv_${i}_ar_addr_i}
+  {ARLEN slv_${i}_ar_len_i}
+  {ARSIZE slv_${i}_ar_size_i}
+  {ARBURST slv_${i}_ar_burst_i}
+  {ARLOCK slv_${i}_ar_lock_i}
+  {ARCACHE slv_${i}_ar_cache_i}
+  {ARPROT slv_${i}_ar_prot_i}
+  {ARQOS slv_${i}_ar_qos_i}
+  {ARUSER slv_${i}_ar_user_i}
+  {ARVALID slv_${i}_ar_valid_i}
+  {ARREADY slv_${i}_ar_ready_o}
+  {RID slv_${i}_r_id_o}
+  {RDATA slv_${i}_r_data_o}
+  {RRESP slv_${i}_r_resp_o}
+  {RLAST slv_${i}_r_last_o}
+  {RVALID slv_${i}_r_valid_o}
+  {RREADY slv_${i}_r_ready_i}
+}
+foreach pair $portmap_${i} {
+  set theirs [lindex $pair 0]
+  set ours [lindex $pair 1]
+  ipx::add_port_map $theirs $slv_${i}
+  set_property physical_name $ours [ipx::get_port_maps $theirs -of_objects $slv_${i}]
+}
+ipx::associate_bus_interfaces -busif slv_${i} -clock clk [ipx::current_core]
+% endfor
+
+# Address Space
+ipx::add_address_space Data [ipx::current_core]
+set_property master_address_space_ref Data \
+  [ipx::get_bus_interfaces mst_0 -of_objects [ipx::current_core] \ 
+]
+set_property width 64 [ipx::get_address_spaces Data -of_objects [ipx::current_core]]
+set_property range_format string [ipx::get_address_spaces Data -of_objects [ipx::current_core]]
+set_property range 16E [ipx::get_address_spaces Data -of_objects [ipx::current_core]]
+
+# Save IP
+set_property core_revision 0 [ipx::current_core]
+ipx::update_source_project_archive -component [ipx::current_core]
+ipx::create_xgui_files [ipx::current_core]
+ipx::update_checksums [ipx::current_core]
+ipx::save_core [ipx::current_core]
+
+close_project

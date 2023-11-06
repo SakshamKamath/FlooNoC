@@ -1,0 +1,525 @@
+
+
+/* =====================================================================
+ * Project:      PULP OOC
+ * Title:        pulp_ooc.sv
+ * Description:  PULP OOC
+ *
+ * $Date:        13.1.2022
+ *
+ * Design generated with GenOv
+ *
+ * Generator:    generate_soc
+ * ===================================================================== */
+/*
+ * Copyright (c) 2019 ETH Zurich, University of Bologna.
+ * All rights reserved.
+ *
+ * This code is under development and not yet released to the public.
+ * Until it is released, the code is under the copyright of ETH Zurich and
+ * the University of Bologna, and may contain confidential and/or unpublished
+ * work. Any reuse/redistribution is strictly forbidden without written
+ * permission from ETH Zurich.
+ *
+ */
+
+`include "axi/typedef.svh"
+
+module richie_noc_ooc #(
+  // SoC
+  parameter int unsigned  N_CLUSTERS  = ${n_clusters},
+  // AXI
+  parameter int unsigned  AXI_DW      = ${dw},
+  parameter type data_t               = logic [AXI_DW-1:0],
+  parameter type id_t                 = logic [${iw}-1:0],
+  parameter type strb_t               = logic [AXI_DW/8-1:0]
+) (
+  // Clocks and Resets
+  input  logic              clk_i,
+  input  logic              rst_ni,
+
+% for i in range(n_tiles-1):
+  output id_t               mst_${i}_aw_id_o,
+  output soc_cfg_pkg::addr_t    mst_${i}_aw_addr_o,
+  output axi_pkg::len_t     mst_${i}_aw_len_o,
+  output axi_pkg::size_t    mst_${i}_aw_size_o,
+  output axi_pkg::burst_t   mst_${i}_aw_burst_o,
+  output logic              mst_${i}_aw_lock_o,
+  output axi_pkg::cache_t   mst_${i}_aw_cache_o,
+  output axi_pkg::prot_t    mst_${i}_aw_prot_o,
+  output axi_pkg::qos_t     mst_${i}_aw_qos_o,
+  output axi_pkg::region_t  mst_${i}_aw_region_o,
+  output axi_pkg::atop_t    mst_${i}_aw_atop_o,
+  output soc_cfg_pkg::user_t    mst_${i}_aw_user_o,
+  output logic              mst_${i}_aw_valid_o,
+  input  logic              mst_${i}_aw_ready_i,
+  output data_t             mst_${i}_w_data_o,
+  output strb_t             mst_${i}_w_strb_o,
+  output logic              mst_${i}_w_last_o,
+  output soc_cfg_pkg::user_t    mst_${i}_w_user_o,
+  output logic              mst_${i}_w_valid_o,
+  input  logic              mst_${i}_w_ready_i,
+  input  id_t               mst_${i}_b_id_i,
+  input  axi_pkg::resp_t    mst_${i}_b_resp_i,
+  input  soc_cfg_pkg::user_t    mst_${i}_b_user_i,
+  input  logic              mst_${i}_b_valid_i,
+  output logic              mst_${i}_b_ready_o,
+  output id_t               mst_${i}_ar_id_o,
+  output soc_cfg_pkg::addr_t    mst_${i}_ar_addr_o,
+  output axi_pkg::len_t     mst_${i}_ar_len_o,
+  output axi_pkg::size_t    mst_${i}_ar_size_o,
+  output axi_pkg::burst_t   mst_${i}_ar_burst_o,
+  output logic              mst_${i}_ar_lock_o,
+  output axi_pkg::cache_t   mst_${i}_ar_cache_o,
+  output axi_pkg::prot_t    mst_${i}_ar_prot_o,
+  output axi_pkg::qos_t     mst_${i}_ar_qos_o,
+  output axi_pkg::region_t  mst_${i}_ar_region_o,
+  output soc_cfg_pkg::user_t    mst_${i}_ar_user_o,
+  output logic              mst_${i}_ar_valid_o,
+  input  logic              mst_${i}_ar_ready_i,
+  input  id_t               mst_${i}_r_id_i,
+  input  data_t             mst_${i}_r_data_i,
+  input  axi_pkg::resp_t    mst_${i}_r_resp_i,
+  input  logic              mst_${i}_r_last_i,
+  input  soc_cfg_pkg::user_t    mst_${i}_r_user_i,
+  input  logic              mst_${i}_r_valid_i,
+  output logic              mst_${i}_r_ready_o,
+
+  input  id_t               slv_${i}_aw_id_i,
+  input  soc_cfg_pkg::addr_t    slv_${i}_aw_addr_i,
+  input  axi_pkg::len_t     slv_${i}_aw_len_i,
+  input  axi_pkg::size_t    slv_${i}_aw_size_i,
+  input  axi_pkg::burst_t   slv_${i}_aw_burst_i,
+  input  logic              slv_${i}_aw_lock_i,
+  input  axi_pkg::cache_t   slv_${i}_aw_cache_i,
+  input  axi_pkg::prot_t    slv_${i}_aw_prot_i,
+  input  axi_pkg::qos_t     slv_${i}_aw_qos_i,
+  input  axi_pkg::region_t  slv_${i}_aw_region_i,
+  input  axi_pkg::atop_t    slv_${i}_aw_atop_i,
+  input  soc_cfg_pkg::user_t    slv_${i}_aw_user_i,
+  input  logic              slv_${i}_aw_valid_i,
+  output logic              slv_${i}_aw_ready_o,
+  input  data_t             slv_${i}_w_data_i,
+  input  strb_t             slv_${i}_w_strb_i,
+  input  logic              slv_${i}_w_last_i,
+  input  soc_cfg_pkg::user_t    slv_${i}_w_user_i,
+  input  logic              slv_${i}_w_valid_i,
+  output logic              slv_${i}_w_ready_o,
+  output id_t               slv_${i}_b_id_o,
+  output axi_pkg::resp_t    slv_${i}_b_resp_o,
+  output soc_cfg_pkg::user_t    slv_${i}_b_user_o,
+  output logic              slv_${i}_b_valid_o,
+  input  logic              slv_${i}_b_ready_i,
+  input  id_t               slv_${i}_ar_id_i,
+  input  soc_cfg_pkg::addr_t    slv_${i}_ar_addr_i,
+  input  axi_pkg::len_t     slv_${i}_ar_len_i,
+  input  axi_pkg::size_t    slv_${i}_ar_size_i,
+  input  axi_pkg::burst_t   slv_${i}_ar_burst_i,
+  input  logic              slv_${i}_ar_lock_i,
+  input  axi_pkg::cache_t   slv_${i}_ar_cache_i,
+  input  axi_pkg::prot_t    slv_${i}_ar_prot_i,
+  input  axi_pkg::qos_t     slv_${i}_ar_qos_i,
+  input  axi_pkg::region_t  slv_${i}_ar_region_i,
+  input  soc_cfg_pkg::user_t    slv_${i}_ar_user_i,
+  input  logic              slv_${i}_ar_valid_i,
+  output logic              slv_${i}_ar_ready_o,
+  output id_t               slv_${i}_r_id_o,
+  output data_t             slv_${i}_r_data_o,
+  output axi_pkg::resp_t    slv_${i}_r_resp_o,
+  output logic              slv_${i}_r_last_o,
+  output soc_cfg_pkg::user_t    slv_${i}_r_user_o,
+  output logic              slv_${i}_r_valid_o,
+  input  logic              slv_${i}_r_ready_i,
+% endfor
+
+  output id_t               mst_${n_tiles-1}_aw_id_o,
+  output soc_cfg_pkg::addr_t    mst_${n_tiles-1}_aw_addr_o,
+  output axi_pkg::len_t     mst_${n_tiles-1}_aw_len_o,
+  output axi_pkg::size_t    mst_${n_tiles-1}_aw_size_o,
+  output axi_pkg::burst_t   mst_${n_tiles-1}_aw_burst_o,
+  output logic              mst_${n_tiles-1}_aw_lock_o,
+  output axi_pkg::cache_t   mst_${n_tiles-1}_aw_cache_o,
+  output axi_pkg::prot_t    mst_${n_tiles-1}_aw_prot_o,
+  output axi_pkg::qos_t     mst_${n_tiles-1}_aw_qos_o,
+  output axi_pkg::region_t  mst_${n_tiles-1}_aw_region_o,
+  output axi_pkg::atop_t    mst_${n_tiles-1}_aw_atop_o,
+  output soc_cfg_pkg::user_t    mst_${n_tiles-1}_aw_user_o,
+  output logic              mst_${n_tiles-1}_aw_valid_o,
+  input  logic              mst_${n_tiles-1}_aw_ready_i,
+  output data_t             mst_${n_tiles-1}_w_data_o,
+  output strb_t             mst_${n_tiles-1}_w_strb_o,
+  output logic              mst_${n_tiles-1}_w_last_o,
+  output soc_cfg_pkg::user_t    mst_${n_tiles-1}_w_user_o,
+  output logic              mst_${n_tiles-1}_w_valid_o,
+  input  logic              mst_${n_tiles-1}_w_ready_i,
+  input  id_t               mst_${n_tiles-1}_b_id_i,
+  input  axi_pkg::resp_t    mst_${n_tiles-1}_b_resp_i,
+  input  soc_cfg_pkg::user_t    mst_${n_tiles-1}_b_user_i,
+  input  logic              mst_${n_tiles-1}_b_valid_i,
+  output logic              mst_${n_tiles-1}_b_ready_o,
+  output id_t               mst_${n_tiles-1}_ar_id_o,
+  output soc_cfg_pkg::addr_t    mst_${n_tiles-1}_ar_addr_o,
+  output axi_pkg::len_t     mst_${n_tiles-1}_ar_len_o,
+  output axi_pkg::size_t    mst_${n_tiles-1}_ar_size_o,
+  output axi_pkg::burst_t   mst_${n_tiles-1}_ar_burst_o,
+  output logic              mst_${n_tiles-1}_ar_lock_o,
+  output axi_pkg::cache_t   mst_${n_tiles-1}_ar_cache_o,
+  output axi_pkg::prot_t    mst_${n_tiles-1}_ar_prot_o,
+  output axi_pkg::qos_t     mst_${n_tiles-1}_ar_qos_o,
+  output axi_pkg::region_t  mst_${n_tiles-1}_ar_region_o,
+  output soc_cfg_pkg::user_t    mst_${n_tiles-1}_ar_user_o,
+  output logic              mst_${n_tiles-1}_ar_valid_o,
+  input  logic              mst_${n_tiles-1}_ar_ready_i,
+  input  id_t               mst_${n_tiles-1}_r_id_i,
+  input  data_t             mst_${n_tiles-1}_r_data_i,
+  input  axi_pkg::resp_t    mst_${n_tiles-1}_r_resp_i,
+  input  logic              mst_${n_tiles-1}_r_last_i,
+  input  soc_cfg_pkg::user_t    mst_${n_tiles-1}_r_user_i,
+  input  logic              mst_${n_tiles-1}_r_valid_i,
+  output logic              mst_${n_tiles-1}_r_ready_o,
+
+  input  id_t               slv_${n_tiles-1}_aw_id_i,
+  input  soc_cfg_pkg::addr_t    slv_${n_tiles-1}_aw_addr_i,
+  input  axi_pkg::len_t     slv_${n_tiles-1}_aw_len_i,
+  input  axi_pkg::size_t    slv_${n_tiles-1}_aw_size_i,
+  input  axi_pkg::burst_t   slv_${n_tiles-1}_aw_burst_i,
+  input  logic              slv_${n_tiles-1}_aw_lock_i,
+  input  axi_pkg::cache_t   slv_${n_tiles-1}_aw_cache_i,
+  input  axi_pkg::prot_t    slv_${n_tiles-1}_aw_prot_i,
+  input  axi_pkg::qos_t     slv_${n_tiles-1}_aw_qos_i,
+  input  axi_pkg::region_t  slv_${n_tiles-1}_aw_region_i,
+  input  axi_pkg::atop_t    slv_${n_tiles-1}_aw_atop_i,
+  input  soc_cfg_pkg::user_t    slv_${n_tiles-1}_aw_user_i,
+  input  logic              slv_${n_tiles-1}_aw_valid_i,
+  output logic              slv_${n_tiles-1}_aw_ready_o,
+  input  data_t             slv_${n_tiles-1}_w_data_i,
+  input  strb_t             slv_${n_tiles-1}_w_strb_i,
+  input  logic              slv_${n_tiles-1}_w_last_i,
+  input  soc_cfg_pkg::user_t    slv_${n_tiles-1}_w_user_i,
+  input  logic              slv_${n_tiles-1}_w_valid_i,
+  output logic              slv_${n_tiles-1}_w_ready_o,
+  output id_t               slv_${n_tiles-1}_b_id_o,
+  output axi_pkg::resp_t    slv_${n_tiles-1}_b_resp_o,
+  output soc_cfg_pkg::user_t    slv_${n_tiles-1}_b_user_o,
+  output logic              slv_${n_tiles-1}_b_valid_o,
+  input  logic              slv_${n_tiles-1}_b_ready_i,
+  input  id_t               slv_${n_tiles-1}_ar_id_i,
+  input  soc_cfg_pkg::addr_t    slv_${n_tiles-1}_ar_addr_i,
+  input  axi_pkg::len_t     slv_${n_tiles-1}_ar_len_i,
+  input  axi_pkg::size_t    slv_${n_tiles-1}_ar_size_i,
+  input  axi_pkg::burst_t   slv_${n_tiles-1}_ar_burst_i,
+  input  logic              slv_${n_tiles-1}_ar_lock_i,
+  input  axi_pkg::cache_t   slv_${n_tiles-1}_ar_cache_i,
+  input  axi_pkg::prot_t    slv_${n_tiles-1}_ar_prot_i,
+  input  axi_pkg::qos_t     slv_${n_tiles-1}_ar_qos_i,
+  input  axi_pkg::region_t  slv_${n_tiles-1}_ar_region_i,
+  input  soc_cfg_pkg::user_t    slv_${n_tiles-1}_ar_user_i,
+  input  logic              slv_${n_tiles-1}_ar_valid_i,
+  output logic              slv_${n_tiles-1}_ar_ready_o,
+  output id_t               slv_${n_tiles-1}_r_id_o,
+  output data_t             slv_${n_tiles-1}_r_data_o,
+  output axi_pkg::resp_t    slv_${n_tiles-1}_r_resp_o,
+  output logic              slv_${n_tiles-1}_r_last_o,
+  output soc_cfg_pkg::user_t    slv_${n_tiles-1}_r_user_o,
+  output logic              slv_${n_tiles-1}_r_valid_o,
+  input  logic              slv_${n_tiles-1}_r_ready_i
+);
+
+  `AXI_TYPEDEF_AW_CHAN_T(aw_t, soc_cfg_pkg::addr_t, id_t, soc_cfg_pkg::user_t)
+  `AXI_TYPEDEF_W_CHAN_T(w_t, data_t, strb_t, soc_cfg_pkg::user_t)
+  `AXI_TYPEDEF_B_CHAN_T(b_t, id_t, soc_cfg_pkg::user_t)
+  `AXI_TYPEDEF_AR_CHAN_T(ar_t, soc_cfg_pkg::addr_t, id_t, soc_cfg_pkg::user_t)
+  `AXI_TYPEDEF_R_CHAN_T(r_t, data_t, id_t, soc_cfg_pkg::user_t)
+  `AXI_TYPEDEF_REQ_T(req_t, aw_t, w_t, ar_t)
+  `AXI_TYPEDEF_RESP_T(resp_t, b_t, r_t)
+
+  `AXI_LITE_TYPEDEF_AW_CHAN_T(lite_aw_t, soc_cfg_pkg::lite_addr_t)
+  `AXI_LITE_TYPEDEF_W_CHAN_T(lite_w_t, soc_cfg_pkg::lite_data_t, soc_cfg_pkg::lite_strb_t)
+  `AXI_LITE_TYPEDEF_B_CHAN_T(lite_b_t)
+  `AXI_LITE_TYPEDEF_AR_CHAN_T(lite_ar_t, soc_cfg_pkg::lite_addr_t)
+  `AXI_LITE_TYPEDEF_R_CHAN_T(lite_r_t, soc_cfg_pkg::lite_data_t)
+  `AXI_LITE_TYPEDEF_REQ_T(lite_req_t, lite_aw_t, lite_w_t, lite_ar_t)
+  `AXI_LITE_TYPEDEF_RESP_T(lite_resp_t, lite_b_t, lite_r_t)
+
+% if (topology == 0):
+  floo_axi_flit_pkg::axi_in_req_t [${n_tiles_x}-1:0][${n_tiles_y}-1:0] to_noc_req;
+  floo_axi_flit_pkg::axi_out_resp_t [${n_tiles_x}-1:0][${n_tiles_y}-1:0] from_noc_rsp;
+  floo_axi_flit_pkg::axi_out_req_t [${n_tiles_x}-1:0][${n_tiles_y}-1:0] from_noc_req;
+  floo_axi_flit_pkg::axi_in_resp_t [${n_tiles_x}-1:0][${n_tiles_y}-1:0] to_noc_rsp;
+ 
+  richie_noc #(
+    // Tiles
+    .NumX               ( soc_cfg_pkg::N_TILES_X        ),
+    .NumY               ( soc_cfg_pkg::N_TILES_Y        ),
+    // Routing
+    .NumRoutes          ( soc_cfg_pkg::NumRoutes        ),
+    .NumVirtChannels    ( soc_cfg_pkg::NumVirtChannels  ),
+    .NumPhysChannels    ( soc_cfg_pkg::NumPhysChannels  ),
+    .RouteAlgo          ( soc_cfg_pkg::RouteAlgo        ),
+    // Buffering
+    .ChannelFifoDepth   ( soc_cfg_pkg::ChannelFifoDepth ),
+    // Communication protocol
+    .xy_id_t            ( floo_param_pkg::xy_id_t       )
+  ) i_noc (
+    .clk_i              ( clk_i                         ), 
+    .rst_ni             ( rst_ni                        ),
+    .axi_in_req         ( to_noc_req                    ),
+    .axi_out_rsp        ( to_noc_rsp                    ),
+    .axi_out_req        ( from_noc_req                  ),
+    .axi_in_rsp         ( from_noc_rsp                  )
+  );
+
+  % for i in range(n_tiles_x): 
+    % for j in range(n_tiles_y): 
+  <% idx = i * n_tiles_x + j %>
+  // TILE [${i}][${j}]
+  assign mst_${idx}_aw_id_o              = from_noc_req[${i}][${j}].aw.id;
+  assign mst_${idx}_aw_addr_o            = from_noc_req[${i}][${j}].aw.addr;
+  assign mst_${idx}_aw_len_o             = from_noc_req[${i}][${j}].aw.len;
+  assign mst_${idx}_aw_size_o            = from_noc_req[${i}][${j}].aw.size;
+  assign mst_${idx}_aw_burst_o           = from_noc_req[${i}][${j}].aw.burst;
+  assign mst_${idx}_aw_lock_o            = from_noc_req[${i}][${j}].aw.lock;
+  assign mst_${idx}_aw_cache_o           = from_noc_req[${i}][${j}].aw.cache;
+  assign mst_${idx}_aw_prot_o            = from_noc_req[${i}][${j}].aw.prot;
+  assign mst_${idx}_aw_qos_o             = from_noc_req[${i}][${j}].aw.qos;
+  assign mst_${idx}_aw_region_o          = from_noc_req[${i}][${j}].aw.region;
+  assign mst_${idx}_aw_atop_o            = from_noc_req[${i}][${j}].aw.atop;
+  assign mst_${idx}_aw_user_o            = from_noc_req[${i}][${j}].aw.user;
+  assign mst_${idx}_aw_valid_o           = from_noc_req[${i}][${j}].aw_valid;
+  assign from_noc_rsp[${i}][${j}].aw_ready    = mst_${idx}_aw_ready_i;
+  assign mst_${idx}_w_data_o             = from_noc_req[${i}][${j}].w.data;
+  assign mst_${idx}_w_strb_o             = from_noc_req[${i}][${j}].w.strb;
+  assign mst_${idx}_w_last_o             = from_noc_req[${i}][${j}].w.last;
+  assign mst_${idx}_w_user_o             = from_noc_req[${i}][${j}].w.user;
+  assign mst_${idx}_w_valid_o            = from_noc_req[${i}][${j}].w_valid;
+  assign from_noc_rsp[${i}][${j}].w_ready     = mst_${idx}_w_ready_i;
+  assign from_noc_rsp[${i}][${j}].b.id        = mst_${idx}_b_id_i;
+  assign from_noc_rsp[${i}][${j}].b.resp      = mst_${idx}_b_resp_i;
+  assign from_noc_rsp[${i}][${j}].b.user      = mst_${idx}_b_user_i;
+  assign from_noc_rsp[${i}][${j}].b_valid     = mst_${idx}_b_valid_i;
+  assign mst_${idx}_b_ready_o            = from_noc_req[${i}][${j}].b_ready;
+  assign mst_${idx}_ar_id_o              = from_noc_req[${i}][${j}].ar.id;
+  assign mst_${idx}_ar_addr_o            = from_noc_req[${i}][${j}].ar.addr;
+  assign mst_${idx}_ar_len_o             = from_noc_req[${i}][${j}].ar.len;
+  assign mst_${idx}_ar_size_o            = from_noc_req[${i}][${j}].ar.size;
+  assign mst_${idx}_ar_burst_o           = from_noc_req[${i}][${j}].ar.burst;
+  assign mst_${idx}_ar_lock_o            = from_noc_req[${i}][${j}].ar.lock;
+  assign mst_${idx}_ar_cache_o           = from_noc_req[${i}][${j}].ar.cache;
+  assign mst_${idx}_ar_prot_o            = from_noc_req[${i}][${j}].ar.prot;
+  assign mst_${idx}_ar_qos_o             = from_noc_req[${i}][${j}].ar.qos;
+  assign mst_${idx}_ar_region_o          = from_noc_req[${i}][${j}].ar.region;
+  assign mst_${idx}_ar_user_o            = from_noc_req[${i}][${j}].ar.user;
+  assign mst_${idx}_ar_valid_o           = from_noc_req[${i}][${j}].ar_valid;
+  assign from_noc_rsp[${i}][${j}].ar_ready  = mst_${idx}_ar_ready_i;
+  assign from_noc_rsp[${i}][${j}].r.id      = mst_${idx}_r_id_i;
+  assign from_noc_rsp[${i}][${j}].r.data    = mst_${idx}_r_data_i;
+  assign from_noc_rsp[${i}][${j}].r.resp    = mst_${idx}_r_resp_i;
+  assign from_noc_rsp[${i}][${j}].r.last    = mst_${idx}_r_last_i;
+  assign from_noc_rsp[${i}][${j}].r.user    = mst_${idx}_r_user_i;
+  assign from_noc_rsp[${i}][${j}].r_valid   = mst_${idx}_r_valid_i;
+  assign mst_${idx}_r_ready_o            = from_noc_req[${i}][${j}].r_ready;
+
+  assign to_noc_req[${i}][${j}].aw.id      = slv_${idx}_aw_id_i;
+  assign to_noc_req[${i}][${j}].aw.addr    = slv_${idx}_aw_addr_i;
+  assign to_noc_req[${i}][${j}].aw.len     = slv_${idx}_aw_len_i;
+  assign to_noc_req[${i}][${j}].aw.size    = slv_${idx}_aw_size_i;
+  assign to_noc_req[${i}][${j}].aw.burst   = slv_${idx}_aw_burst_i;
+  assign to_noc_req[${i}][${j}].aw.lock    = slv_${idx}_aw_lock_i;
+  assign to_noc_req[${i}][${j}].aw.cache   = slv_${idx}_aw_cache_i;
+  assign to_noc_req[${i}][${j}].aw.prot    = slv_${idx}_aw_prot_i;
+  assign to_noc_req[${i}][${j}].aw.qos     = slv_${idx}_aw_qos_i;
+  assign to_noc_req[${i}][${j}].aw.region  = slv_${idx}_aw_region_i;
+  assign to_noc_req[${i}][${j}].aw.atop    = slv_${idx}_aw_atop_i;
+  assign to_noc_req[${i}][${j}].aw.user    = slv_${idx}_aw_user_i;
+  assign to_noc_req[${i}][${j}].aw_valid   = slv_${idx}_aw_valid_i;
+  assign slv_${idx}_aw_ready_o         = to_noc_rsp[${i}][${j}].aw_ready;
+  assign to_noc_req[${i}][${j}].w.data     = slv_${idx}_w_data_i;
+  assign to_noc_req[${i}][${j}].w.strb     = slv_${idx}_w_strb_i;
+  assign to_noc_req[${i}][${j}].w.last     = slv_${idx}_w_last_i;
+  assign to_noc_req[${i}][${j}].w.user     = slv_${idx}_w_user_i;
+  assign to_noc_req[${i}][${j}].w_valid    = slv_${idx}_w_valid_i;
+  assign slv_${idx}_w_ready_o          = to_noc_rsp[${i}][${j}].w_ready;
+  assign slv_${idx}_b_id_o             = to_noc_rsp[${i}][${j}].b.id;
+  assign slv_${idx}_b_resp_o           = to_noc_rsp[${i}][${j}].b.resp;
+  assign slv_${idx}_b_user_o           = to_noc_rsp[${i}][${j}].b.user;
+  assign slv_${idx}_b_valid_o          = to_noc_rsp[${i}][${j}].b_valid;
+  assign to_noc_req[${i}][${j}].b_ready    = slv_${idx}_b_ready_i;
+  assign to_noc_req[${i}][${j}].ar.id      = slv_${idx}_ar_id_i;
+  assign to_noc_req[${i}][${j}].ar.addr    = slv_${idx}_ar_addr_i;
+  assign to_noc_req[${i}][${j}].ar.len     = slv_${idx}_ar_len_i;
+  assign to_noc_req[${i}][${j}].ar.size    = slv_${idx}_ar_size_i;
+  assign to_noc_req[${i}][${j}].ar.burst   = slv_${idx}_ar_burst_i;
+  assign to_noc_req[${i}][${j}].ar.lock    = slv_${idx}_ar_lock_i;
+  assign to_noc_req[${i}][${j}].ar.cache   = slv_${idx}_ar_cache_i;
+  assign to_noc_req[${i}][${j}].ar.prot    = slv_${idx}_ar_prot_i;
+  assign to_noc_req[${i}][${j}].ar.qos     = slv_${idx}_ar_qos_i;
+  assign to_noc_req[${i}][${j}].ar.region  = slv_${idx}_ar_region_i;
+  assign to_noc_req[${i}][${j}].ar.user    = slv_${idx}_ar_user_i;
+  assign to_noc_req[${i}][${j}].ar_valid   = slv_${idx}_ar_valid_i;
+  assign slv_${idx}_ar_ready_o         = to_noc_rsp[${i}][${j}].ar_ready;
+  assign slv_${idx}_r_id_o             = to_noc_rsp[${i}][${j}].r.id;
+  assign slv_${idx}_r_data_o           = to_noc_rsp[${i}][${j}].r.data;
+  assign slv_${idx}_r_last_o           = to_noc_rsp[${i}][${j}].r.last;
+  assign slv_${idx}_r_resp_o           = to_noc_rsp[${i}][${j}].r.resp;
+  assign slv_${idx}_r_user_o           = to_noc_rsp[${i}][${j}].r.user;
+  assign slv_${idx}_r_valid_o          = to_noc_rsp[${i}][${j}].r_valid;
+  assign to_noc_req[${i}][${j}].r_ready    = slv_${idx}_r_ready_i;
+    % endfor
+  % endfor
+
+% elif (topology == 1):
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH (soc_cfg_pkg::AXI_AW),
+    .AXI_DATA_WIDTH (soc_cfg_pkg::AXI_DW),
+    .AXI_ID_WIDTH   (soc_cfg_pkg::AXI_IW_MST),
+    .AXI_USER_WIDTH (soc_cfg_pkg::AXI_UW)
+  ) mst [${n_tiles}-1:0]();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH (soc_cfg_pkg::AXI_AW),
+    .AXI_DATA_WIDTH (soc_cfg_pkg::AXI_DW),
+    .AXI_ID_WIDTH   (soc_cfg_pkg::AXI_IW_SLV),
+    .AXI_USER_WIDTH (soc_cfg_pkg::AXI_UW)
+  ) slv [${n_tiles}-1:0]();
+
+  localparam axi_pkg::xbar_cfg_t XbarCfg = '{
+    NoSlvPorts:         ${n_tiles},
+    NoMstPorts:         ${n_tiles},
+    MaxMstTrans:        4,
+    MaxSlvTrans:        4,
+    FallThrough:        1'b0,
+    LatencyMode:        axi_pkg::CUT_ALL_PORTS,
+    PipelineStages:     1,
+    AxiIdWidthSlvPorts: soc_cfg_pkg::AXI_IW_SB_INP,
+    AxiIdUsedSlvPorts:  soc_cfg_pkg::AXI_IW_SB_INP,
+    UniqueIds:          0,
+    AxiAddrWidth:       soc_cfg_pkg::AXI_AW,
+    AxiDataWidth:       soc_cfg_pkg::AXI_DW,
+    NoAddrRules:        ${n_tiles}
+  };
+  
+  typedef axi_pkg::xbar_rule_64_t rule_t;
+  rule_t [${n_tiles}-1:0] addr_map;
+
+  for (genvar i = 0; i < ${n_tiles}; i++) begin : gen_map_tiles
+    assign addr_map[i+1] = '{
+      idx:        i,
+      start_addr: 64'h0000_0000_1000_0000 + i * 32'h0010_0000,
+      end_addr:   64'h0000_0000_1000_0000 + i * 32'h0010_0000 + 32'h002F_FFFF
+    };
+  end
+
+  axi_xbar_intf #(
+    .AXI_USER_WIDTH (soc_cfg_pkg::AXI_UW),
+    .Cfg            (XbarCfg),
+    .rule_t         (rule_t)
+  ) i_axi_xbar (
+    .clk_i,
+    .rst_ni,
+    .test_i                 (1'b0),
+    .slv_ports              (slv),
+    .mst_ports              (mst),
+    .addr_map_i             (addr_map),
+    .en_default_mst_port_i  ('0),
+    .default_mst_port_i     ('0)
+  );
+
+  % for i in range(n_tiles):  
+  // MST/SLV [${i}]
+  assign mst_${i}_aw_id_o              = mst[${i}].aw_id;
+  assign mst_${i}_aw_addr_o            = mst[${i}].aw_addr;
+  assign mst_${i}_aw_len_o             = mst[${i}].aw_len;
+  assign mst_${i}_aw_size_o            = mst[${i}].aw_size;
+  assign mst_${i}_aw_burst_o           = mst[${i}].aw_burst;
+  assign mst_${i}_aw_lock_o            = mst[${i}].aw_lock;
+  assign mst_${i}_aw_cache_o           = mst[${i}].aw_cache;
+  assign mst_${i}_aw_prot_o            = mst[${i}].aw_prot;
+  assign mst_${i}_aw_qos_o             = mst[${i}].aw_qos;
+  assign mst_${i}_aw_region_o          = mst[${i}].aw_region;
+  assign mst_${i}_aw_atop_o            = mst[${i}].aw_atop;
+  assign mst_${i}_aw_user_o            = mst[${i}].aw_user;
+  assign mst_${i}_aw_valid_o           = mst[${i}].aw_valid;
+  assign mst[${i}].aw_ready            = mst_${i}_aw_ready_i;
+  assign mst_${i}_w_data_o             = mst[${i}].w_data;
+  assign mst_${i}_w_strb_o             = mst[${i}].w_strb;
+  assign mst_${i}_w_last_o             = mst[${i}].w_last;
+  assign mst_${i}_w_user_o             = mst[${i}].w_user;
+  assign mst_${i}_w_valid_o            = mst[${i}].w_valid;
+  assign mst[${i}].w_ready             = mst_${i}_w_ready_i;
+  assign mst[${i}].b_id                = mst_${i}_b_id_i;
+  assign mst[${i}].b_resp              = mst_${i}_b_resp_i;
+  assign mst[${i}].b_user              = mst_${i}_b_user_i;
+  assign mst[${i}].b_valid             = mst_${i}_b_valid_i;
+  assign mst_${i}_b_ready_o            = mst[${i}].b_ready;
+  assign mst_${i}_ar_id_o              = mst[${i}].ar_id;
+  assign mst_${i}_ar_addr_o            = mst[${i}].ar_addr;
+  assign mst_${i}_ar_len_o             = mst[${i}].ar_len;
+  assign mst_${i}_ar_size_o            = mst[${i}].ar_size;
+  assign mst_${i}_ar_burst_o           = mst[${i}].ar_burst;
+  assign mst_${i}_ar_lock_o            = mst[${i}].ar_lock;
+  assign mst_${i}_ar_cache_o           = mst[${i}].ar_cache;
+  assign mst_${i}_ar_prot_o            = mst[${i}].ar_prot;
+  assign mst_${i}_ar_qos_o             = mst[${i}].ar_qos;
+  assign mst_${i}_ar_region_o          = mst[${i}].ar_region;
+  assign mst_${i}_ar_user_o            = mst[${i}].ar_user;
+  assign mst_${i}_ar_valid_o           = mst[${i}].ar_valid;
+  assign mst[${i}].ar_ready            = mst_${i}_ar_ready_i;
+  assign mst[${i}].r_id                = mst_${i}_r_id_i;
+  assign mst[${i}].r_data              = mst_${i}_r_data_i;
+  assign mst[${i}].r_resp              = mst_${i}_r_resp_i;
+  assign mst[${i}].r_last              = mst_${i}_r_last_i;
+  assign mst[${i}].r_user              = mst_${i}_r_user_i;
+  assign mst[${i}].r_valid             = mst_${i}_r_valid_i;
+  assign mst_${i}_r_ready_o            = mst[${i}].r_ready;
+
+  assign slv[${i}].aw_id               = slv_${i}_aw_id_i;
+  assign slv[${i}].aw_addr             = slv_${i}_aw_addr_i;
+  assign slv[${i}].aw_len              = slv_${i}_aw_len_i;
+  assign slv[${i}].aw_size             = slv_${i}_aw_size_i;
+  assign slv[${i}].aw_burst            = slv_${i}_aw_burst_i;
+  assign slv[${i}].aw_lock             = slv_${i}_aw_lock_i;
+  assign slv[${i}].aw_cache            = slv_${i}_aw_cache_i;
+  assign slv[${i}].aw_prot             = slv_${i}_aw_prot_i;
+  assign slv[${i}].aw_qos              = slv_${i}_aw_qos_i;
+  assign slv[${i}].aw_region           = slv_${i}_aw_region_i;
+  assign slv[${i}].aw_atop             = slv_${i}_aw_atop_i;
+  assign slv[${i}].aw_user             = slv_${i}_aw_user_i;
+  assign slv[${i}].aw_valid            = slv_${i}_aw_valid_i;
+  assign slv_${i}_aw_ready_o           = slv[${i}].aw_ready;
+  assign slv[${i}].w_data              = slv_${i}_w_data_i;
+  assign slv[${i}].w_strb              = slv_${i}_w_strb_i;
+  assign slv[${i}].w_last              = slv_${i}_w_last_i;
+  assign slv[${i}].w_user              = slv_${i}_w_user_i;
+  assign slv[${i}].w_valid             = slv_${i}_w_valid_i;
+  assign slv_${i}_w_ready_o            = slv[${i}].w_ready;
+  assign slv_${i}_b_id_o               = slv[${i}].b_id;
+  assign slv_${i}_b_resp_o             = slv[${i}].b_resp;
+  assign slv_${i}_b_user_o             = slv[${i}].b_user;
+  assign slv_${i}_b_valid_o            = slv[${i}].b_valid;
+  assign slv[${i}].b_ready             = slv_${i}_b_ready_i;
+  assign slv[${i}].ar_id               = slv_${i}_ar_id_i;
+  assign slv[${i}].ar_addr             = slv_${i}_ar_addr_i;
+  assign slv[${i}].ar_len              = slv_${i}_ar_len_i;
+  assign slv[${i}].ar_size             = slv_${i}_ar_size_i;
+  assign slv[${i}].ar_burst            = slv_${i}_ar_burst_i;
+  assign slv[${i}].ar_lock             = slv_${i}_ar_lock_i;
+  assign slv[${i}].ar_cache            = slv_${i}_ar_cache_i;
+  assign slv[${i}].ar_prot             = slv_${i}_ar_prot_i;
+  assign slv[${i}].ar_qos              = slv_${i}_ar_qos_i;
+  assign slv[${i}].ar_region           = slv_${i}_ar_region_i;
+  assign slv[${i}].ar_user             = slv_${i}_ar_user_i;
+  assign slv[${i}].ar_valid            = slv_${i}_ar_valid_i;
+  assign slv_${i}_ar_ready_o           = slv[${i}].ar_ready;
+  assign slv_${i}_r_id_o               = slv[${i}].r_id;
+  assign slv_${i}_r_data_o             = slv[${i}].r_data;
+  assign slv_${i}_r_last_o             = slv[${i}].r_last;
+  assign slv_${i}_r_resp_o             = slv[${i}].r_resp;
+  assign slv_${i}_r_user_o             = slv[${i}].r_user;
+  assign slv_${i}_r_valid_o            = slv[${i}].r_valid;
+  assign slv[${i}].r_ready             = slv_${i}_r_ready_i;
+  % endfor
+
+% endif
+
+endmodule

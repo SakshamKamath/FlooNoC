@@ -1,0 +1,695 @@
+<%
+# =====================================================================
+# Project:      SoC package
+# Title:        soc_package.template_sv
+# Description:  SoC package
+#
+# $Date:        13.10.2023
+#
+# Generator:    generate_ov
+# =====================================================================
+#
+# Copyright (C) 2023 University of Modena and Reggio Emilia.
+#
+# Author: Gianluca Bellocchi, University of Modena and Reggio Emilia.
+# =====================================================================
+%>
+
+/* =====================================================================
+ * Project:      Richie NoC
+ * Title:        richie_noc_ip.v
+ * Description:  Richie NoC IP interface for the Vivado® IP packager flow
+ *
+ * $Date:        13.10.2023
+ *
+ * Design generated with GenOv
+ *
+ * Generator:    generate_ov
+ * ===================================================================== */
+/*
+ * Copyright (C) 2023 University of Modena and Reggio Emilia.
+ * Author: Gianluca Bellocchi, University of Modena and Reggio Emilia.
+ *
+ */
+
+<%
+  # Richie NoC IP
+%>
+  
+module richie_noc_ip (
+  ${port('clk', 1, False)},\
+  ${port('rst', 1, False, True)},
+% for i in range(n_tiles-1): 
+  ${axi_ports('mst_' + str(i), True, aw_pl2ps, dw, iw_pl2ps, uw_pl2ps)},
+  ${axi_ports('slv_' + str(i), False, aw_ps2pl, dw, iw_ps2pl, uw_ps2pl)},
+% endfor
+  ${axi_ports('mst_' + str(n_tiles-1), True, aw_pl2ps, dw, iw_pl2ps, uw_pl2ps)},
+  ${axi_ports('slv_' + str(n_tiles-1), False, aw_ps2pl, dw, iw_ps2pl, uw_ps2pl)}
+);
+
+% for i in range(n_tiles): 
+  // Tile ${i}
+  ${logic(iw)} slv_${i}_aw_id;     
+  ${logic(iw)} slv_${i}_b_id;                   
+  ${logic(iw)} slv_${i}_ar_id;        
+  ${logic(iw)} slv_${i}_r_id;
+  ${logic(iw)} mst_${i}_aw_id;     
+  ${logic(iw)} mst_${i}_b_id;                   
+  ${logic(iw)} mst_${i}_ar_id;        
+  ${logic(iw)} mst_${i}_r_id;
+  
+  ${logic(aw)} slv_${i}_aw_addr;                               
+  ${logic(aw)} slv_${i}_ar_addr;            
+  ${logic(aw)} mst_${i}_aw_addr;                               
+  ${logic(aw)} mst_${i}_ar_addr;
+  ${logic(aw)} mst_${i}_aw_addr_idr;                           
+  ${logic(aw)} mst_${i}_ar_addr_idr;
+
+  ${logic(8)} slv_${i}_aw_len;                                
+  ${logic(8)} slv_${i}_ar_len;
+  ${logic(8)} mst_${i}_aw_len;      
+  ${logic(8)} mst_${i}_ar_len;
+
+  ${logic(3)} slv_${i}_aw_size;     
+  ${logic(3)} slv_${i}_ar_size;
+  ${logic(3)} mst_${i}_aw_size;     
+  ${logic(3)} mst_${i}_ar_size;
+
+  ${logic(2)} slv_${i}_aw_burst;    
+  ${logic(2)} slv_${i}_ar_burst;
+  ${logic(2)} mst_${i}_aw_burst;    
+  ${logic(2)} mst_${i}_ar_burst;
+
+  ${logic(1)} slv_${i}_aw_lock;     
+  ${logic(1)} slv_${i}_ar_lock;
+  ${logic(1)} mst_${i}_aw_lock;    
+  ${logic(1)} mst_${i}_ar_lock;
+  
+  ${logic(4)} slv_${i}_aw_cache;    
+  ${logic(4)} slv_${i}_ar_cache;
+  ${logic(4)} mst_${i}_aw_cache;    
+  ${logic(4)} mst_${i}_ar_cache;
+  
+  ${logic(3)} slv_${i}_aw_prot;     
+  ${logic(3)} slv_${i}_ar_prot;
+  ${logic(3)} mst_${i}_aw_prot;     
+  ${logic(3)} mst_${i}_ar_prot;
+  
+  ${logic(4)} slv_${i}_aw_qos;      
+  ${logic(4)} slv_${i}_ar_qos;
+  ${logic(4)} mst_${i}_aw_qos;     
+  ${logic(4)} mst_${i}_ar_qos;
+  
+  ${logic(4)} slv_${i}_aw_region;   
+  ${logic(4)} slv_${i}_ar_region;
+  ${logic(4)} mst_${i}_aw_region;   
+  ${logic(4)} mst_${i}_ar_region;
+  
+  ${logic(6)} slv_${i}_aw_atop;
+  ${logic(6)} mst_${i}_aw_atop;
+  
+  ${logic(uw)} slv_${i}_aw_user;   
+  ${logic(uw)} slv_${i}_b_user;   
+  ${logic(uw)} slv_${i}_w_user;   
+  ${logic(uw)} slv_${i}_ar_user;      
+  ${logic(uw)} slv_${i}_r_user;
+  ${logic(uw)} mst_${i}_aw_user;   
+  ${logic(uw)} mst_${i}_b_user;   
+  ${logic(uw)} mst_${i}_w_user;   
+  ${logic(uw)} mst_${i}_ar_user;      
+  ${logic(uw)} mst_${i}_r_user;
+  ${logic(uw)} mst_${i}_aw_user_idr;
+  ${logic(uw)} mst_${i}_ar_user_idr;
+           
+  ${logic(1)} slv_${i}_aw_valid;  
+  ${logic(1)} slv_${i}_b_valid;  
+  ${logic(1)} slv_${i}_w_valid;  
+  ${logic(1)} slv_${i}_ar_valid;     
+  ${logic(1)} slv_${i}_r_valid;
+  ${logic(1)} mst_${i}_aw_valid;  
+  ${logic(1)} mst_${i}_b_valid;  
+  ${logic(1)} mst_${i}_w_valid;  
+  ${logic(1)} mst_${i}_ar_valid;     
+  ${logic(1)} mst_${i}_r_valid;
+  ${logic(1)} slv_${i}_aw_ready;  
+  ${logic(1)} slv_${i}_b_ready;  
+  ${logic(1)} slv_${i}_w_ready;  
+  ${logic(1)} slv_${i}_ar_ready;     
+  ${logic(1)} slv_${i}_r_ready;
+  ${logic(1)} mst_${i}_aw_ready;  
+  ${logic(1)} mst_${i}_b_ready;  
+  ${logic(1)} mst_${i}_w_ready;  
+  ${logic(1)} mst_${i}_ar_ready;     
+  ${logic(1)} mst_${i}_r_ready;
+    
+  ${logic(dw)} slv_${i}_w_data;        
+  ${logic(dw)} slv_${i}_r_data;
+  ${logic(dw)} mst_${i}_w_data;        
+  ${logic(dw)} mst_${i}_r_data;
+     
+  ${logic(dw/8)} slv_${i}_w_strb;
+  ${logic(dw/8)} mst_${i}_w_strb;
+    
+  ${logic(2)} slv_${i}_b_resp;         
+  ${logic(2)} slv_${i}_r_resp;
+  ${logic(2)} mst_${i}_b_resp;         
+  ${logic(2)} mst_${i}_r_resp;
+  
+  ${logic(1)} slv_${i}_w_last;        
+  ${logic(1)} slv_${i}_r_last;
+  ${logic(1)} mst_${i}_w_last;        
+  ${logic(1)} mst_${i}_r_last;
+% endfor
+
+% for i in range(n_tiles): 
+  // Converter MASTER ${i}
+  axi_iw_converter_flat #(
+    .AXI_SLV_PORT_ID_WIDTH        (${iw}),
+    .AXI_MST_PORT_ID_WIDTH        (${iw_pl2ps}),
+    .AXI_SLV_PORT_MAX_UNIQ_IDS    (8),
+    .AXI_SLV_PORT_MAX_TXNS_PER_ID (16),
+    .AXI_SLV_PORT_MAX_TXNS        (64),
+    .AXI_MST_PORT_MAX_UNIQ_IDS    (8),
+    .AXI_MST_PORT_MAX_TXNS_PER_ID (16),
+    .AXI_ADDR_WIDTH               (${aw}),
+    .AXI_DATA_WIDTH               (${dw}),
+    .AXI_USER_WIDTH               (${uw})
+  ) i_iw_converter_mst_${i} (
+    .clk_i           (clk_i),
+    .rst_ni          (rst_ni),
+
+    .slv_aw_id_i     (mst_${i}_aw_id),
+    .slv_aw_addr_i   (mst_${i}_aw_addr),
+    .slv_aw_len_i    (mst_${i}_aw_len),
+    .slv_aw_size_i   (mst_${i}_aw_size),
+    .slv_aw_burst_i  (mst_${i}_aw_burst),
+    .slv_aw_lock_i   (mst_${i}_aw_lock),
+    .slv_aw_cache_i  (mst_${i}_aw_cache),
+    .slv_aw_prot_i   (mst_${i}_aw_prot),
+    .slv_aw_qos_i    (mst_${i}_aw_qos),
+    .slv_aw_region_i (mst_${i}_aw_region),
+    .slv_aw_atop_i   (mst_${i}_aw_atop),
+    .slv_aw_user_i   (mst_${i}_aw_user),
+    .slv_aw_valid_i  (mst_${i}_aw_valid),
+    .slv_aw_ready_o  (mst_${i}_aw_ready),
+    .slv_w_data_i    (mst_${i}_w_data),
+    .slv_w_strb_i    (mst_${i}_w_strb),
+    .slv_w_last_i    (mst_${i}_w_last),
+    .slv_w_user_i    (mst_${i}_w_user),
+    .slv_w_valid_i   (mst_${i}_w_valid),
+    .slv_w_ready_o   (mst_${i}_w_ready),
+    .slv_b_id_o      (mst_${i}_b_id),
+    .slv_b_resp_o    (mst_${i}_b_resp),
+    .slv_b_user_o    (mst_${i}_b_user),
+    .slv_b_valid_o   (mst_${i}_b_valid),
+    .slv_b_ready_i   (mst_${i}_b_ready),
+    .slv_ar_id_i     (mst_${i}_ar_id),
+    .slv_ar_addr_i   (mst_${i}_ar_addr),
+    .slv_ar_len_i    (mst_${i}_ar_len),
+    .slv_ar_size_i   (mst_${i}_ar_size),
+    .slv_ar_burst_i  (mst_${i}_ar_burst),
+    .slv_ar_lock_i   (mst_${i}_ar_lock),
+    .slv_ar_cache_i  (mst_${i}_ar_cache),
+    .slv_ar_prot_i   (mst_${i}_ar_prot),
+    .slv_ar_qos_i    (mst_${i}_ar_qos),
+    .slv_ar_region_i (mst_${i}_ar_region),
+    .slv_ar_user_i   (mst_${i}_ar_user),
+    .slv_ar_valid_i  (mst_${i}_ar_valid),
+    .slv_ar_ready_o  (mst_${i}_ar_ready),
+    .slv_r_id_o      (mst_${i}_r_id),
+    .slv_r_data_o    (mst_${i}_r_data),
+    .slv_r_resp_o    (mst_${i}_r_resp),
+    .slv_r_last_o    (mst_${i}_r_last),
+    .slv_r_user_o    (mst_${i}_r_user),
+    .slv_r_valid_o   (mst_${i}_r_valid),
+    .slv_r_ready_i   (mst_${i}_r_ready),
+
+    .mst_aw_id_o      (mst_${i}_aw_id_o),
+    .mst_aw_addr_o    (mst_${i}_aw_addr_idr),
+    .mst_aw_len_o     (mst_${i}_aw_len_o),
+    .mst_aw_size_o    (mst_${i}_aw_size_o),
+    .mst_aw_burst_o   (mst_${i}_aw_burst_o),
+    .mst_aw_lock_o    (mst_${i}_aw_lock_o),
+    .mst_aw_cache_o   (mst_${i}_aw_cache_o),
+    .mst_aw_prot_o    (/* overridden */),
+    .mst_aw_qos_o     (mst_${i}_aw_qos_o),
+    .mst_aw_region_o  (/* unused */),
+    .mst_aw_atop_o    (/* unused */),
+    .mst_aw_user_o    (mst_${i}_aw_user_idr),
+    .mst_aw_valid_o   (mst_${i}_aw_valid_o),
+    .mst_aw_ready_i   (mst_${i}_aw_ready_i),
+    .mst_w_data_o     (mst_${i}_w_data_o),
+    .mst_w_strb_o     (mst_${i}_w_strb_o),
+    .mst_w_last_o     (mst_${i}_w_last_o),
+    .mst_w_user_o      (/* unused */),
+    .mst_w_valid_o    (mst_${i}_w_valid_o),
+    .mst_w_ready_i    (mst_${i}_w_ready_i),
+    .mst_b_id_i       (mst_${i}_b_id_i),
+    .mst_b_resp_i     (mst_${i}_b_resp_i),
+    .mst_b_user_i     ({${uw}{1'b0}}),
+    .mst_b_valid_i    (mst_${i}_b_valid_i),
+    .mst_b_ready_o    (mst_${i}_b_ready_o),
+    .mst_ar_id_o      (mst_${i}_ar_id_o),
+    .mst_ar_addr_o    (mst_${i}_ar_addr_idr),
+    .mst_ar_len_o     (mst_${i}_ar_len_o),
+    .mst_ar_size_o    (mst_${i}_ar_size_o),
+    .mst_ar_burst_o   (mst_${i}_ar_burst_o),
+    .mst_ar_lock_o    (mst_${i}_ar_lock_o),
+    .mst_ar_cache_o   (mst_${i}_ar_cache_o),
+    .mst_ar_prot_o    (/* overridden */),
+    .mst_ar_qos_o     (mst_${i}_ar_qos_o),
+    .mst_ar_region_o  (/* unused */),
+    .mst_ar_user_o    (mst_${i}_ar_user_idr),
+    .mst_ar_valid_o   (mst_${i}_ar_valid_o),
+    .mst_ar_ready_i   (mst_${i}_ar_ready_i),
+    .mst_r_id_i       (mst_${i}_r_id_i),
+    .mst_r_data_i     (mst_${i}_r_data_i),
+    .mst_r_resp_i     (mst_${i}_r_resp_i),
+    .mst_r_last_i     (mst_${i}_r_last_i),
+    .mst_r_user_i     ({${uw}{1'b0}}),
+    .mst_r_valid_i    (mst_${i}_r_valid_i),
+    .mst_r_ready_o    (mst_${i}_r_ready_o)
+  );
+
+  assign mst_${i}_aw_addr_o = mst_${i}_aw_addr_idr[${aw_pl2ps-1}:0];
+  assign mst_${i}_ar_addr_o = mst_${i}_ar_addr_idr[${aw_pl2ps-1}:0];
+  % if uw_pl2ps > 1:
+  assign mst_${i}_aw_user_o = mst_${i}_aw_user_idr[${uw_pl2ps-1}:0];
+  assign mst_${i}_ar_user_o = mst_${i}_ar_user_idr[${uw_pl2ps-1}:0];
+  % else:
+  assign mst_${i}_aw_user_o = mst_${i}_aw_user_idr[0];
+  assign mst_${i}_ar_user_o = mst_${i}_ar_user_idr[0];
+  % endif
+  assign mst_${i}_aw_prot_o = 3'b010;
+  assign mst_${i}_ar_prot_o = 3'b010;
+% endfor
+
+% for i in range(n_tiles): 
+  // Converter SLAVE ${i}
+  axi_iw_converter_flat #(
+    .AXI_SLV_PORT_ID_WIDTH        (${iw_ps2pl}),
+    .AXI_MST_PORT_ID_WIDTH        (${iw}),
+    .AXI_SLV_PORT_MAX_UNIQ_IDS    (4),
+    .AXI_SLV_PORT_MAX_TXNS_PER_ID (1),
+    .AXI_SLV_PORT_MAX_TXNS        (4),
+    .AXI_MST_PORT_MAX_UNIQ_IDS    (4),
+    .AXI_MST_PORT_MAX_TXNS_PER_ID (1),
+    .AXI_ADDR_WIDTH               (${aw}),
+    .AXI_DATA_WIDTH               (${dw}),
+    .AXI_USER_WIDTH               (${uw})
+  ) i_iw_converter_slv_${i} (
+    .clk_i           (clk_i),
+    .rst_ni          (rst_ni),
+
+    .slv_aw_id_i     (slv_${i}_aw_id_i),
+    .slv_aw_addr_i   ({{${aw-aw_ps2pl}{1'b0}}, slv_${i}_aw_addr_i}),
+    .slv_aw_len_i    (slv_${i}_aw_len_i),
+    .slv_aw_size_i   (slv_${i}_aw_size_i),
+    .slv_aw_burst_i  (slv_${i}_aw_burst_i),
+    .slv_aw_lock_i   (slv_${i}_aw_lock_i),
+    .slv_aw_cache_i  (slv_${i}_aw_cache_i),
+    .slv_aw_prot_i   (slv_${i}_aw_prot_i),
+    .slv_aw_qos_i    (slv_${i}_aw_qos_i),
+    .slv_aw_region_i ({4{1'b0}}),
+    .slv_aw_atop_i   ({6{1'b0}}),
+    .slv_aw_user_i   (slv_${i}_aw_user_i[${uw-1}:0]),
+    .slv_aw_valid_i  (slv_${i}_aw_valid_i),
+    .slv_aw_ready_o  (slv_${i}_aw_ready_o),
+    .slv_w_data_i    (slv_${i}_w_data_i),
+    .slv_w_strb_i    (slv_${i}_w_strb_i),
+    .slv_w_last_i    (slv_${i}_w_last_i),
+    .slv_w_user_i    ({${uw}{1'b0}}),
+    .slv_w_valid_i   (slv_${i}_w_valid_i),
+    .slv_w_ready_o   (slv_${i}_w_ready_o),
+    .slv_b_id_o      (slv_${i}_b_id_o),
+    .slv_b_resp_o    (slv_${i}_b_resp_o),
+    .slv_b_user_o    (/* unused */),
+    .slv_b_valid_o   (slv_${i}_b_valid_o),
+    .slv_b_ready_i   (slv_${i}_b_ready_i),
+    .slv_ar_id_i     (slv_${i}_ar_id_i),
+    .slv_ar_addr_i   ({{${aw-aw_ps2pl}{1'b0}}, slv_${i}_ar_addr_i}),
+    .slv_ar_len_i    (slv_${i}_ar_len_i),
+    .slv_ar_size_i   (slv_${i}_ar_size_i),
+    .slv_ar_burst_i  (slv_${i}_ar_burst_i),
+    .slv_ar_lock_i   (slv_${i}_ar_lock_i),
+    .slv_ar_cache_i  (slv_${i}_ar_cache_i),
+    .slv_ar_prot_i   (slv_${i}_ar_prot_i),
+    .slv_ar_qos_i    (slv_${i}_ar_qos_i),
+    .slv_ar_region_i ({4{1'b0}}),
+    .slv_ar_user_i   (slv_${i}_ar_user_i[${uw-1}:0]),
+    .slv_ar_valid_i  (slv_${i}_ar_valid_i),
+    .slv_ar_ready_o  (slv_${i}_ar_ready_o),
+    .slv_r_id_o      (slv_${i}_r_id_o),
+    .slv_r_data_o    (slv_${i}_r_data_o),
+    .slv_r_resp_o    (slv_${i}_r_resp_o),
+    .slv_r_last_o    (slv_${i}_r_last_o),
+    .slv_r_user_o    (/* unused */),
+    .slv_r_valid_o   (slv_${i}_r_valid_o),
+    .slv_r_ready_i   (slv_${i}_r_ready_i),
+
+    .mst_aw_id_o      (slv_${i}_aw_id),
+    .mst_aw_addr_o    (slv_${i}_aw_addr),
+    .mst_aw_len_o     (slv_${i}_aw_len),
+    .mst_aw_size_o    (slv_${i}_aw_size),
+    .mst_aw_burst_o   (slv_${i}_aw_burst),
+    .mst_aw_lock_o    (slv_${i}_aw_lock),
+    .mst_aw_cache_o   (slv_${i}_aw_cache),
+    .mst_aw_prot_o    (slv_${i}_aw_prot),
+    .mst_aw_qos_o     (slv_${i}_aw_qos),
+    .mst_aw_region_o  (slv_${i}_aw_region),
+    .mst_aw_atop_o    (slv_${i}_aw_atop),
+    .mst_aw_user_o    (slv_${i}_aw_user),
+    .mst_aw_valid_o   (slv_${i}_aw_valid),
+    .mst_aw_ready_i   (slv_${i}_aw_ready),
+    .mst_w_data_o     (slv_${i}_w_data),
+    .mst_w_strb_o     (slv_${i}_w_strb),
+    .mst_w_last_o     (slv_${i}_w_last),
+    .mst_w_user_o     (slv_${i}_w_user),
+    .mst_w_valid_o    (slv_${i}_w_valid),
+    .mst_w_ready_i    (slv_${i}_w_ready),
+    .mst_b_id_i       (slv_${i}_b_id),
+    .mst_b_resp_i     (slv_${i}_b_resp),
+    .mst_b_user_i     (slv_${i}_b_user),
+    .mst_b_valid_i    (slv_${i}_b_valid),
+    .mst_b_ready_o    (slv_${i}_b_ready),
+    .mst_ar_id_o      (slv_${i}_ar_id),
+    .mst_ar_addr_o    (slv_${i}_ar_addr),
+    .mst_ar_len_o     (slv_${i}_ar_len),
+    .mst_ar_size_o    (slv_${i}_ar_size),
+    .mst_ar_burst_o   (slv_${i}_ar_burst),
+    .mst_ar_lock_o    (slv_${i}_ar_lock),
+    .mst_ar_cache_o   (slv_${i}_ar_cache),
+    .mst_ar_prot_o    (slv_${i}_ar_prot),
+    .mst_ar_qos_o     (slv_${i}_ar_qos),
+    .mst_ar_region_o  (slv_${i}_ar_region),
+    .mst_ar_user_o    (slv_${i}_ar_user),
+    .mst_ar_valid_o   (slv_${i}_ar_valid),
+    .mst_ar_ready_i   (slv_${i}_ar_ready),
+    .mst_r_id_i       (slv_${i}_r_id),
+    .mst_r_data_i     (slv_${i}_r_data),
+    .mst_r_resp_i     (slv_${i}_r_resp),
+    .mst_r_last_i     (slv_${i}_r_last),
+    .mst_r_user_i     (slv_${i}_r_user),
+    .mst_r_valid_i    (slv_${i}_r_valid),
+    .mst_r_ready_o    (slv_${i}_r_ready)
+  );
+% endfor
+  
+  richie_noc_ooc i_bound (
+    .clk_i            (clk_i),
+    .rst_ni           (rst_ni),
+
+% for i in range(n_tiles-1): 
+    .mst_${i}_aw_id_o      (mst_${i}_aw_id),
+    .mst_${i}_aw_addr_o    (mst_${i}_aw_addr),
+    .mst_${i}_aw_len_o     (mst_${i}_aw_len),
+    .mst_${i}_aw_size_o    (mst_${i}_aw_size),
+    .mst_${i}_aw_burst_o   (mst_${i}_aw_burst),
+    .mst_${i}_aw_lock_o    (mst_${i}_aw_lock),
+    .mst_${i}_aw_cache_o   (mst_${i}_aw_cache),
+    .mst_${i}_aw_prot_o    (mst_${i}_aw_prot),
+    .mst_${i}_aw_qos_o     (mst_${i}_aw_qos),
+    .mst_${i}_aw_region_o  (mst_${i}_aw_region),
+    .mst_${i}_aw_atop_o    (mst_${i}_aw_atop),
+    .mst_${i}_aw_user_o    (mst_${i}_aw_user),
+    .mst_${i}_aw_valid_o   (mst_${i}_aw_valid),
+    .mst_${i}_aw_ready_i   (mst_${i}_aw_ready),
+    .mst_${i}_w_data_o     (mst_${i}_w_data),
+    .mst_${i}_w_strb_o     (mst_${i}_w_strb),
+    .mst_${i}_w_last_o     (mst_${i}_w_last),
+    .mst_${i}_w_user_o     (mst_${i}_w_user),
+    .mst_${i}_w_valid_o    (mst_${i}_w_valid),
+    .mst_${i}_w_ready_i    (mst_${i}_w_ready),
+    .mst_${i}_b_id_i       (mst_${i}_b_id),
+    .mst_${i}_b_resp_i     (mst_${i}_b_resp),
+    .mst_${i}_b_user_i     (mst_${i}_b_user),
+    .mst_${i}_b_valid_i    (mst_${i}_b_valid),
+    .mst_${i}_b_ready_o    (mst_${i}_b_ready),
+    .mst_${i}_ar_id_o      (mst_${i}_ar_id),
+    .mst_${i}_ar_addr_o    (mst_${i}_ar_addr),
+    .mst_${i}_ar_len_o     (mst_${i}_ar_len),
+    .mst_${i}_ar_size_o    (mst_${i}_ar_size),
+    .mst_${i}_ar_burst_o   (mst_${i}_ar_burst),
+    .mst_${i}_ar_lock_o    (mst_${i}_ar_lock),
+    .mst_${i}_ar_cache_o   (mst_${i}_ar_cache),
+    .mst_${i}_ar_prot_o    (mst_${i}_ar_prot),
+    .mst_${i}_ar_qos_o     (mst_${i}_ar_qos),
+    .mst_${i}_ar_region_o  (mst_${i}_ar_region),
+    .mst_${i}_ar_user_o    (mst_${i}_ar_user),
+    .mst_${i}_ar_valid_o   (mst_${i}_ar_valid),
+    .mst_${i}_ar_ready_i   (mst_${i}_ar_ready),
+    .mst_${i}_r_id_i       (mst_${i}_r_id),
+    .mst_${i}_r_data_i     (mst_${i}_r_data),
+    .mst_${i}_r_resp_i     (mst_${i}_r_resp),
+    .mst_${i}_r_last_i     (mst_${i}_r_last),
+    .mst_${i}_r_user_i     (mst_${i}_r_user),
+    .mst_${i}_r_valid_i    (mst_${i}_r_valid),
+    .mst_${i}_r_ready_o    (mst_${i}_r_ready),
+
+    .slv_${i}_aw_id_i      (slv_${i}_aw_id),
+    .slv_${i}_aw_addr_i    (slv_${i}_aw_addr),
+    .slv_${i}_aw_len_i     (slv_${i}_aw_len),
+    .slv_${i}_aw_size_i    (slv_${i}_aw_size),
+    .slv_${i}_aw_burst_i   (slv_${i}_aw_burst),
+    .slv_${i}_aw_lock_i    (slv_${i}_aw_lock),
+    .slv_${i}_aw_cache_i   (slv_${i}_aw_cache),
+    .slv_${i}_aw_prot_i    (slv_${i}_aw_prot),
+    .slv_${i}_aw_qos_i     (slv_${i}_aw_qos),
+    .slv_${i}_aw_region_i  (slv_${i}_aw_region),
+    .slv_${i}_aw_atop_i    (slv_${i}_aw_atop),
+    .slv_${i}_aw_user_i    (slv_${i}_aw_user),
+    .slv_${i}_aw_valid_i   (slv_${i}_aw_valid),
+    .slv_${i}_aw_ready_o   (slv_${i}_aw_ready),
+    .slv_${i}_w_data_i     (slv_${i}_w_data),
+    .slv_${i}_w_strb_i     (slv_${i}_w_strb),
+    .slv_${i}_w_last_i     (slv_${i}_w_last),
+    .slv_${i}_w_user_i     (slv_${i}_w_user),
+    .slv_${i}_w_valid_i    (slv_${i}_w_valid),
+    .slv_${i}_w_ready_o    (slv_${i}_w_ready),
+    .slv_${i}_b_id_o       (slv_${i}_b_id),
+    .slv_${i}_b_resp_o     (slv_${i}_b_resp),
+    .slv_${i}_b_user_o     (slv_${i}_b_user),
+    .slv_${i}_b_valid_o    (slv_${i}_b_valid),
+    .slv_${i}_b_ready_i    (slv_${i}_b_ready),
+    .slv_${i}_ar_id_i      (slv_${i}_ar_id),
+    .slv_${i}_ar_addr_i    (slv_${i}_ar_addr),
+    .slv_${i}_ar_len_i     (slv_${i}_ar_len),
+    .slv_${i}_ar_size_i    (slv_${i}_ar_size),
+    .slv_${i}_ar_burst_i   (slv_${i}_ar_burst),
+    .slv_${i}_ar_lock_i    (slv_${i}_ar_lock),
+    .slv_${i}_ar_cache_i   (slv_${i}_ar_cache),
+    .slv_${i}_ar_prot_i    (slv_${i}_ar_prot),
+    .slv_${i}_ar_qos_i     (slv_${i}_ar_qos),
+    .slv_${i}_ar_region_i  (slv_${i}_ar_region),
+    .slv_${i}_ar_user_i    (slv_${i}_ar_user),
+    .slv_${i}_ar_valid_i   (slv_${i}_ar_valid),
+    .slv_${i}_ar_ready_o   (slv_${i}_ar_ready),
+    .slv_${i}_r_id_o       (slv_${i}_r_id),
+    .slv_${i}_r_data_o     (slv_${i}_r_data),
+    .slv_${i}_r_resp_o     (slv_${i}_r_resp),
+    .slv_${i}_r_last_o     (slv_${i}_r_last),
+    .slv_${i}_r_user_o     (slv_${i}_r_user),
+    .slv_${i}_r_valid_o    (slv_${i}_r_valid),
+    .slv_${i}_r_ready_i    (slv_${i}_r_ready),
+% endfor
+
+    .mst_${n_tiles-1}_aw_id_o      (mst_${n_tiles-1}_aw_id),
+    .mst_${n_tiles-1}_aw_addr_o    (mst_${n_tiles-1}_aw_addr),
+    .mst_${n_tiles-1}_aw_len_o     (mst_${n_tiles-1}_aw_len),
+    .mst_${n_tiles-1}_aw_size_o    (mst_${n_tiles-1}_aw_size),
+    .mst_${n_tiles-1}_aw_burst_o   (mst_${n_tiles-1}_aw_burst),
+    .mst_${n_tiles-1}_aw_lock_o    (mst_${n_tiles-1}_aw_lock),
+    .mst_${n_tiles-1}_aw_cache_o   (mst_${n_tiles-1}_aw_cache),
+    .mst_${n_tiles-1}_aw_prot_o    (mst_${n_tiles-1}_aw_prot),
+    .mst_${n_tiles-1}_aw_qos_o     (mst_${n_tiles-1}_aw_qos),
+    .mst_${n_tiles-1}_aw_region_o  (mst_${n_tiles-1}_aw_region),
+    .mst_${n_tiles-1}_aw_atop_o    (mst_${n_tiles-1}_aw_atop),
+    .mst_${n_tiles-1}_aw_user_o    (mst_${n_tiles-1}_aw_user),
+    .mst_${n_tiles-1}_aw_valid_o   (mst_${n_tiles-1}_aw_valid),
+    .mst_${n_tiles-1}_aw_ready_i   (mst_${n_tiles-1}_aw_ready),
+    .mst_${n_tiles-1}_w_data_o     (mst_${n_tiles-1}_w_data),
+    .mst_${n_tiles-1}_w_strb_o     (mst_${n_tiles-1}_w_strb),
+    .mst_${n_tiles-1}_w_last_o     (mst_${n_tiles-1}_w_last),
+    .mst_${n_tiles-1}_w_user_o     (mst_${n_tiles-1}_w_user),
+    .mst_${n_tiles-1}_w_valid_o    (mst_${n_tiles-1}_w_valid),
+    .mst_${n_tiles-1}_w_ready_i    (mst_${n_tiles-1}_w_ready),
+    .mst_${n_tiles-1}_b_id_i       (mst_${n_tiles-1}_b_id),
+    .mst_${n_tiles-1}_b_resp_i     (mst_${n_tiles-1}_b_resp),
+    .mst_${n_tiles-1}_b_user_i     (mst_${n_tiles-1}_b_user),
+    .mst_${n_tiles-1}_b_valid_i    (mst_${n_tiles-1}_b_valid),
+    .mst_${n_tiles-1}_b_ready_o    (mst_${n_tiles-1}_b_ready),
+    .mst_${n_tiles-1}_ar_id_o      (mst_${n_tiles-1}_ar_id),
+    .mst_${n_tiles-1}_ar_addr_o    (mst_${n_tiles-1}_ar_addr),
+    .mst_${n_tiles-1}_ar_len_o     (mst_${n_tiles-1}_ar_len),
+    .mst_${n_tiles-1}_ar_size_o    (mst_${n_tiles-1}_ar_size),
+    .mst_${n_tiles-1}_ar_burst_o   (mst_${n_tiles-1}_ar_burst),
+    .mst_${n_tiles-1}_ar_lock_o    (mst_${n_tiles-1}_ar_lock),
+    .mst_${n_tiles-1}_ar_cache_o   (mst_${n_tiles-1}_ar_cache),
+    .mst_${n_tiles-1}_ar_prot_o    (mst_${n_tiles-1}_ar_prot),
+    .mst_${n_tiles-1}_ar_qos_o     (mst_${n_tiles-1}_ar_qos),
+    .mst_${n_tiles-1}_ar_region_o  (mst_${n_tiles-1}_ar_region),
+    .mst_${n_tiles-1}_ar_user_o    (mst_${n_tiles-1}_ar_user),
+    .mst_${n_tiles-1}_ar_valid_o   (mst_${n_tiles-1}_ar_valid),
+    .mst_${n_tiles-1}_ar_ready_i   (mst_${n_tiles-1}_ar_ready),
+    .mst_${n_tiles-1}_r_id_i       (mst_${n_tiles-1}_r_id),
+    .mst_${n_tiles-1}_r_data_i     (mst_${n_tiles-1}_r_data),
+    .mst_${n_tiles-1}_r_resp_i     (mst_${n_tiles-1}_r_resp),
+    .mst_${n_tiles-1}_r_last_i     (mst_${n_tiles-1}_r_last),
+    .mst_${n_tiles-1}_r_user_i     (mst_${n_tiles-1}_r_user),
+    .mst_${n_tiles-1}_r_valid_i    (mst_${n_tiles-1}_r_valid),
+    .mst_${n_tiles-1}_r_ready_o    (mst_${n_tiles-1}_r_ready),
+
+    .slv_${n_tiles-1}_aw_id_i      (slv_${n_tiles-1}_aw_id),
+    .slv_${n_tiles-1}_aw_addr_i    (slv_${n_tiles-1}_aw_addr),
+    .slv_${n_tiles-1}_aw_len_i     (slv_${n_tiles-1}_aw_len),
+    .slv_${n_tiles-1}_aw_size_i    (slv_${n_tiles-1}_aw_size),
+    .slv_${n_tiles-1}_aw_burst_i   (slv_${n_tiles-1}_aw_burst),
+    .slv_${n_tiles-1}_aw_lock_i    (slv_${n_tiles-1}_aw_lock),
+    .slv_${n_tiles-1}_aw_cache_i   (slv_${n_tiles-1}_aw_cache),
+    .slv_${n_tiles-1}_aw_prot_i    (slv_${n_tiles-1}_aw_prot),
+    .slv_${n_tiles-1}_aw_qos_i     (slv_${n_tiles-1}_aw_qos),
+    .slv_${n_tiles-1}_aw_region_i  (slv_${n_tiles-1}_aw_region),
+    .slv_${n_tiles-1}_aw_atop_i    (slv_${n_tiles-1}_aw_atop),
+    .slv_${n_tiles-1}_aw_user_i    (slv_${n_tiles-1}_aw_user),
+    .slv_${n_tiles-1}_aw_valid_i   (slv_${n_tiles-1}_aw_valid),
+    .slv_${n_tiles-1}_aw_ready_o   (slv_${n_tiles-1}_aw_ready),
+    .slv_${n_tiles-1}_w_data_i     (slv_${n_tiles-1}_w_data),
+    .slv_${n_tiles-1}_w_strb_i     (slv_${n_tiles-1}_w_strb),
+    .slv_${n_tiles-1}_w_last_i     (slv_${n_tiles-1}_w_last),
+    .slv_${n_tiles-1}_w_user_i     (slv_${n_tiles-1}_w_user),
+    .slv_${n_tiles-1}_w_valid_i    (slv_${n_tiles-1}_w_valid),
+    .slv_${n_tiles-1}_w_ready_o    (slv_${n_tiles-1}_w_ready),
+    .slv_${n_tiles-1}_b_id_o       (slv_${n_tiles-1}_b_id),
+    .slv_${n_tiles-1}_b_resp_o     (slv_${n_tiles-1}_b_resp),
+    .slv_${n_tiles-1}_b_user_o     (slv_${n_tiles-1}_b_user),
+    .slv_${n_tiles-1}_b_valid_o    (slv_${n_tiles-1}_b_valid),
+    .slv_${n_tiles-1}_b_ready_i    (slv_${n_tiles-1}_b_ready),
+    .slv_${n_tiles-1}_ar_id_i      (slv_${n_tiles-1}_ar_id),
+    .slv_${n_tiles-1}_ar_addr_i    (slv_${n_tiles-1}_ar_addr),
+    .slv_${n_tiles-1}_ar_len_i     (slv_${n_tiles-1}_ar_len),
+    .slv_${n_tiles-1}_ar_size_i    (slv_${n_tiles-1}_ar_size),
+    .slv_${n_tiles-1}_ar_burst_i   (slv_${n_tiles-1}_ar_burst),
+    .slv_${n_tiles-1}_ar_lock_i    (slv_${n_tiles-1}_ar_lock),
+    .slv_${n_tiles-1}_ar_cache_i   (slv_${n_tiles-1}_ar_cache),
+    .slv_${n_tiles-1}_ar_prot_i    (slv_${n_tiles-1}_ar_prot),
+    .slv_${n_tiles-1}_ar_qos_i     (slv_${n_tiles-1}_ar_qos),
+    .slv_${n_tiles-1}_ar_region_i  (slv_${n_tiles-1}_ar_region),
+    .slv_${n_tiles-1}_ar_user_i    (slv_${n_tiles-1}_ar_user),
+    .slv_${n_tiles-1}_ar_valid_i   (slv_${n_tiles-1}_ar_valid),
+    .slv_${n_tiles-1}_ar_ready_o   (slv_${n_tiles-1}_ar_ready),
+    .slv_${n_tiles-1}_r_id_o       (slv_${n_tiles-1}_r_id),
+    .slv_${n_tiles-1}_r_data_o     (slv_${n_tiles-1}_r_data),
+    .slv_${n_tiles-1}_r_resp_o     (slv_${n_tiles-1}_r_resp),
+    .slv_${n_tiles-1}_r_last_o     (slv_${n_tiles-1}_r_last),
+    .slv_${n_tiles-1}_r_user_o     (slv_${n_tiles-1}_r_user),
+    .slv_${n_tiles-1}_r_valid_o    (slv_${n_tiles-1}_r_valid),
+    .slv_${n_tiles-1}_r_ready_i    (slv_${n_tiles-1}_r_ready)
+  );
+
+endmodule
+
+<%
+  # Definition of template-based functions to support generation
+%>
+
+<%def name="logic(width)">\
+  <%
+    if width == 1:
+      typ = 'wire        '
+    else:
+      typ = "wire [%3d:0]" % (width - 1)
+  %>
+  ${typ}\
+</%def>\
+<%def name="port(name, width, output, active_low=False)">\
+  <%
+    if output:
+      direction = 'output'
+      suffix = 'o'
+    else:
+      direction = 'input '
+      suffix = 'i'
+    if width == 1:
+      typ = '        '
+    else:
+      typ = "[%3d:0] " % (width - 1)
+    if active_low:
+      suffix = 'n' + suffix
+    name = name + '_' + suffix
+  %>
+  % if width > 0:
+  ${direction} ${typ} ${name}\
+  % endif
+</%def>\
+<%def name="axi_ax_ports(prefix, master, aw, iw, uw)">\
+  ${port(prefix + '_id', iw, master)},\
+  ${port(prefix + '_addr', aw, master)},\
+  ${port(prefix + '_len', 8, master)},\
+  ${port(prefix + '_size', 3, master)},\
+  ${port(prefix + '_burst', 2, master)},\
+  ${port(prefix + '_lock', 1, master)},\
+  ${port(prefix + '_cache', 4, master)},\
+  ${port(prefix + '_prot', 3, master)},\
+  ${port(prefix + '_qos', 4, master)},\
+  ${port(prefix + '_user', uw, master)},\
+  ${port(prefix + '_valid', 1, master)},\
+  ${port(prefix + '_ready', 1, not master)}\
+</%def>\
+<%def name="axi_w_ports(prefix, master, dw)">\
+  ${port(prefix + '_data', dw, master)},\
+  ${port(prefix + '_strb', dw/8, master)},\
+  ${port(prefix + '_last', 1, master)},\
+  ${port(prefix + '_valid', 1, master)},\
+  ${port(prefix + '_ready', 1, not master)}\
+</%def>\
+<%def name="axi_b_ports(prefix, master, iw)">\
+  ${port(prefix + '_id', iw, not master)},\
+  ${port(prefix + '_resp', 2, not master)},\
+  ${port(prefix + '_valid', 1, not master)},\
+  ${port(prefix + '_ready', 1, master)}\
+</%def>\
+<%def name="axi_r_ports(prefix, master, dw, iw)">\
+  ${port(prefix + '_id', iw, not master)},\
+  ${port(prefix + '_data', dw, not master)},\
+  ${port(prefix + '_resp', 2, not master)},\
+  ${port(prefix + '_last', 1, not master)},\
+  ${port(prefix + '_valid', 1, not master)},\
+  ${port(prefix + '_ready', 1, master)}\
+</%def>\
+<%def name="axi_ports(prefix, master, aw, dw, iw, uw)">\
+  ${axi_ax_ports(prefix + '_aw', master, aw, iw, uw)},\
+  ${axi_w_ports(prefix + '_w', master, dw)},\
+  ${axi_b_ports(prefix + '_b', master, iw)},\
+  ${axi_ax_ports(prefix + '_ar', master, aw, iw, uw)},\
+  ${axi_r_ports(prefix + '_r', master, dw, iw)}\
+</%def>\
+<%def name="axi_lite_ax_ports(prefix, master, aw)">\
+  ${port(prefix + '_addr', aw, master)},\
+  ${port(prefix + '_prot', 3, master)},\
+  ${port(prefix + '_valid', 1, master)},\
+  ${port(prefix + '_ready', 1, not master)}\
+</%def>\
+<%def name="axi_lite_w_ports(prefix, master, dw)">\
+  ${port(prefix + '_data', dw, master)},\
+  ${port(prefix + '_strb', dw/8, master)},\
+  ${port(prefix + '_valid', 1, master)},\
+  ${port(prefix + '_ready', 1, not master)}\
+</%def>\
+<%def name="axi_lite_b_ports(prefix, master)">\
+  ${port(prefix + '_resp', 2, not master)},\
+  ${port(prefix + '_valid', 1, not master)},\
+  ${port(prefix + '_ready', 1, master)}\
+</%def>\
+<%def name="axi_lite_r_ports(prefix, master, dw)">\
+  ${port(prefix + '_data', dw, not master)},\
+  ${port(prefix + '_resp', 2, not master)},\
+  ${port(prefix + '_valid', 1, not master)},\
+  ${port(prefix + '_ready', 1, master)}\
+</%def>\
+<%def name="axi_lite_ports(prefix, master, aw, dw)">\
+  ${axi_lite_ax_ports(prefix + '_aw', master, aw)},\
+  ${axi_lite_w_ports(prefix + '_w', master, dw)},\
+  ${axi_lite_b_ports(prefix + '_b', master)},\
+  ${axi_lite_ax_ports(prefix + '_ar', master, aw)},\
+  ${axi_lite_r_ports(prefix + '_r', master, dw)}\
+</%def>\

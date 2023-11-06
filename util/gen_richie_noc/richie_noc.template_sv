@@ -1,0 +1,241 @@
+// Author: Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+
+`include "floo_noc/typedef.svh"
+
+module richie_noc 
+  import floo_pkg::*;
+  import floo_param_pkg::*;
+  import floo_axi_flit_pkg::*;  
+#( 
+  // Tiles mesh parameters
+  parameter int unsigned NumX                       = 2,
+  parameter int unsigned NumY                       = 2,
+
+  parameter int unsigned NumRoutes                  = 0,
+  parameter int unsigned NumVirtChannels            = 1,
+  parameter int unsigned NumPhysChannels            = 1,
+
+  // X Coordinate address offset for XY routing
+  parameter int unsigned XYAddrOffsetX              = 0, // was dependant on HBM size
+
+  // Y Coordinate address offset for XY routing
+  parameter int unsigned XYAddrOffsetY              = 0, // was dependant on HBM size
+
+  // NiC chimney parameters
+  parameter bit CutAx                               = 1'b1,
+  parameter bit CutRsp                              = 1'b0,
+
+  // NiC chimney parameters
+  parameter bit RoBSimple                           = 1'b1,
+  parameter int unsigned ReorderBufferSize          = 32'd256,
+
+  parameter int unsigned MaxTxns                    = 32,
+  
+  parameter route_algo_e RouteAlgo                  = XYRouting,
+  parameter int unsigned ChannelFifoDepth           = 2,
+  parameter int unsigned OutputFifoDepth            = 32,
+
+  // Only used for XYRouting
+  parameter type xy_id_t                            = floo_param_pkg::xy_id_t,
+  parameter int unsigned NumAddrRules               = 0
+) (
+  input logic                               clk_i,
+  input logic                               rst_ni,
+
+  /////////////////////
+  //   AXI Signals   //
+  /////////////////////
+
+  // - axi_in_req_t, axi_in_resp_t, etc. are created with the macro AXI_TYPEDEF_ALL in "floo_axi_flit_pkg.sv"
+  // - The macro AXI_TYPEDEF_ALL definition is in the AXI library (under "typedef.svh")
+
+  (* DONT_TOUCH = "yes" *) input floo_axi_flit_pkg::axi_in_req_t     [NumX-1:0][NumY-1:0] axi_in_req,
+  (* DONT_TOUCH = "yes" *) output floo_axi_flit_pkg::axi_out_resp_t  [NumX-1:0][NumY-1:0] axi_out_rsp,
+  (* DONT_TOUCH = "yes" *) output floo_axi_flit_pkg::axi_out_req_t   [NumX-1:0][NumY-1:0] axi_out_req,
+  (* DONT_TOUCH = "yes" *) input floo_axi_flit_pkg::axi_in_resp_t    [NumX-1:0][NumY-1:0] axi_in_rsp
+);
+
+  /////////////////////
+  //   NoC Signals   //
+  /////////////////////
+
+  // IO requests/responses
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_flit_t           [NumX-1:0][NumY-1:0] noc_in_req;
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_flit_t           [NumX-1:0][NumY-1:0] noc_out_rsp;
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_flit_t           [NumX-1:0][NumY-1:0] noc_out_req;
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_flit_t           [NumX-1:0][NumY-1:0] noc_in_rsp;
+
+  // Request Router
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_req_data;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_req_ready;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_req_valid;
+
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_req_data;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_req_ready;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_req_valid;
+
+  // Response Router
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_rsp_data;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_rsp_ready;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_rsp_valid;
+
+  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_rsp_data;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_rsp_ready;
+  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_rsp_valid;
+
+  ////////////////////////////
+  //   Network Interfaces   //
+  ////////////////////////////
+
+  for (genvar x = 0; x < NumX; x++) begin : gen_x
+    for (genvar y = 0; y < NumX; y++) begin : gen_y 
+
+      // Coordinates/ID of the current tile
+      xy_id_t current_id;
+
+      // assign current_id = '{x: x+1, y: y+1};
+      assign current_id = '{x: x, y: y};
+
+      (* DONT_TOUCH = "TRUE" *) 
+      floo_axi_chimney #(
+        .RouteAlgo                ( RouteAlgo               ),
+        .XYAddrOffsetX            ( XYAddrOffsetX           ),
+        .XYAddrOffsetY            ( XYAddrOffsetY           ),
+        .MaxTxns                  ( MaxTxns                 ),
+        .ReorderBufferSize        ( ReorderBufferSize       ),
+        .RoBSimple                ( RoBSimple               ),
+        .CutAx                    ( CutAx                   ),
+        .CutRsp                   ( CutRsp                  ),
+        .xy_id_t                  ( xy_id_t                 )
+      ) i_chimney (
+        .clk_i                    ( clk_i                   ),
+        .rst_ni                   ( rst_ni                  ),
+        .test_enable_i            ( 1'b0                    ),
+        .sram_cfg_i               ( '0                      ),
+        // AXI4 side interfaces
+        .axi_in_req_i             ( axi_in_req[x][y]        ),
+        .axi_out_rsp_i            ( axi_in_rsp[x][y]        ),
+        .axi_out_req_o            ( axi_out_req[x][y]       ),
+        .axi_in_rsp_o             ( axi_out_rsp[x][y]       ),
+        // Coordinates/ID of the current tile
+        .xy_id_i                  ( current_id              ),
+        .id_i                     ( 1'b0                    ),
+        // NoC side interfaces
+        .req_o                    ( noc_out_req[x][y]       ),
+        .rsp_i                    ( noc_in_rsp[x][y]        ),
+        .req_i                    ( noc_in_req[x][y]        ),
+        .rsp_o                    ( noc_out_rsp[x][y]       )
+        
+      );
+
+      // register NoC requests/responses
+      //
+      // Note: Also necessary to unpack flit struct into req/rsp, valid and ready
+
+      spill_register #(
+        .T          ( floo_axi_flit_pkg::req_generic_t      )
+      ) i_req_noc_out_req_arb (
+        .clk_i      ( clk_i                                 ),
+        .rst_ni     ( rst_ni                                ),
+        .data_i     ( noc_out_req[x][y].data                ),
+        .valid_i    ( noc_out_req[x][y].valid               ),
+        .ready_o    ( noc_out_req[x][y].ready               ),
+        .data_o     ( noc_out_req_data[x][y]                ),
+        .valid_o    ( noc_out_req_valid[x][y]               ),
+        .ready_i    ( noc_out_req_ready[x][y]               )
+      );
+
+      spill_register #(
+        .T          ( floo_axi_flit_pkg::rsp_generic_t      )
+      ) i_req_noc_in_rsp_arb (
+        .clk_i      ( clk_i                                 ),
+        .rst_ni     ( rst_ni                                ),
+        .data_i     ( noc_in_rsp[x][y].data                 ),
+        .valid_i    ( noc_in_rsp[x][y].valid                ),
+        .ready_o    ( noc_in_rsp[x][y].ready                ),
+        .data_o     ( noc_in_rsp_data[x][y]                 ),
+        .valid_o    ( noc_in_rsp_valid[x][y]                ),
+        .ready_i    ( noc_in_rsp_ready[x][y]                )
+      );
+
+      spill_register #(
+        .T          ( floo_axi_flit_pkg::req_generic_t      )
+      ) i_req_noc_in_req_arb (
+        .clk_i      ( clk_i                                 ),
+        .rst_ni     ( rst_ni                                ),
+        .data_i     ( noc_in_req[x][y].data                 ),
+        .valid_i    ( noc_in_req[x][y].valid                ),
+        .ready_o    ( noc_in_req[x][y].ready                ),
+        .data_o     ( noc_in_req_data[x][y]                 ),
+        .valid_o    ( noc_in_req_valid[x][y]                ),
+        .ready_i    ( noc_in_req_ready[x][y]                )
+      );
+
+      spill_register #(
+        .T          ( floo_axi_flit_pkg::rsp_generic_t      )
+      ) i_req_noc_out_rsp_arb (
+        .clk_i      ( clk_i                                 ),
+        .rst_ni     ( rst_ni                                ),
+        .data_i     ( noc_out_rsp[x][y].data                ),
+        .valid_i    ( noc_out_rsp[x][y].valid               ),
+        .ready_o    ( noc_out_rsp[x][y].ready               ),
+        .data_o     ( noc_out_rsp_data[x][y]                ),
+        .valid_o    ( noc_out_rsp_valid[x][y]               ),
+        .ready_i    ( noc_out_rsp_ready[x][y]               )
+      );
+
+    end
+  end
+
+  //////////////////
+  //   NoC Mesh   //
+  //////////////////
+
+  // Request mesh
+
+  (* DONT_TOUCH = "TRUE" *) 
+  floo_mesh #(
+    .NumX             ( NumX                              ),
+    .NumY             ( NumY                              ),
+    .NumRoutes        ( NumRoutes                         ),
+    .NumPhysChannels  ( NumPhysChannels                   ),
+    .NumVirtChannels  ( NumVirtChannels                   ),
+    .RouteAlgo        ( RouteAlgo                         ),
+    .flit_t           ( floo_axi_flit_pkg::req_generic_t  ),
+    .xy_id_t          ( floo_param_pkg::xy_id_t           )
+  ) i_req_floo_mesh (
+    .clk_i            ( clk_i                             ),
+    .rst_ni           ( rst_ni                            ),
+    .valid_i          ( noc_out_req_valid                 ),
+    .ready_o          ( noc_out_req_ready                 ),
+    .data_i           ( noc_out_req_data                  ),
+    .valid_o          ( noc_in_req_valid                  ),
+    .ready_i          ( noc_in_req_ready                  ),
+    .data_o           ( noc_in_req_data                   )
+  );
+
+  // Response mesh
+
+  (* DONT_TOUCH = "TRUE" *) 
+  floo_mesh #(
+    .NumX             ( NumX                              ),
+    .NumY             ( NumY                              ),
+    .NumRoutes        ( NumRoutes                         ),
+    .NumPhysChannels  ( NumPhysChannels                   ),
+    .NumVirtChannels  ( NumVirtChannels                   ),
+    .RouteAlgo        ( RouteAlgo                         ),
+    .ChannelFifoDepth ( ChannelFifoDepth                  ),
+    .flit_t           ( floo_axi_flit_pkg::rsp_generic_t  ),
+    .xy_id_t          ( floo_param_pkg::xy_id_t           )
+  ) i_rsp_floo_mesh (
+    .clk_i            ( clk_i                             ),
+    .rst_ni           ( rst_ni                            ),
+    .valid_i          ( noc_out_rsp_valid                 ),
+    .ready_o          ( noc_out_rsp_ready                 ),
+    .data_i           ( noc_out_rsp_data                  ),
+    .valid_o          ( noc_in_rsp_valid                  ),
+    .ready_i          ( noc_in_rsp_ready                  ),
+    .data_o           ( noc_in_rsp_data                   )
+  );
+
+endmodule

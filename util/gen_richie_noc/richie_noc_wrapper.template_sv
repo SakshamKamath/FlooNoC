@@ -1,0 +1,37 @@
+// Author: Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+
+// `include "axi/assign.svh"
+// `include "axi/typedef.svh"
+`include "floo_noc/typedef.svh"
+
+module richie_noc_wrapper
+  import floo_pkg::*;
+  import floo_param_pkg::*;
+  import floo_axi_flit_pkg::*;  
+#( 
+  parameter int unsigned  N_TILES     = ${n_tiles},
+  parameter int unsigned  N_TILES_X   = ${n_tiles_x},
+  parameter int unsigned  N_TILES_Y   = ${n_tiles_y}
+) (
+  input logic                               clk_i,
+  input logic                               rst_ni,
+  input floo_axi_flit_pkg::axi_in_req_t     [${n_tiles_x}-1:0][${n_tiles_y}-1:0] axi_in_req,
+  output floo_axi_flit_pkg::axi_out_resp_t  [${n_tiles_x}-1:0][${n_tiles_y}-1:0] axi_out_rsp,
+  output floo_axi_flit_pkg::axi_out_req_t   [${n_tiles_x}-1:0][${n_tiles_y}-1:0] axi_out_req,
+  input floo_axi_flit_pkg::axi_in_resp_t    [${n_tiles_x}-1:0][${n_tiles_y}-1:0] axi_in_rsp
+);
+
+  richie_noc #(
+    .NumX               ( N_TILES_X                 ),
+    .NumY               ( N_TILES_Y                 ),
+    .xy_id_t            ( floo_param_pkg::xy_id_t   )
+  ) i_noc (
+    .clk_i              ( clk_i                     ), 
+    .rst_ni             ( rst_ni                    ),
+    .axi_in_req         ( axi_in_req                ),
+    .axi_out_rsp        ( axi_out_rsp               ),
+    .axi_out_req        ( axi_out_req               ),
+    .axi_in_rsp         ( axi_in_rsp                )
+  );
+
+endmodule

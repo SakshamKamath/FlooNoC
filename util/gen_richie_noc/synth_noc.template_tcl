@@ -1,0 +1,275 @@
+# =====================================================================
+# Project:      FPGA build
+# Title:        synth_noc.tcl
+# Description:  Synthesize Zynq project with NoC IP.
+# =====================================================================
+
+# Vivado project location.
+set PRJ_PATH [lindex $argv 0]
+puts "Vivado project is going to be located in $PRJ_PATH\."
+
+# Vivado IPs location.
+set VIVADO_IPS_DIR [lindex $argv 1]
+
+# Source parameters
+source $VIVADO_IPS_DIR\/fpga_noc_params.tcl
+
+#
+# CREATE BLOCK DESIGN FOR ZYNQ + NOC
+# 
+
+# Create project
+create_project $PRJ_NAME $PRJ_PATH -part $PL_PART_NAME
+set_property board_part $BOARD_PART_NAME [current_project]
+
+# Set synthesis properties
+set_param synth.elaboration.rodinMoreOptions "rt::set_parameter var_size_limit 20000000"
+
+# Add NoC IP to user library
+set_property ip_repo_paths $VIVADO_IPS_DIR [current_project]
+# set_property  ip_repo_paths  $PRJ_PATH/.. [current_project]
+# set_property ip_repo_paths [pwd] [current_project]
+update_ip_catalog
+
+# Create block design
+create_bd_design "$PRJ_NAME"
+update_compile_order -fileset sources_1
+
+#
+# SET VARIABLES
+# 
+
+# Maximum number of interconnect ports (per interconnect)
+set max_zynq_interconnect_ports 16
+
+# Number of interconnects
+set n_zynq_interconnects [expr int(($N_NOC_MST)/($max_zynq_interconnect_ports - $N_ZYNQ_MST) + 1)]
+
+# Number of ports (per interconnect)
+set n_zynq_port_per_intc $N_ZYNQ_MST
+set n_noc_port_per_intc [expr int($max_zynq_interconnect_ports - $N_ZYNQ_MST)]
+
+# NoC ports (per interconnect)
+
+# -- Master
+for {set idx_intc 0} {$idx_intc < ($n_zynq_interconnects - 1)} {incr idx_intc} {
+  set n_noc_ports_mst($idx_intc) [expr int($max_zynq_interconnect_ports - $N_ZYNQ_MST)]
+}
+set n_noc_ports_mst($idx_intc) [expr int($N_NOC_MST - $n_noc_port_per_intc * ($n_zynq_interconnects - 1))]
+
+# -- Slave
+for {set idx_intc 0} {$idx_intc < ($n_zynq_interconnects - 1)} {incr idx_intc} {
+  set n_noc_ports_slv($idx_intc) [expr int($max_zynq_interconnect_ports - $N_ZYNQ_SLV)]
+}
+set n_noc_ports_slv($idx_intc) [expr int($N_NOC_SLV - $n_noc_port_per_intc * ($n_zynq_interconnects - 1))]
+
+# Total interconnect ports (per interconnect)
+# Note: Each interconnect exposes 1 mst/slave for the Zynq (or for communication btw different interconnects) + the NoC ports
+
+# -- Master
+for {set idx_intc 0} {$idx_intc < ($n_zynq_interconnects - 1)} {incr idx_intc} {
+  set n_intc_ports_mst($idx_intc) [expr int($max_zynq_interconnect_ports)]
+}
+set n_intc_ports_mst($idx_intc) [expr int($n_noc_ports_mst($idx_intc) + $N_ZYNQ_MST)]
+
+# -- Slave
+for {set idx_intc 0} {$idx_intc < ($n_zynq_interconnects - 1)} {incr idx_intc} {
+  set n_intc_ports_slv($idx_intc) [expr int($max_zynq_interconnect_ports)]
+}
+set n_intc_ports_slv($idx_intc) [expr int($n_noc_ports_slv($idx_intc) + $N_ZYNQ_SLV)]
+
+# Note: Refer to the following link for errors in passing variables to the Vivado block design:
+      # https://support.xilinx.com/s/question/0D52E00006hpgpKSAQ/configure-generic-parameters-of-a-custom-ip-based-on-variable-value?language=en_US
+
+# Add Zynq UltraScale+ Processor System
+create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.3 i_zynq_ps
+apply_bd_automation -rule xilinx.com:bd_rule:zynq_ultra_ps_e -config {apply_board_preset "1" }   [get_bd_cells i_zynq_ps]
+set_property -dict [list \
+  CONFIG.PSU__USE__M_AXI_GP1 {0} \
+  CONFIG.PSU__USE__S_AXI_GP2 {1} \
+  CONFIG.PSU__USE__S_AXI_GP3 {0} \
+  CONFIG.PSU__USE__IRQ1 {1} \
+] [get_bd_cells i_zynq_ps]
+
+for {set idx_mst 0} {$idx_mst < ($N_ZYNQ_MST)} {incr idx_mst} {
+  set clk [format "maxihpm$idx_mst\_fpd_aclk" $idx_mst]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0]   [get_bd_pins i_zynq_ps/$clk]
+}
+
+for {set idx_slv 0} {$idx_slv < ($N_ZYNQ_SLV)} {incr idx_slv} {
+  set clk [format "saxihp$idx_slv\_fpd_aclk" $idx_slv]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0]   [get_bd_pins i_zynq_ps/$clk]
+}
+
+# Configure PL frequency
+set_property -dict [list \
+  CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ "$PL_FREQMHZ"] [get_bd_cells i_zynq_ps]
+
+# Add System Reset
+create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 i_sys_reset
+connect_bd_net [get_bd_pins i_zynq_ps/pl_resetn0] \
+  [get_bd_pins i_sys_reset/ext_reset_in]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_sys_reset/slowest_sync_clk]
+
+# Add AXI interconnect from Zynq PS
+for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
+  create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 i_zynq_interconnect_$idx_intc
+  set_property -dict [list \
+    CONFIG.NUM_MI $n_intc_ports_mst($idx_intc) \
+    CONFIG.NUM_SI $n_intc_ports_slv($idx_intc) \
+    CONFIG.STRATEGY {1} \
+  ] [get_bd_cells i_zynq_interconnect_$idx_intc]
+}
+
+# Add Richie NoC
+create_bd_cell -type ip -vlnv ethz.ch:user:richie_noc_ip:1.0 $I_NOC_NAME
+
+# Route NoC clk and rst to Zynq
+connect_bd_net [get_bd_pins $I_NOC_NAME/clk_i] \
+  [get_bd_pins i_zynq_ps/pl_clk0]
+connect_bd_net [get_bd_pins $I_NOC_NAME/rst_ni] \
+  [get_bd_pins i_sys_reset/peripheral_aresetn]
+
+# Route interconnect clk and rst to Zynq
+for {set idx_intc 0} {$idx_intc < ($n_zynq_interconnects)} {incr idx_intc} {
+  connect_bd_net [get_bd_pins i_zynq_interconnect_$idx_intc/ACLK] [get_bd_pins i_zynq_ps/pl_clk0]
+  connect_bd_net [get_bd_pins i_zynq_interconnect_$idx_intc/ARESETN] [get_bd_pins i_sys_reset/peripheral_aresetn]
+}
+
+# Route clk and rst to interconnect master ports
+for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
+  for {set idx_port 0} {$idx_port < $n_intc_ports_mst($idx_intc)} {incr idx_port} {
+    set clk [format "M%02d_ACLK" $idx_port]
+    set rst [format "M%02d_ARESETN" $idx_port]
+    connect_bd_net [get_bd_pins i_zynq_interconnect_$idx_intc/$clk] [get_bd_pins i_zynq_ps/pl_clk0]
+    connect_bd_net [get_bd_pins i_zynq_interconnect_$idx_intc/$rst] [get_bd_pins i_sys_reset/peripheral_aresetn]
+  }
+}
+
+# Route clk and rst to interconnect slave ports
+for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
+  for {set idx_port 0} {$idx_port < $n_intc_ports_slv($idx_intc)} {incr idx_port} {
+    set clk [format "S%02d_ACLK" $idx_port]
+    set rst [format "S%02d_ARESETN" $idx_port]
+    connect_bd_net [get_bd_pins i_zynq_interconnect_$idx_intc/$clk] [get_bd_pins i_zynq_ps/pl_clk0]
+    connect_bd_net [get_bd_pins i_zynq_interconnect_$idx_intc/$rst] [get_bd_pins i_sys_reset/peripheral_aresetn]
+  }
+}
+
+# Connect Zynq masters and slaves 
+# Note: using port M_AXI_HPM0_FPD and S_AXI_HP0_FPD
+for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
+  if {$idx_intc == 0} {
+    set mst [format "M_AXI_HPM%01d_FPD" 0]
+    set slv [format "S%02d_AXI" 0]
+    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_interconnect_$idx_intc/$slv] \
+      [get_bd_intf_pins i_zynq_ps/$mst]
+  } else {
+      set mst [format "M%02d_AXI" 0]
+      set slv [format "S%02d_AXI" 0]
+      connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_interconnect_$idx_intc/$slv] \
+        [get_bd_intf_pins i_zynq_interconnect_[expr int($idx_intc - 1)]/$mst]
+  }
+}
+set mst [format "M%02d_AXI" 0]
+set slv [format "S_AXI_HP%01d_FPD" 0]
+connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_ps/$slv] \
+  [get_bd_intf_pins i_zynq_interconnect_[expr int($n_zynq_interconnects - 1)]/$mst]
+
+# Connect NoC masters
+# -- Set initial values
+# -- Note: The zynq master connects to the first port of the first interconnect, thus idx_port=1
+for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
+  for {set idx_noc_port 0} {$idx_noc_port < $n_noc_ports_mst($idx_intc)} {incr idx_noc_port} {
+    set mst [format "mst_%01d" [expr int($idx_noc_port + ($n_noc_port_per_intc * $idx_intc))]]
+    set slv [format "S%02d_AXI" [expr int($idx_noc_port + 1)]]
+    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_interconnect_$idx_intc/$slv] \
+      [get_bd_intf_pins $I_NOC_NAME/$mst]
+  }
+}
+
+# Connect NoC slaves
+# -- Set initial values
+# -- Note: The zynq master connects to the first port of the first interconnect, thus idx_port=1
+for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
+  for {set idx_noc_port 0} {$idx_noc_port < $n_noc_ports_mst($idx_intc)} {incr idx_noc_port} {
+    set mst [format "M%02d_AXI" [expr int($idx_noc_port + 1)]]
+    set slv [format "slv_%01d" [expr int($idx_noc_port + ($n_noc_port_per_intc * $idx_intc))]]
+    connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_interconnect_$idx_intc/$mst] \
+      [get_bd_intf_pins $I_NOC_NAME/$slv]
+  }
+}
+
+#
+# ADDRESS MAP
+#
+
+assign_bd_address
+
+# Excluding segments to avoid errors concerning address segments connected to the AXI crossbar
+# -- Note: The SoC is only meant for the NoC characterization, this topology won't be used for real applications
+# -- PS side
+for {set idx_noc_port 0} {$idx_noc_port < $N_NOC_MST} {incr idx_noc_port} {
+  if {$idx_noc_port == 0} {
+    exclude_bd_addr_seg [get_bd_addr_segs i_zynq_ps/Data/SEG_i_richie_noc_Reg]
+  } else {
+    exclude_bd_addr_seg [get_bd_addr_segs i_zynq_ps/Data/SEG_i_richie_noc_Reg$idx_noc_port]
+  }
+}
+
+# -- NoC side
+for {set idx_noc_port 0} {$idx_noc_port < $N_NOC_MST} {incr idx_noc_port} {
+  if {$idx_noc_port == 0} {
+    exclude_bd_addr_seg [get_bd_addr_segs i_richie_noc/Data/SEG_i_richie_noc_Reg]
+  } else {
+    exclude_bd_addr_seg [get_bd_addr_segs i_richie_noc/Data/SEG_i_richie_noc_Reg$idx_noc_port]
+  }
+}
+
+# Validate and save Top-Level Block Design
+save_bd_design
+validate_bd_design
+save_bd_design
+close_bd_design [get_bd_designs $PRJ_NAME]
+
+make_wrapper -files [get_files \
+  $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd \
+] -top
+add_files -norecurse \
+  $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/hdl/$PRJ_NAME\_wrapper.v
+
+# Create targets and runs for IPs.
+generate_target all \
+  [get_files $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd]
+export_ip_user_files -of_objects \
+  [get_files $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd] \
+  -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] \
+  $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd \
+]
+export_ip_user_files -of_objects [get_ips $PRJ_NAME\_$I_NOC_NAME\_0] \
+  -no_script -sync -force -quiet
+
+# Define include and defines again for PULP.
+# Note: Direct name substitution because of conflicts between Mako and tcl syntaxes
+set string_name "$PRJ_NAME"
+append string_name "_"
+append string_name "$I_NOC_NAME"
+append string_name "_0"
+eval [exec sed {s/current_fileset/get_filesets $string_name/} \
+  $VIVADO_IPS_DIR\/define_defines_includes_no_simset.tcl]
+
+#
+# FPGA SYNTHESIS
+#
+
+# Set synthesis strategies
+# set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+set_property strategy Flow_AreaOptimized_high [get_runs synth_1]
+set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY rebuilt [get_runs synth_1]
+set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
+
+# Launch synthesis
+launch_runs synth_1 -jobs 12
+wait_on_run synth_1
