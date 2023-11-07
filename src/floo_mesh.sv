@@ -13,9 +13,11 @@ import floo_pkg::*;
 #(
   parameter int unsigned NumX = 4,
   parameter int unsigned NumY = 4,
+  parameter int unsigned NumRoutes = 0,
   parameter int unsigned NumVirtChannels = 1,
   parameter int unsigned NumPhysChannels = 1,
   parameter route_algo_e RouteAlgo       = IdTable,
+  parameter int unsigned ChannelFifoDepth = 2,
   parameter type flit_t = logic,
   parameter type xy_id_t = logic
 ) (
@@ -99,16 +101,16 @@ import floo_pkg::*;
       end
 
       floo_router #(
-        .NumPhysChannels ( NumPhysChannels ),
-        .NumVirtChannels ( NumVirtChannels ),
-        .NumRoutes       ( 5               ),
-        .flit_t          ( flit_t          ),
-        .RouteAlgo       ( RouteAlgo       ),
-        .ChannelFifoDepth( 2               ),
-        .IdWidth         ( $bits(xy_id_t)  ),
-        .id_t            ( xy_id_t         ),
-        .addr_rule_t     ( logic           ),
-        .NumAddrRules    ( 1               )
+        .NumPhysChannels ( NumPhysChannels  ),
+        .NumVirtChannels ( NumVirtChannels  ),
+        .NumRoutes       ( NumRoutes        ),
+        .flit_t          ( flit_t           ),
+        .RouteAlgo       ( RouteAlgo        ),
+        .ChannelFifoDepth( ChannelFifoDepth ),
+        .IdWidth         ( $bits(xy_id_t)   ),
+        .id_t            ( xy_id_t          ),
+        .addr_rule_t     ( logic            ),
+        .NumAddrRules    ( 1                )
       ) i_floo_router (
         .clk_i,
         .rst_ni,
