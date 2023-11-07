@@ -18,3 +18,16 @@ scripts/spyglass/*
 test/jobs
 *.csv
 **/*.log
+
+# generate files
+src/floo_axi_flit_pkg.sv
+util/axi_cfg.hjson
+top_fpga/soc_cfg_pkg.sv
+top_fpga/richie_noc_ip.v
+top_fpga/richie_noc_ooc.sv
+top_fpga/richie_noc_wrapper.sv
+top_fpga/richie_noc.sv
+top_fpga/soc_bus.sv
+fpga/utils/vivado_ips/fpga_noc_params.tcl
+fpga/utils/vivado_ips/create_noc_ip.tcl
+fpga/utils/richie/synth_noc.tcl
