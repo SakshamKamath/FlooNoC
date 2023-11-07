@@ -7,9 +7,11 @@
 #
 # =====================================================================
 #
-# Copyright (C) 2021 University of Modena and Reggio Emilia.
+# Copyright 2023 University of Modena and Reggio Emilia.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
 #
-# Author: Gianluca Bellocchi, University of Modena and Reggio Emilia.
+# Author: Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 #
 # =====================================================================
 

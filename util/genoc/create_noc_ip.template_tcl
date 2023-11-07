@@ -16,7 +16,6 @@
 #
 # Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 #
-#
 
 source fpga_noc_params.tcl
 

@@ -3,6 +3,7 @@
 *transcript
 *work
 *py_env_noc
+*top_fpga
 vsim.wlf
 scripts/compile_vsim.tcl
 working_dir/*

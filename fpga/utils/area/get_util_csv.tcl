@@ -1,0 +1,34 @@
+# =====================================================================
+# Project:      FPGA build
+# Title:        get_util_csv.tcl
+# Description:  TCL script to create CSV report without interaction with GUI.
+#
+# $Date:        13.10.2023
+#
+# ===================================================================== */
+#
+# Copyright 2023 University of Modena and Reggio Emilia.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+#
+
+# Get utilization report from Vivado as string
+set reportLines [split [report_utilization -hierarchical -return_string -hierarchical_depth 20] "\n"]
+
+# Create output CSV
+set csv_file "$reports_dir/$PRJ_NAME\_$design_run_type\_utilization.csv"
+set fh [open $csv_file w]
+
+# Process report for use with ArchEx
+set writelines false
+foreach line $reportLines {
+	if {[regexp {\\+[\+-]\+} $line]} {
+		set writelines true
+	}
+	if {[regexp {^\|} $line]} {
+		puts $fh [regsub -all {\|} [regsub -all {.\|.} $line ","] ""]
+	}
+}
+close $fh

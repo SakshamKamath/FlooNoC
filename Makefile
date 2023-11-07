@@ -4,6 +4,7 @@
 
 # Author: Michael Rogenmoser <michaero@iis.ee.ethz.ch>
 # Author: Tim Fischer <fischeti@iis.ee.ethz.ch>
+# Author: Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 
 ##########
 # Common #
@@ -11,6 +12,14 @@
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
+
+# Paths
+SRC_PATH 				= $(realpath $(MKFILE_DIR)/src )
+FPGA_SRC_PATH 			= $(realpath $(MKFILE_DIR)/top_fpga )
+FPGA_PATH 				= $(realpath $(MKFILE_DIR)/fpga )
+TEST_PATH 				= $(realpath $(MKFILE_DIR)/test )
+UTILS_PATH 				= $(realpath $(MKFILE_DIR)/util )
+SCRIPTS_PATH 			= $(realpath $(MKFILE_DIR)/scripts )
 
 .PHONY: all clean
 all: compile-sim
@@ -20,8 +29,10 @@ clean: clean-sim clean-spyglass clean-jobs clean-sources
 # Programs #
 ############
 
-BENDER     	?= bender
-VSIM       	?= questa-2022.3 vsim
+BENDER 		?= $(MKFILE_DIR)/bender
+BENDER_PKG	?= $(MKFILE_DIR)/Bender.yml
+BENDER_LOCK	?= $(MKFILE_DIR)/Bender.lock
+VSIM       	?= vsim # questa-2022.3 vsim
 SPYGLASS   	?= sg_shell
 VERIBLE_FMT	?= verible-verilog-format
 
@@ -58,52 +69,93 @@ endif
 
 # Automatically open the waveform if a wave.tcl file is present
 VSIM_FLAGS_GUI += -do "log -r /*"
-ifneq ("$(wildcard test/$(VSIM_TB_DUT).wave.tcl)","")
-    VSIM_FLAGS_GUI += -do "source test/$(VSIM_TB_DUT).wave.tcl"
+ifneq ("$(wildcard $(TEST_PATH)/$(VSIM_TB_DUT).wave.tcl)","")
+    VSIM_FLAGS_GUI += -do "source $(TEST_PATH)/$(VSIM_TB_DUT).wave.tcl"
 endif
 
 ###################
-# Flit Generation #
+# Generation Flow #
 ###################
 
+TARGET_OV               := my_richie_noc
+TARGET_BOARD            := zcu102
+
+export TARGET_OV TARGET_BOARD
+
+###################
+# FPGA build flow #
+###################
+
+.PHONY: test
+
+fpga: clean_fpga build_fpga reports_fpga
+
+reports_fpga:
+	cd $(FPGA_PATH) && $(MAKE) -s $@
+
+build_fpga: bender $(BENDER_PKG) $(BENDER_LOCK) gen-noc
+	cd $(FPGA_PATH) && $(MAKE) -s $@
+
+test: bender $(BENDER_PKG) $(BENDER_LOCK)
+
+clean_fpga:
+	cd $(FPGA_PATH) && $(MAKE) -s $@
+
+##################
+# NoC Generation #
+##################
+
 FLIT_CFG ?= $(shell find util -name "*.hjson")
-FLIT_SRC ?= $(patsubst util/%_cfg.hjson,src/floo_%_flit_pkg.sv,$(FLIT_CFG))
+FLIT_SRC ?= $(patsubst $(UTILS_PATH)/%_cfg.hjson,$(SRC_PATH)/floo_%_flit_pkg.sv,$(FLIT_CFG))
 
-.PHONY: sources clean-sources gen_richie_noc
+.PHONY: sources clean-sources gen-noc
 
-gen_richie_noc:
-	@cd $(ROOT)/util && python flit_gen.py -c $(ROOT)/util/axi_cfg.hjson > $(RTL_SRC_PATH)/floo_axi_flit_pkg.sv
+genoc:
+	mkdir -p $(FPGA_SRC_PATH)
+	cd $(UTILS_PATH)/$@ && python $@.py axi_cfg.template_hjson > $(UTILS_PATH)/axi_cfg.hjson
+	cd $(UTILS_PATH)/$@ && python $@.py soc_cfg_pkg.template_sv > $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
+	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
+	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ooc.template_sv > $(FPGA_SRC_PATH)/richie_noc_ooc.sv
+	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_wrapper.template_sv > $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
+	cd $(UTILS_PATH)/$@ && python $@.py richie_noc.template_sv > $(FPGA_SRC_PATH)/richie_noc.sv
+	cd $(UTILS_PATH)/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
+	cd $(UTILS_PATH)/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
+	cd $(UTILS_PATH)/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/richie/synth_noc.tcl
+	cd $(UTILS_PATH) && python flit_gen.py -c $(UTILS_PATH)/axi_cfg.hjson > $(SRC_PATH)/floo_axi_flit_pkg.sv
 	@# $(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
-	@cd $(ROOT)/util/$@ && python $@.py axi_cfg.template_hjson > $(ROOT)/util/axi_cfg.hjson
-	@cd $(ROOT)/util/$@ && python $@.py soc_cfg_pkg.template_sv > $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
-	@cd $(ROOT)/util/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
-	@cd $(ROOT)/util/$@ && python $@.py richie_noc_ooc.template_sv > $(FPGA_SRC_PATH)/richie_noc_ooc.sv
-	@cd $(ROOT)/util/$@ && python $@.py richie_noc_wrapper.template_sv > $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
-	@cd $(ROOT)/util/$@ && python $@.py richie_noc.template_sv > $(FPGA_SRC_PATH)/richie_noc.sv
-	@cd $(ROOT)/util/$@ && python $@.py soc_bus.template_sv > $(FPGA_SRC_PATH)/soc_bus.sv
-	@cd $(ROOT)/util/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
-	@cd $(ROOT)/util/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
-	@cd $(ROOT)/util/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/richie/synth_noc.tcl
+
+cleanoc:
+	rm $(SRC_PATH)/floo_axi_flit_pkg.sv
+	rm $(UTILS_PATH)/axi_cfg.hjson
+	rm $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
+	rm $(FPGA_SRC_PATH)/richie_noc_ip.v
+	rm $(FPGA_SRC_PATH)/richie_noc_ooc.sv
+	rm $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
+	rm $(FPGA_SRC_PATH)/richie_noc.sv
+	rm $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
+	rm $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
+	rm $(FPGA_PATH)/utils/richie/synth_noc.tcl
 
 sources: $(FLIT_SRC)
-src/floo_%_flit_pkg.sv: util/%_cfg.hjson
-	python util/flit_gen.py -c $< > $@
+$(SRC_PATH)/floo_%_flit_pkg.sv: $(UTILS_PATH)/%_cfg.hjson
+	python $(UTILS_PATH)/flit_gen.py -c $< > $@
 	# $(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
 
 clean-sources:
-	rm -f src/floo_*_flit_pkg.sv
+	rm -f $(SRC_PATH)/floo_*_flit_pkg.sv
 
 ######################
 # Traffic Generation #
 ######################
 
 .PHONY: jobs clean-jobs
-jobs: util/gen_jobs.py
-	mkdir -p test/jobs
-	./util/gen_jobs.py --out_dir test/jobs
+jobs:$(UTILS_PATH)/gen_jobs.py
+	mkdir -p $(TEST_PATH)/jobs
+	$(UTILS_PATH)/gen_jobs.py \
+		--out_dir $(TEST_PATH)/jobs
 
 clean-jobs:
-	rm -rf test/jobs
+	rm -rf $(TEST_PATH)/jobs
 
 ########################
 # QuestaSim Simulation #
@@ -111,14 +163,14 @@ clean-jobs:
 
 .PHONY: compile-sim run-sim run-sim-batch clean-sim
 
-scripts/compile_vsim.tcl: Bender.yml sources
+$(SCRIPTS_PATH)/compile_vsim.tcl: Bender.yml sources
 	mkdir -p scripts
-	echo 'set ROOT [file normalize [file dirname [info script]]/..]' > scripts/compile_vsim.tcl
-	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" $(BENDER_FLAGS) | grep -v "set ROOT" >> scripts/compile_vsim.tcl
-	echo >> scripts/compile_vsim.tcl
+	echo 'set ROOT [file normalize [file dirname [info script]]/..]' > $(SCRIPTS_PATH)/compile_vsim.tcl
+	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" $(BENDER_FLAGS) | grep -v "set ROOT" >> $(SCRIPTS_PATH)/compile_vsim.tcl
+	echo >> $(SCRIPTS_PATH)/compile_vsim.tcl
 
-compile-sim: scripts/compile_vsim.tcl gen_richie_noc
-	$(VSIM) -64 -c -do "source scripts/compile_vsim.tcl; quit"
+compile-sim: $(SCRIPTS_PATH)/compile_vsim.tcl gen-noc
+	$(VSIM) -64 -c -do "source $(SCRIPTS_PATH)/compile_vsim.tcl; quit"
 
 run-sim:
 	$(VSIM) $(VSIM_FLAGS) $(VSIM_FLAGS_GUI) $(VSIM_TB_DUT)
@@ -127,7 +179,7 @@ run-sim-batch:
 	$(VSIM) -c $(VSIM_FLAGS) $(VSIM_TB_DUT) -do "run -all; quit"
 
 clean-sim:
-	rm -rf scripts/compile_vsim.tcl
+	rm -rf $(SCRIPTS_PATH)/compile_vsim.tcl
 	rm -rf modelsim.ini
 	rm -rf transcript
 	rm -rf work*

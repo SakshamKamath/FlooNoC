@@ -1,0 +1,6 @@
+.Xil/
+/hero_exilzcu102*/
+vivado*.jou
+vivado*.log
+vivado*.str
+/build/*

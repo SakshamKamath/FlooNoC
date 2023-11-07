@@ -16,7 +16,6 @@
 #
 # Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 #
-#
 
 # Vivado project location.
 set prj_dir [lindex $argv 0]
