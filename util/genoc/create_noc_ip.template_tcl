@@ -1,8 +1,22 @@
 # =====================================================================
-# Project:      FPGA build
-# Title:        crate_noc_ip.tcl
-# Description:  Create NoC IP.
-# =====================================================================
+# Project:      Richie NoC
+# Title:        create_noc_ip.tcl
+# Description:  TCL script to create NoC IP for the Vivado® IP block design
+#
+# $Date:        13.10.2023
+#
+# Design generated with GeNoC
+#
+# Generator:    ***
+# ===================================================================== */
+#
+# Copyright 2023 University of Modena and Reggio Emilia.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+#
+#
 
 source fpga_noc_params.tcl
 

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# Copyright 2023 University of Modena and Reggio Emilia.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author: Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+
 import sys
 from mako.template import Template
 import math

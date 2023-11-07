@@ -1,8 +1,22 @@
 # =====================================================================
-# Project:      FPGA build
+# Project:      Richie NoC
 # Title:        fpga_noc_params.tcl
-# Description:  FPGA parameters.
-# =====================================================================
+# Description:  TCL script with NoC parameters for the FPGA build flow
+#
+# $Date:        13.10.2023
+#
+# Design generated with GeNoC
+#
+# Generator:    ***
+# ===================================================================== */
+#
+# Copyright 2023 University of Modena and Reggio Emilia.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+#
+#
 
 # Vivado project location.
 set prj_dir [lindex $argv 0]

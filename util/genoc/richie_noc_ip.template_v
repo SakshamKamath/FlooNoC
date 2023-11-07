@@ -1,20 +1,3 @@
-<%
-# =====================================================================
-# Project:      SoC package
-# Title:        soc_package.template_sv
-# Description:  SoC package
-#
-# $Date:        13.10.2023
-#
-# Generator:    generate_ov
-# =====================================================================
-#
-# Copyright (C) 2023 University of Modena and Reggio Emilia.
-#
-# Author: Gianluca Bellocchi, University of Modena and Reggio Emilia.
-# =====================================================================
-%>
-
 /* =====================================================================
  * Project:      Richie NoC
  * Title:        richie_noc_ip.v
@@ -22,13 +5,16 @@
  *
  * $Date:        13.10.2023
  *
- * Design generated with GenOv
+ * Design generated with GeNoC
  *
- * Generator:    generate_ov
+ * Generator:    ***
  * ===================================================================== */
 /*
- * Copyright (C) 2023 University of Modena and Reggio Emilia.
- * Author: Gianluca Bellocchi, University of Modena and Reggio Emilia.
+ * Copyright 2023 University of Modena and Reggio Emilia.
+ * Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
  *
  */
 

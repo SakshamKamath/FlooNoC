@@ -1,4 +1,22 @@
-// Author: Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+/* =====================================================================
+ * Project:      Richie NoC
+ * Title:        richie_noc.sv
+ * Description:  Top-level interface
+ *
+ * $Date:        13.10.2023
+ *
+ * Design generated with GeNoC
+ *
+ * Generator:    ***
+ * ===================================================================== */
+/*
+ * Copyright 2023 University of Modena and Reggio Emilia.
+ * Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+ *
+ */
 
 `include "floo_noc/typedef.svh"
 

@@ -2,6 +2,7 @@
 *modelsim.ini
 *transcript
 *work
+*py_env_noc
 vsim.wlf
 scripts/compile_vsim.tcl
 working_dir/*

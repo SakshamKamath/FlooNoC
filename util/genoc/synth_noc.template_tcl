@@ -1,8 +1,22 @@
 # =====================================================================
-# Project:      FPGA build
+# Project:      Richie NoC
 # Title:        synth_noc.tcl
-# Description:  Synthesize Zynq project with NoC IP.
-# =====================================================================
+# Description:  TCL script to synthesize NoC IP for the Vivado® flow
+#
+# $Date:        13.10.2023
+#
+# Design generated with GeNoC
+#
+# Generator:    ***
+# ===================================================================== */
+#
+# Copyright 2023 University of Modena and Reggio Emilia.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+#
+#
 
 # Vivado project location.
 set PRJ_PATH [lindex $argv 0]
