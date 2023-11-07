@@ -56,11 +56,6 @@ report_area:
 
 build_fpga: synth_noc
 
-fpga_output:
-	@$(VIVADO) $(VIVADO_OPT) \
-		-source $(FPGA_UTILS_RICHIE)/$(TARGET_BOARD)/my_richie_noc_export_hw.tcl \
-		-tclargs $(TARGET_OV) $(FPGA_BUILD_DIR)
-
 synth_noc: check_exist clean_fpga create_noc_ip
 	@$(VIVADO) $(VIVADO_OPT) \
 		-source $(FPGA_UTILS_RICHIE)/synth_noc.tcl \

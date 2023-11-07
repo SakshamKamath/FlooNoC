@@ -7,7 +7,7 @@ package:
   authors:
     - "Michael Rogenmoser <michaero@iis.ee.ethz.ch>"
     - "Tim Fischer <fischeti@iis.ee.ethz.ch>"
-    - "Gianluca Bellocchi" <gianluca.bellocchi@unimore.it>
+    - "Gianluca Bellocchi <gianluca.bellocchi@unimore.it>"
 
 dependencies:
   common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.29.0 }

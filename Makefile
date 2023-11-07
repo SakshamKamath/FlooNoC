@@ -93,7 +93,7 @@ fpga: clean_fpga build_fpga reports_fpga
 reports_fpga:
 	cd $(FPGA_PATH) && $(MAKE) -s $@
 
-build_fpga: bender $(BENDER_PKG) $(BENDER_LOCK) gen-noc
+build_fpga: bender $(BENDER_PKG) $(BENDER_LOCK) genoc
 	cd $(FPGA_PATH) && $(MAKE) -s $@
 
 test: bender $(BENDER_PKG) $(BENDER_LOCK)
@@ -108,10 +108,11 @@ clean_fpga:
 FLIT_CFG ?= $(shell find util -name "*.hjson")
 FLIT_SRC ?= $(patsubst $(UTILS_PATH)/%_cfg.hjson,$(SRC_PATH)/floo_%_flit_pkg.sv,$(FLIT_CFG))
 
-.PHONY: sources clean-sources gen-noc
+.PHONY: sources clean-sources genoc
 
 genoc:
 	mkdir -p $(FPGA_SRC_PATH)
+	mkdir -p $(FPGA_PATH)/utils/richie
 	cd $(UTILS_PATH)/$@ && python $@.py axi_cfg.template_hjson > $(UTILS_PATH)/axi_cfg.hjson
 	cd $(UTILS_PATH)/$@ && python $@.py soc_cfg_pkg.template_sv > $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
@@ -169,7 +170,7 @@ $(SCRIPTS_PATH)/compile_vsim.tcl: Bender.yml sources
 	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" $(BENDER_FLAGS) | grep -v "set ROOT" >> $(SCRIPTS_PATH)/compile_vsim.tcl
 	echo >> $(SCRIPTS_PATH)/compile_vsim.tcl
 
-compile-sim: $(SCRIPTS_PATH)/compile_vsim.tcl gen-noc
+compile-sim: $(SCRIPTS_PATH)/compile_vsim.tcl genoc
 	$(VSIM) -64 -c -do "source $(SCRIPTS_PATH)/compile_vsim.tcl; quit"
 
 run-sim:
