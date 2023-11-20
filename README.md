@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="docs/img/floo_noc_logo.svg" alt="Logo" width="300">
+  <img src="docs/img/floo_noc_logo.png" alt="Logo" width="300">
 
 # FlooNoC: A Fast, Low-Overhead On-chip Network
 </div>
@@ -75,18 +75,18 @@ Currently, we do not provide any open-source simulation setup. Internally, the F
 
 ```sh
 # Compile the sources
-make sim_compile
+make compile-sim
 # Run the simulation
-make sim_run_c VSIM_TB_DUT=tb_floo_dut
+make run-sim-batch VSIM_TB_DUT=tb_floo_dut
 ```
 
 or in the GUI, with prepared waveforms:
 
 ```sh
 # Compile the sources
-make sim_compile
+make compile-sim
 # Run the simulation
-make sim_run VSIM_TB_DUT=tb_floo_dut
+make run-sim VSIM_TB_DUT=tb_floo_dut
 ```
 By replacing `tb_floo_dut` with the name of the testbench you want to simulate.
 
@@ -129,6 +129,7 @@ This repository includes the following NoC IPs:
 | [floo_vc_arbiter](src/floo_vc_arbiter.sv) | A virtual channel arbiter |  |
 | [floo_rob](src/floo_rob.sv) | A table-based Reorder Buffer |  |
 | [floo_simple_rob](src/floo_simple_rob.sv) | A simplistic low-complexity Reorder Buffer |  |
+| [floo_rob_wrapper](src/floo_simple_rob.sv) | A wrapper of all available types of RoBs including RoB-less version |  |
 
 ### Verification IPs
 | Name | Description | Doc |
@@ -146,37 +147,33 @@ The data structs for the flits and the links are auto-generated and can be confi
 
 The AXI channels(s) needs to be configured in `util/*cfg.hjson`. The following example shows the configuration for a single AXI channel with 64-bit data width, 32-bit address width, 3-bit ID width, and 1-bit user width (beware that ID width can be different for input and output channels).
 
-  ```
+```
   axi_channels: [
-    {name: 'axi', params: {dw: 64, aw: 32, iw: 3, uw: 1 }},
+    {name: 'axi', direction: 'input', params: {dw: 64, aw: 32, iw: 3, uw: 1 }}
   ]
 ```
 Multiple physical links can be declared and the mapping of the AXI channels to the physical link can be configured in `util/*cfg.json`. The following example shows the configuration for two physical channels, one for requests and one for responses. The mapping of the AXI channels to the physical link is done by specifying the AXI channels in the `map` field.
 
 ```
-  phys_channels: [
-    'req',
-    'rsp'
-  ],
-  map: {
-    req: ["axi_aw", "axi_w", "axi_ar"],
-    rsp: ["axi_b", "axi_r"]
-  },
-```
-
-FlooNoC does not send any header and tail flits to avoid serilization overhead. Instead additional needed information is sent in parallel and can be specified with the `meta` argument and the number of bits required. For instance, the `rob_req` field specifies if a responses needs to be reorderd. The `rob_idx` field specifies the index of the ROB that is used to track the outstanding requests. The `dst_id` & `src_id` fields specifies source and destination to route the packet. The `last` field specifies the last signal of the of a burst transfer used in wormhole routing.
-
-```
-  meta: {
-    rob_req: 1,
-    rob_idx: 7,
-    dst_id: 6,
-    src_id: 6,
-    last: 1
+  channel_mapping: {
+    req: {axi: ['aw', 'w', 'ar']}
+    rsp: {axi: ['b', 'r']}
   }
 ```
-Finally, the package source files can be generated with the following command:
+
+FlooNoC does not send any header and tail flits to avoid serilization overhead. Instead additional needed routing information is sent in parallel and needs to be specified in the `routing` field. Examples for the different routing algorithms can be found in `util/*cfg.hjson`. The following example shows the configuration for a XY routing algorithm with 3-bit X and Y coordinates, 36-bit address offset, and 8-bit RoB index.
+
+```
+  routing: {
+    route_algo: XYRouting
+    num_x_bits: 3
+    num_y_bits: 3
+    addr_offset_bits: 36
+    rob_idx_bits: 8
+  }
+```
+Finally, the package source files can be generated with:
 
 ```sh
-python util/flit_gen.py -c /path/to/cfg.hjson -o /path/to/outdir
+make sources
 ```

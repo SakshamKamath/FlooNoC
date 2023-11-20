@@ -8,6 +8,7 @@ quietly WaveActivateNextPane {} 0
 delete wave *
 
 set num_phys_channels [expr [llength [find instances -bydu floo_wormhole_arbiter]] / 2 / 2]
+set normal_rob [expr [llength [find instances -bydu floo_rob]] / 2 == 4]
 set simple_rob [expr [llength [find instances -bydu floo_simple_rob]] / 2 == 4]
 
 for {set i 0} {$i < 2} {incr i} {
@@ -15,44 +16,58 @@ for {set i 0} {$i < 2} {incr i} {
 
     add wave -noupdate -expand -group $group_name -ports tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/*
 
-    add wave -noupdate -expand -group $group_name -group Arbiter -group ArbiterNarrowReq -ports tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_narrow_req_wormhole_arbiter/*
-    add wave -noupdate -expand -group $group_name -group Arbiter -group ArbiterNarrowRsp -ports tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_narrow_rsp_wormhole_arbiter/*
+    add wave -noupdate -expand -group $group_name -group Arbiter -group ArbiterNarrowReq -ports tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_req_wormhole_arbiter/*
+    add wave -noupdate -expand -group $group_name -group Arbiter -group ArbiterNarrowRsp -ports tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_rsp_wormhole_arbiter/*
     add wave -noupdate -expand -group $group_name -group Arbiter -group ArbiterWideReq -ports tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_wide_wormhole_arbiter/*
 
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_aw_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_w_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_b_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_ar_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_r_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_aw_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_w_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_b_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_ar_data
-    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_r_data
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_narrow_aw
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_narrow_w
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_narrow_b
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_narrow_ar
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_narrow_r
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_wide_aw
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_wide_w
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_wide_b
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_wide_ar
+    add wave -noupdate -expand -group $group_name -group Packer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/floo_wide_r
 
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_unpack_aw_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_unpack_w_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_unpack_ar_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_unpack_b_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/narrow_unpack_r_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_unpack_aw_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_unpack_w_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_unpack_ar_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_unpack_b_data
-    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/wide_unpack_r_data
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_valid_in
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_ready_out
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_narrow_unpack_aw
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_narrow_unpack_w
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_narrow_unpack_ar
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_narrow_unpack_b
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_narrow_unpack_r
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_wide_unpack_aw
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_wide_unpack_w
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_wide_unpack_ar
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_wide_unpack_b
+    add wave -noupdate -expand -group $group_name -group Unpacker tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/axi_wide_unpack_r
 
-    if {!$simple_rob} {
+    if {$normal_rob} {
         add wave -noupdate -expand -group $group_name -group NarrowR_RoB -group StatusTable tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/gen_narrow_rob/i_narrow_r_rob/i_floo_rob_status_table/*
         add wave -noupdate -expand -group $group_name -group NarrowR_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/gen_narrow_rob/i_narrow_r_rob/*
         add wave -noupdate -expand -group $group_name -group WideR_RoB -group StatusTable tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/gen_wide_rob/i_wide_r_rob/i_floo_rob_status_table/*
         add wave -noupdate -expand -group $group_name -group WideR_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/gen_wide_rob/i_wide_r_rob/*
-    } else {
+    } elseif {$simple_rob} {
         add wave -noupdate -expand -group $group_name -group NarrowR_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/gen_simple_rob/i_narrow_r_rob/*
         add wave -noupdate -expand -group $group_name -group WideR_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/gen_simple_rob/i_wide_r_rob/*
+    } else {
+        add wave -noupdate -expand -group $group_name -group NarrowR_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_narrow_r_rob/*
+        add wave -noupdate -expand -group $group_name -group WideR_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_wide_r_rob/*
     }
 
     add wave -noupdate -expand -group $group_name -group NarrowB_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_narrow_b_rob/*
     add wave -noupdate -expand -group $group_name -group WideB_RoB tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_wide_b_rob/*
+
+    add wave -noupdate -expand -group $group_name -group NarrowMetaBuffer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_narrow_meta_buffer/*
+    try {
+        add wave -noupdate -expand -group $group_name -group NarrowMetaBuffer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_narrow_meta_buffer/gen_atop_support/*
+    }
+    add wave -noupdate -expand -group $group_name -group WideMetaBuffer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_wide_meta_buffer/*
+    try {
+        add wave -noupdate -expand -group $group_name -group WideMetaBuffer tb_floo_narrow_wide_chimney/i_floo_narrow_wide_chimney_${i}/i_wide_meta_buffer/gen_atop_support/*
+    }
 
 }
 

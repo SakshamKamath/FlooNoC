@@ -14,12 +14,12 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 
 # Paths
-SRC_PATH 				= $(realpath $(MKFILE_DIR)/src )
-FPGA_SRC_PATH 			= $(realpath $(MKFILE_DIR)/top_fpga )
-FPGA_PATH 				= $(realpath $(MKFILE_DIR)/fpga )
-TEST_PATH 				= $(realpath $(MKFILE_DIR)/test )
-UTILS_PATH 				= $(realpath $(MKFILE_DIR)/util )
-SCRIPTS_PATH 			= $(realpath $(MKFILE_DIR)/scripts )
+SRC_PATH = $(MKFILE_DIR)/src
+FPGA_SRC_PATH = $(MKFILE_DIR)/top_fpga
+FPGA_PATH = $(MKFILE_DIR)/fpga
+TEST_PATH = $(MKFILE_DIR)/test
+UTILS_PATH = $(MKFILE_DIR)/util
+SCRIPTS_PATH = $(MKFILE_DIR)/scripts
 
 .PHONY: all clean
 all: compile-sim
@@ -29,11 +29,11 @@ clean: clean-sim clean-spyglass clean-jobs clean-sources
 # Programs #
 ############
 
-BENDER 		?= $(MKFILE_DIR)/bender
-BENDER_PKG	?= $(MKFILE_DIR)/Bender.yml
+BENDER ?= $(MKFILE_DIR)/bender
+BENDER_PKG ?= $(MKFILE_DIR)/Bender.yml
 BENDER_LOCK	?= $(MKFILE_DIR)/Bender.lock
-VSIM       	?= vsim # questa-2022.3 vsim
-SPYGLASS   	?= sg_shell
+VSIM ?= vsim # questa-2022.3
+SPYGLASS ?= sg_shell
 VERIBLE_FMT	?= verible-verilog-format
 
 #####################
@@ -45,7 +45,7 @@ BENDER_FLAGS += -t test
 
 VLOG_ARGS += -suppress vlog-2583
 VLOG_ARGS += -suppress vlog-13314
-VLOG_ARGS += -suppress vlog-13233
+VLOG_ARGS += -suppress vlog-13233clean
 VLOG_ARGS += -timescale \"1 ns / 1 ps\"
 
 VSIM_TB_DUT ?= floo_noc_router_test
@@ -137,26 +137,42 @@ cleanoc:
 	rm $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
 	rm $(FPGA_PATH)/utils/richie/synth_noc.tcl
 
-sources: $(FLIT_SRC)
-$(SRC_PATH)/floo_%_flit_pkg.sv: $(UTILS_PATH)/%_cfg.hjson
-	python $(UTILS_PATH)/flit_gen.py -c $< > $@
-	# $(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
-
-clean-sources:
-	rm -f $(SRC_PATH)/floo_*_flit_pkg.sv
-
 ######################
 # Traffic Generation #
 ######################
 
+TRAFFIC_GEN ?= util/gen_jobs.py
+TRAFFIC_TB ?= dma_mesh
+TRAFFIC_TYPE ?= random
+TRAFFIC_RW ?= read
+TRAFFIC_OUTDIR ?= test/jobs
+
 .PHONY: jobs clean-jobs
-jobs:$(UTILS_PATH)/gen_jobs.py
-	mkdir -p $(TEST_PATH)/jobs
-	$(UTILS_PATH)/gen_jobs.py \
-		--out_dir $(TEST_PATH)/jobs
+jobs: $(TRAFFIC_GEN)
+	mkdir -p $(TRAFFIC_OUTDIR)
+	$(TRAFFIC_GEN) --out_dir $(TRAFFIC_OUTDIR) --tb $(TRAFFIC_TB) --type $(TRAFFIC_TYPE) --rw $(TRAFFIC_RW)
 
 clean-jobs:
-	rm -rf $(TEST_PATH)/jobs
+	rm -rf $(TRAFFIC_OUTDIR)
+
+###################
+# FPGA build flow #
+###################
+
+.PHONY: test
+
+fpga: clean_fpga build_fpga reports_fpga
+
+reports_fpga:
+	cd $(FPGA_PATH) && $(MAKE) -s $@
+
+build_fpga: bender $(BENDER_PKG) $(BENDER_LOCK) genoc
+	cd $(FPGA_PATH) && $(MAKE) -s $@
+
+test: bender $(BENDER_PKG) $(BENDER_LOCK)
+
+clean_fpga:
+	cd $(FPGA_PATH) && $(MAKE) -s $@
 
 ########################
 # QuestaSim Simulation #

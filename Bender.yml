@@ -10,21 +10,20 @@ package:
     - "Gianluca Bellocchi <gianluca.bellocchi@unimore.it>"
 
 dependencies:
-  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.29.0 }
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.32.0 }
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2 }
-  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.39.0 }
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.39.1 }
   axi_hero: { path: "./deps/axi_hero" }
-  idma: { git: "https://github.com/pulp-platform/iDMA.git", version: 0.4.2 }
+  idma: { git: "https://github.com/pulp-platform/iDMA.git", version: 0.5.1 }
 
 export_include_dirs:
   - include
 
 sources:
   # Level 0
-  - src/floo_axi_flit_pkg.sv
-  - src/floo_narrow_wide_flit_pkg.sv
   - src/floo_pkg.sv
-  - src/floo_param_pkg.sv
+  - src/floo_axi_pkg.sv
+  - src/floo_narrow_wide_pkg.sv
   # Level 1
   - src/floo_cut.sv
   - src/floo_fifo.sv
@@ -34,6 +33,7 @@ sources:
   - src/floo_wormhole_arbiter.sv
   - src/floo_simple_rob.sv
   - src/floo_rob.sv
+  - src/floo_rob_wrapper.sv
   - src/floo_meta_buffer.sv
   # Level 2
   - src/floo_axi_chimney.sv
@@ -53,6 +53,8 @@ sources:
       - top_fpga/richie_noc_ip.v
 
   - target: test
+    include_dirs:
+      - test
     files:
       # Level 0
       - test/floo_test_pkg.sv
@@ -78,9 +80,10 @@ sources:
   - target: any(synthesis,spyglass)
     files:
       # Level 0
+      - test/floo_test_pkg.sv
+      # Level 1
       - src/synth/floo_synth_axi_chimney.sv
       - src/synth/floo_synth_narrow_wide_chimney.sv
       - src/synth/floo_synth_router.sv
-      - src/synth/floo_synth_router_simple.sv
       - src/synth/floo_synth_narrow_wide_router.sv
       - src/synth/floo_synth_endpoint.sv

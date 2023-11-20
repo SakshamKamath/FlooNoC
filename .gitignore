@@ -22,7 +22,7 @@ test/jobs
 **/*.log
 
 # generate files
-src/floo_axi_flit_pkg.sv
+src/floo_axi_pkg.sv
 util/axi_cfg.hjson
 top_fpga/soc_cfg_pkg.sv
 top_fpga/richie_noc_ip.v
