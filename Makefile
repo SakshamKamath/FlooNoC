@@ -77,56 +77,47 @@ endif
 # Generation Flow #
 ###################
 
-TARGET_OV               := my_richie_noc
-TARGET_BOARD            := zcu102
+TARGET_OV := my_richie_noc
+TARGET_BOARD := zcu102
 
 export TARGET_OV TARGET_BOARD
 
-###################
-# FPGA build flow #
-###################
-
-.PHONY: test
-
-fpga: clean_fpga build_fpga reports_fpga
-
-reports_fpga:
-	cd $(FPGA_PATH) && $(MAKE) -s $@
-
-build_fpga: bender $(BENDER_PKG) $(BENDER_LOCK) genoc
-	cd $(FPGA_PATH) && $(MAKE) -s $@
-
-test: bender $(BENDER_PKG) $(BENDER_LOCK)
-
-clean_fpga:
-	cd $(FPGA_PATH) && $(MAKE) -s $@
-
-##################
-# NoC Generation #
-##################
-
-FLIT_CFG ?= $(shell find util -name "*.hjson")
-FLIT_SRC ?= $(patsubst $(UTILS_PATH)/%_cfg.hjson,$(SRC_PATH)/floo_%_flit_pkg.sv,$(FLIT_CFG))
+FLIT_OUT_DIR ?= $(SRC_PATH)
+FLIT_CFG_DIR ?= $(UTILS_PATH)
+FLIT_CFG ?= $(shell find $(FLIT_CFG_DIR) -name "*.hjson")
+FLIT_SRC ?= $(patsubst $(FLIT_CFG_DIR)/%_cfg.hjson,$(FLIT_OUT_DIR)/floo_%_pkg.sv,$(FLIT_CFG))
+FLIT_GEN ?= util/flit_gen.py
+FLIT_TPL ?= util/floo_flit_pkg.sv.mako
 
 .PHONY: sources clean-sources genoc
+
+sources: genoc $(FLIT_SRC)
+$(FLIT_OUT_DIR)/floo_%_pkg.sv: $(FLIT_CFG_DIR)/%_cfg.hjson $(FLIT_GEN) $(FLIT_TPL)
+	$(FLIT_GEN) -c $< > $@
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
+
+clean-sources: cleanoc
+	rm -f $(FLIT_SRC)
 
 genoc:
 	mkdir -p $(FPGA_SRC_PATH)
 	mkdir -p $(FPGA_PATH)/utils/richie
 	cd $(UTILS_PATH)/$@ && python $@.py axi_cfg.template_hjson > $(UTILS_PATH)/axi_cfg.hjson
+	cd $(UTILS_PATH)/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
+	cd $(UTILS_PATH)/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
+	cd $(UTILS_PATH)/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/richie/synth_noc.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py soc_cfg_pkg.template_sv > $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ooc.template_sv > $(FPGA_SRC_PATH)/richie_noc_ooc.sv
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_wrapper.template_sv > $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc.template_sv > $(FPGA_SRC_PATH)/richie_noc.sv
-	cd $(UTILS_PATH)/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
-	cd $(UTILS_PATH)/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
-	cd $(UTILS_PATH)/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/richie/synth_noc.tcl
-	cd $(UTILS_PATH) && python flit_gen.py -c $(UTILS_PATH)/axi_cfg.hjson > $(SRC_PATH)/floo_axi_flit_pkg.sv
-	@# $(VERIBLE_FMT) --inplace --try_wrap_long_lines $@
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ip.v
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ooc.sv
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc.sv
 
 cleanoc:
-	rm $(SRC_PATH)/floo_axi_flit_pkg.sv
 	rm $(UTILS_PATH)/axi_cfg.hjson
 	rm $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
 	rm $(FPGA_SRC_PATH)/richie_noc_ip.v

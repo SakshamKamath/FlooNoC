@@ -57,14 +57,19 @@
  *
  * Author:          Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
  *
+ * Note:            THIS FILE IS AUTO-GENERATED. DO NOT EDIT! 
+ * 
+ *                  Edit the corresponding template file instead:
+ * 
+ *                      ==> 'FlooNoC/util/genoc/richie_noc.template_sv'
+ *
  * ===================================================================== */
 
 `include "floo_noc/typedef.svh"
 
 module richie_noc 
   import floo_pkg::*;
-  import floo_param_pkg::*;
-  import floo_axi_flit_pkg::*;  
+  import floo_axi_pkg::*;  
 #( 
   // Tiles mesh parameters
   parameter int unsigned NumX                       = 2,
@@ -95,7 +100,7 @@ module richie_noc
   parameter int unsigned OutputFifoDepth            = 32,
 
   // Only used for XYRouting
-  parameter type xy_id_t                            = floo_param_pkg::xy_id_t,
+  parameter type xy_id_t                            = xy_id_t,
   parameter int unsigned NumAddrRules               = 0
 ) (
   input logic                               clk_i,
@@ -105,13 +110,13 @@ module richie_noc
   //   AXI Signals   //
   /////////////////////
 
-  // - axi_in_req_t, axi_in_resp_t, etc. are created with the macro AXI_TYPEDEF_ALL in "floo_axi_flit_pkg.sv"
+  // - axi_in_req_t, axi_in_resp_t, etc. are created with the macro AXI_TYPEDEF_ALL in "floo_axi_pkg.sv"
   // - The macro AXI_TYPEDEF_ALL definition is in the AXI library (under "typedef.svh")
 
-  (* DONT_TOUCH = "yes" *) input floo_axi_flit_pkg::axi_in_req_t     [NumX-1:0][NumY-1:0] axi_in_req,
-  (* DONT_TOUCH = "yes" *) output floo_axi_flit_pkg::axi_out_resp_t  [NumX-1:0][NumY-1:0] axi_out_rsp,
-  (* DONT_TOUCH = "yes" *) output floo_axi_flit_pkg::axi_out_req_t   [NumX-1:0][NumY-1:0] axi_out_req,
-  (* DONT_TOUCH = "yes" *) input floo_axi_flit_pkg::axi_in_resp_t    [NumX-1:0][NumY-1:0] axi_in_rsp
+  input floo_axi_pkg::axi_in_req_t     [NumX-1:0][NumY-1:0] axi_in_req,
+  output floo_axi_pkg::axi_out_resp_t  [NumX-1:0][NumY-1:0] axi_out_rsp,
+  output floo_axi_pkg::axi_out_req_t   [NumX-1:0][NumY-1:0] axi_out_req,
+  input floo_axi_pkg::axi_in_resp_t    [NumX-1:0][NumY-1:0] axi_in_rsp
 );
 
   /////////////////////
@@ -119,26 +124,26 @@ module richie_noc
   /////////////////////
 
   // IO requests/responses
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_flit_t           [NumX-1:0][NumY-1:0] noc_in_req;
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_flit_t           [NumX-1:0][NumY-1:0] noc_out_rsp;
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_flit_t           [NumX-1:0][NumY-1:0] noc_out_req;
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_flit_t           [NumX-1:0][NumY-1:0] noc_in_rsp;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_flit_t [NumX-1:0][NumY-1:0] noc_in_req;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_flit_t [NumX-1:0][NumY-1:0] noc_out_rsp;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_flit_t [NumX-1:0][NumY-1:0] noc_out_req;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_flit_t [NumX-1:0][NumY-1:0] noc_in_rsp;
 
   // Request Router
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_req_data;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_req_data;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_req_ready;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_req_valid;
 
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::req_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_req_data;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_req_data;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_req_ready;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_req_valid;
 
   // Response Router
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_rsp_data;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_rsp_data;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_rsp_ready;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_rsp_valid;
 
-  (* DONT_TOUCH = "yes" *) floo_axi_flit_pkg::rsp_generic_t  [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_rsp_data;
+  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_rsp_data;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_rsp_ready;
   (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_rsp_valid;
 
@@ -162,10 +167,10 @@ module richie_noc
         .XYAddrOffsetY            ( XYAddrOffsetY           ),
         .MaxTxns                  ( MaxTxns                 ),
         .ReorderBufferSize        ( ReorderBufferSize       ),
-        .RoBSimple                ( RoBSimple               ),
+        .RoBType                  ( NoRoB                   ),
         .CutAx                    ( CutAx                   ),
         .CutRsp                   ( CutRsp                  ),
-        .xy_id_t                  ( xy_id_t                 )
+        .id_t                     ( xy_id_t                 )
       ) i_chimney (
         .clk_i                    ( clk_i                   ),
         .rst_ni                   ( rst_ni                  ),
@@ -177,13 +182,12 @@ module richie_noc
         .axi_out_req_o            ( axi_out_req[x][y]       ),
         .axi_in_rsp_o             ( axi_out_rsp[x][y]       ),
         // Coordinates/ID of the current tile
-        .xy_id_i                  ( current_id              ),
-        .id_i                     ( 1'b0                    ),
+        .id_i                     ( current_id              ),
         // NoC side interfaces
-        .req_o                    ( noc_out_req[x][y]       ),
-        .rsp_i                    ( noc_in_rsp[x][y]        ),
-        .req_i                    ( noc_in_req[x][y]        ),
-        .rsp_o                    ( noc_out_rsp[x][y]       )
+        .floo_req_o               ( noc_out_req[x][y]       ),
+        .floo_rsp_i               ( noc_in_rsp[x][y]        ),
+        .floo_req_i               ( noc_in_req[x][y]        ),
+        .floo_rsp_o               ( noc_out_rsp[x][y]       )
         
       );
 
@@ -192,7 +196,7 @@ module richie_noc
       // Note: Also necessary to unpack flit struct into req/rsp, valid and ready
 
       spill_register #(
-        .T          ( floo_axi_flit_pkg::req_generic_t      )
+        .T          ( floo_axi_pkg::req_generic_t      )
       ) i_req_noc_out_req_arb (
         .clk_i      ( clk_i                                 ),
         .rst_ni     ( rst_ni                                ),
@@ -205,7 +209,7 @@ module richie_noc
       );
 
       spill_register #(
-        .T          ( floo_axi_flit_pkg::rsp_generic_t      )
+        .T          ( floo_axi_pkg::rsp_generic_t      )
       ) i_req_noc_in_rsp_arb (
         .clk_i      ( clk_i                                 ),
         .rst_ni     ( rst_ni                                ),
@@ -218,7 +222,7 @@ module richie_noc
       );
 
       spill_register #(
-        .T          ( floo_axi_flit_pkg::req_generic_t      )
+        .T          ( floo_axi_pkg::req_generic_t      )
       ) i_req_noc_in_req_arb (
         .clk_i      ( clk_i                                 ),
         .rst_ni     ( rst_ni                                ),
@@ -231,7 +235,7 @@ module richie_noc
       );
 
       spill_register #(
-        .T          ( floo_axi_flit_pkg::rsp_generic_t      )
+        .T          ( floo_axi_pkg::rsp_generic_t      )
       ) i_req_noc_out_rsp_arb (
         .clk_i      ( clk_i                                 ),
         .rst_ni     ( rst_ni                                ),
@@ -260,8 +264,8 @@ module richie_noc
     .NumPhysChannels  ( NumPhysChannels                   ),
     .NumVirtChannels  ( NumVirtChannels                   ),
     .RouteAlgo        ( RouteAlgo                         ),
-    .flit_t           ( floo_axi_flit_pkg::req_generic_t  ),
-    .xy_id_t          ( floo_param_pkg::xy_id_t           )
+    .flit_t           ( floo_axi_pkg::req_generic_t       ),
+    .xy_id_t          ( xy_id_t                           )
   ) i_req_floo_mesh (
     .clk_i            ( clk_i                             ),
     .rst_ni           ( rst_ni                            ),
@@ -284,8 +288,8 @@ module richie_noc
     .NumVirtChannels  ( NumVirtChannels                   ),
     .RouteAlgo        ( RouteAlgo                         ),
     .ChannelFifoDepth ( ChannelFifoDepth                  ),
-    .flit_t           ( floo_axi_flit_pkg::rsp_generic_t  ),
-    .xy_id_t          ( floo_param_pkg::xy_id_t           )
+    .flit_t           ( floo_axi_pkg::rsp_generic_t       ),
+    .xy_id_t          ( xy_id_t                           )
   ) i_rsp_floo_mesh (
     .clk_i            ( clk_i                             ),
     .rst_ni           ( rst_ni                            ),

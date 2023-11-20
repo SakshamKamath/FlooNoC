@@ -6,7 +6,7 @@
 
 module floo_synth_router_simple
   import floo_pkg::*;
-  import floo_axi_flit_pkg::*;
+  import floo_axi_pkg::*;
   import floo_param_pkg::*;
 #(
   parameter int unsigned DataWidth = 32,

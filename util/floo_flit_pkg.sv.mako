@@ -80,10 +80,14 @@ package floo_${name}_pkg;
   localparam int unsigned XAddrOffset = ${routing['addr_offset_bits']};
   localparam int unsigned YAddrOffset = ${routing['addr_offset_bits'] + routing['num_x_bits']};
 
-  typedef struct packed {
-    logic [NumXBits-1:0] x;
-    logic [NumYBits-1:0] y;
-  } xy_id_t;
+  // typedef struct packed {
+  //   logic [NumXBits-1:0] x;
+  //   logic [NumYBits-1:0] y;
+  // } xy_id_t;
+
+  // `FLOO_NOC_TYPEDEF_XY_ID_T(xy_id_t, NumX, NumY)
+
+  `FLOO_NOC_TYPEDEF_XY_ID_T(xy_id_t, NumX+2, NumY+2)
 
   function automatic logic [NumXBits-1:0] get_x_coord(logic [${protocols[0]['params']['aw']-1}:0] addr);
     return addr[XAddrOffset +: NumXBits];

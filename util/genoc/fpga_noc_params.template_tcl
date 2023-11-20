@@ -61,6 +61,11 @@
 #
 # Author: 	    Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 #
+# Note:         THIS FILE IS AUTO-GENERATED. DO NOT EDIT! 
+#               Edit the corresponding template file instead:
+#
+#                 ==> 'FlooNoC/util/genoc/fpga_noc_params.template_tcl'
+#
 # =====================================================================
 
 # Vivado project location.

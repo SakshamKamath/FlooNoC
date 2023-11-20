@@ -3,27 +3,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Tim Fischer <fischeti@iis.ee.ethz.ch>
+//
+// This file is auto-generated. Do not edit! Edit the template file instead
 
 {
     name: "axi",
-    axi_channels: [
-      {name: 'axi_in', params: {dw: ${dw}, aw: ${aw}, iw: ${iw}, uw: ${uw} }},
-      {name: 'axi_out', params: {dw: ${dw}, aw: ${aw}, iw: ${iw}, uw: ${uw} }},
+    protocols: [
+      {name: 'axi', direction: 'input', params: {dw: ${dw}, aw: ${aw}, iw: ${iw}, uw: ${uw} }},
+      {name: 'axi', direction: 'output', params: {dw: ${dw}, aw: ${aw}, iw: ${iw}, uw: ${uw} }}
     ]
-    phys_channels: [
-      'req',
-      'rsp'
-    ],
-    map: {
-      req: ["axi_in_aw", "axi_in_w", "axi_in_ar"],
-      rsp: ["axi_in_b", "axi_in_r"]
+    channel_mapping: {
+      req: {axi: ['aw', 'w', 'ar']}
+      rsp: {axi: ['b', 'r']}
     },
-    meta: {
-      rob_req: 1,
-      rob_idx: 1,
-      dst_id: 1,
-      src_id: 1,
-      last: 1,
-      atop: 1,
+    routing: {
+      route_algo: XYRouting
+      num_x_bits: 3
+      num_y_bits: 3
+      addr_offset_bits: 16
+      rob_idx_bits: 8
     }
 }

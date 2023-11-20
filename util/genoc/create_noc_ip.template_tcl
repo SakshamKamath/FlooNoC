@@ -61,6 +61,11 @@
 #
 # Author: 		  Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 #
+# Note:         THIS FILE IS AUTO-GENERATED. DO NOT EDIT! 
+#               Edit the corresponding template file instead:
+#
+#                 ==> 'FlooNoC/util/genoc/create_noc_ip.template_tcl'
+#
 # =====================================================================
 
 source fpga_noc_params.tcl
