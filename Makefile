@@ -29,10 +29,14 @@ clean: clean-sim clean-spyglass clean-jobs clean-sources
 # Programs #
 ############
 
-BENDER ?= $(MKFILE_DIR)/bender
+BENDER ?= bender
 BENDER_PKG ?= $(MKFILE_DIR)/Bender.yml
 BENDER_LOCK	?= $(MKFILE_DIR)/Bender.lock
-VSIM ?= vsim # questa-2022.3
+ifeq ($(IIS),1)
+VSIM ?= questa-2022.3 vsim
+else
+VSIM ?= vsim
+endif
 SPYGLASS ?= sg_shell
 VERIBLE_FMT	?= verible-verilog-format
 

@@ -39,6 +39,7 @@ sources:
   - src/floo_axi_chimney.sv
   - src/floo_narrow_wide_chimney.sv
   - src/floo_router.sv
+  - src/floo_narrow_router.sv
   - src/floo_narrow_wide_router.sv
   # Level 3
   - src/floo_mesh.sv
@@ -75,7 +76,7 @@ sources:
       - test/tb_floo_dma_chimney.sv
       - test/tb_floo_dma_nw_chimney.sv
       - test/tb_floo_dma_mesh.sv
-      - test/tb_richie_floo_noc.sv
+      - test/tb_floo_dma_mesh_narrow.sv
 
   - target: any(synthesis,spyglass)
     files:
