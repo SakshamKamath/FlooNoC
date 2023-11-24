@@ -13,6 +13,8 @@ module floo_narrow_router
     parameter int unsigned NumRoutes        = NumDirections,
     parameter int unsigned NumInputs        = NumRoutes,
     parameter int unsigned NumOutputs       = NumRoutes,
+    parameter int unsigned NumVirtChannels  = 1,
+    parameter int unsigned NumPhysChannels  = 1,
     parameter int unsigned ChannelFifoDepth = 0,
     parameter int unsigned OutputFifoDepth  = 0,
     parameter route_algo_e RouteAlgo        = XYRouting,
@@ -65,8 +67,8 @@ module floo_narrow_router
   end
 
   floo_router #(
-    .NumPhysChannels  ( 1                       ),
-    .NumVirtChannels  ( 1                       ),
+    .NumPhysChannels  ( NumPhysChannels         ),
+    .NumVirtChannels  ( NumVirtChannels         ),
     .NumInput         ( NumInputs               ),
     .NumOutput        ( NumOutputs              ),
     .flit_t           ( floo_req_generic_flit_t ),
@@ -94,8 +96,8 @@ module floo_narrow_router
 
 
   floo_router #(
-    .NumPhysChannels  ( 1                       ),
-    .NumVirtChannels  ( 1                       ),
+    .NumPhysChannels  ( NumPhysChannels         ),
+    .NumVirtChannels  ( NumVirtChannels         ),
     .NumInput         ( NumInputs               ),
     .NumOutput        ( NumOutputs              ),
     .ChannelFifoDepth ( ChannelFifoDepth        ),

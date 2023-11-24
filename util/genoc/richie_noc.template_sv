@@ -85,14 +85,14 @@ module richie_noc
   parameter int unsigned ReorderBufferSize          = 32'd256,
   parameter int unsigned MaxTxns                    = 32,
   parameter route_algo_e RouteAlgo                  = XYRouting,
-  parameter int unsigned ChannelFifoDepth           = 2,
-  parameter int unsigned OutputFifoDepth            = 32,
   parameter int unsigned XYAddrOffsetX              = 0, // was dependant on HBM size
   parameter int unsigned XYAddrOffsetY              = 0, // was dependant on HBM size
   parameter type sram_cfg_t                         = logic,
 
   // Router
   parameter bit XYRouteOpt                          = 1'b0,
+  parameter int unsigned ChannelFifoDepth           = 2,
+  parameter int unsigned OutputFifoDepth            = 32,
 
   // Coordinates/ID
   parameter type id_t                               = logic,
@@ -181,6 +181,8 @@ module richie_noc
       (* DONT_TOUCH = "yes" *)
       floo_narrow_router #(
         .NumRoutes                ( NumRoutes               ),
+        .NumVirtChannels          ( NumVirtChannels         ),
+        .NumPhysChannels          ( NumPhysChannels         ),
         .ChannelFifoDepth         ( ChannelFifoDepth        ),
         .OutputFifoDepth          ( OutputFifoDepth         ),
         .RouteAlgo                ( RouteAlgo               ),

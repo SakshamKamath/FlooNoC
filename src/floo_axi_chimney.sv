@@ -264,7 +264,7 @@ module floo_axi_chimney
   end
 
   floo_rob_wrapper #(
-    .RoBType            ( NoRoB             ),
+    .RoBType            ( RoBType           ),
     .ReorderBufferSize  ( ReorderBufferSize ),
     .MaxRoTxnsPerId     ( MaxTxnsPerId      ),
     .OnlyMetaData       ( 1'b1              ),
@@ -309,7 +309,7 @@ module floo_axi_chimney
 
 
   floo_rob_wrapper #(
-    .RoBType            ( NoRoB             ),
+    .RoBType            ( RoBType           ),
     .ReorderBufferSize  ( ReorderBufferSize ),
     .MaxRoTxnsPerId     ( MaxTxnsPerId      ),
     .OnlyMetaData       ( 1'b0              ),

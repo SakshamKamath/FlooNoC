@@ -110,21 +110,21 @@ genoc:
 	cd $(UTILS_PATH)/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/richie/synth_noc.tcl
-	cd $(UTILS_PATH)/$@ && python $@.py soc_cfg_pkg.template_sv > $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ooc.template_sv > $(FPGA_SRC_PATH)/richie_noc_ooc.sv
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc.template_sv > $(SRC_PATH)/richie_noc.sv
-	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
+	cd $(UTILS_PATH)/$@ && python $@.py soc_cfg_pkg.template_sv > $(SRC_PATH)/soc_cfg_pkg.sv
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ip.v
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ooc.sv
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(SRC_PATH)/richie_noc.sv
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(SRC_PATH)/soc_cfg_pkg.sv
 
 cleanoc:
 	rm $(UTILS_PATH)/axi_cfg.hjson
-	rm $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
 	rm $(FPGA_SRC_PATH)/richie_noc_ip.v
 	rm $(FPGA_SRC_PATH)/richie_noc_ooc.sv
 	rm $(SRC_PATH)/richie_noc.sv
+	rm $(SRC_PATH)/soc_cfg_pkg.sv
 	rm $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	rm $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
 	rm $(FPGA_PATH)/utils/richie/synth_noc.tcl
@@ -151,17 +151,15 @@ clean-jobs:
 # FPGA build flow #
 ###################
 
-.PHONY: test
+.PHONY: test bender
 
 fpga: clean_fpga build_fpga reports_fpga
 
 reports_fpga:
 	cd $(FPGA_PATH) && $(MAKE) -s $@
 
-build_fpga: bender $(BENDER_PKG) $(BENDER_LOCK) genoc
+build_fpga: $(BENDER) $(BENDER_PKG) $(BENDER_LOCK) genoc
 	cd $(FPGA_PATH) && $(MAKE) -s $@
-
-test: bender $(BENDER_PKG) $(BENDER_LOCK)
 
 clean_fpga:
 	cd $(FPGA_PATH) && $(MAKE) -s $@

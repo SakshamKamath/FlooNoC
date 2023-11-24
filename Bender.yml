@@ -24,6 +24,7 @@ sources:
   - src/floo_pkg.sv
   - src/floo_axi_pkg.sv
   - src/floo_narrow_wide_pkg.sv
+  - src/soc_cfg_pkg.sv
   # Level 1
   - src/floo_cut.sv
   - src/floo_fifo.sv
@@ -48,7 +49,6 @@ sources:
   - target: fpga
     files:
       # Level 0
-      - src/fpga/soc_cfg_pkg.sv
       - src/fpga/richie_noc_ooc.sv
       - src/fpga/richie_noc_ip.v
 

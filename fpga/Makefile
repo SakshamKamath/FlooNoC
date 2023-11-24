@@ -26,13 +26,18 @@ FPGA_UTILS_RICHIE 		:= $(ROOT)/utils/richie
 FPGA_UTILS_VIVADO 		:= $(ROOT)/utils/vivado_ips
 FPGA_UTILS_AREA 		:= $(ROOT)/utils/area
 
-BENDER 					= $(ROOT)/../bender script vivado
-BENDER_FILES 			= $(ROOT)/../bender $(ROOT)/../Bender.yml $(ROOT)/../Bender.lock
+BENDER 					?= bender
+BENDER_PKG 				?= $(ROOT)/../Bender.yml
+BENDER_LOCK				?= $(ROOT)/../Bender.lock
 
-ifeq ($(VIVADO),)
-VIVADO 			:= vitis-2019.2 vivado
+ifeq ($(IIS),1)
+	ifeq ($(VIVADO),)
+VIVADO 					:= vitis-2019.2 vivado
+	endif
+else
+VIVADO 					:= vivado
 endif
-VIVADO_OPT 		:=-mode batch
+VIVADO_OPT 				:=-mode batch
 
 # =====================================================================
 
@@ -72,17 +77,15 @@ create_noc_ip: clean_noc_fpga build_env
 
 build_env: $(FPGA_BUILD_DIR)/$(TARGET_OV) fpga_scripts
 
-fpga_scripts: $(BENDER_FILES) $(BUILD_ENV)
-	@$(BENDER) --only-defines --only-includes > $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips/define_defines_includes.tcl
-	@$(BENDER) --only-defines --only-includes --no-simset > $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips/define_defines_includes_no_simset.tcl
-	@$(BENDER) --only-sources > $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips/define_sources.tcl
+fpga_scripts: $(BENDER_PKG) $(BENDER_LOCK) $(BUILD_ENV)
+	@$(BENDER) script vivado --only-defines --only-includes > $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips/define_defines_includes.tcl
+	@$(BENDER) script vivado --only-defines --only-includes --no-simset > $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips/define_defines_includes_no_simset.tcl
+	@$(BENDER) script vivado --only-sources > $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips/define_sources.tcl
 
 $(FPGA_BUILD_DIR)/$(TARGET_OV):
 	@echo "FPGA build directory -> $@"
 	@mkdir -p $@/vivado_ips
 	@cp $(FPGA_UTILS_VIVADO)/* $@/vivado_ips
-# @cp ../src/synth/* $@/vivado_ips
-	@cp ../top_fpga/richie_* $@/vivado_ips
 
 ../bender: ../Makefile
 	@$(MAKE) -C .. bender

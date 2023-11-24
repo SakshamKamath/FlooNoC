@@ -102,15 +102,35 @@ package automatic soc_cfg_pkg;
   %>
 
   // -- NoC topology
-  localparam int unsigned N_TILES               = ${n_tiles};
-  localparam int unsigned N_TILES_X             = ${n_tiles_x};
-  localparam int unsigned N_TILES_Y             = ${n_tiles_y};
+  // -- -- -- Total number of tiles
+  localparam int unsigned NOC_N_TILES = ${n_tiles};
+  // -- -- -- Number of tiles over X direction
+  localparam int unsigned NOC_N_TILES_X = ${n_tiles_x};
+  // -- -- -- Number of tiles over Y direction
+  localparam int unsigned NOC_N_TILES_Y = ${n_tiles_y};
+  // -- -- -- Number of virtual channels
+  localparam int unsigned NOC_N_VIRT_CHANNELS = 1;
+  // -- -- -- Number of physical channels
+  localparam int unsigned NOC_N_PHYS_CHANNELS = 1;
 
   // -- Chimney
-  localparam int unsigned NumVirtChannels       = 1;
-  localparam int unsigned NumPhysChannels       = 1;
-  localparam floo_pkg::route_algo_e RouteAlgo   = XYRouting;  // see floo_pkg
-  localparam int unsigned ChannelFifoDepth      = 4;
+  // -- -- -- Cut timing paths of outgoing requests
+  localparam bit NOC_CUT_AX = 1'b1;
+  // -- -- -- Cut timing paths of incoming responses
+  localparam bit NOC_CUT_RSP = 1'b0;
+  // -- -- -- Type of the narrow reorder buffer
+  localparam [1:0] NOC_ROB_TYPE = floo_pkg::NoRoB;
+  // -- -- -- Capacity of the reorder buffer
+  localparam int unsigned NOC_ROB_SIZE = 4;
+  // -- -- -- Maximum number of non-atomic outstanding requests
+  localparam int unsigned NOC_MAX_TXNS = 4;
+  // -- -- -- Routing Algorithm
+  localparam floo_pkg::route_algo_e NOC_ROUTE_ALGO = floo_pkg::XYRouting;
+
+  // -- Router
+  // -- -- -- FIFO depths
+  localparam int unsigned NOC_CH_FIFO_DEPTH = 4;
+  localparam int unsigned NOC_OUT_FIFO_DEPTH = 4;
 
   <%
     # Definition of parameters for clusters
@@ -156,12 +176,12 @@ package automatic soc_cfg_pkg;
     # Definition of functions
   %>
 
-  function int unsigned oup_id_w(input int unsigned n_clusters, inp_id_w);
-    return inp_id_w + cf_math_pkg::clog2(n_slaves(n_clusters));
-  endfunction
+  // function int unsigned oup_id_w(input int unsigned n_clusters, inp_id_w);
+  //   return inp_id_w + cf_math_pkg::clog2(n_slaves(n_clusters));
+  // endfunction
 
-  function int unsigned axi_iw_sb_oup(input int unsigned n_clusters);
-    return oup_id_w(n_clusters, AXI_IW_SB_INP);
-  endfunction
+  // function int unsigned axi_iw_sb_oup(input int unsigned n_clusters);
+  //   return oup_id_w(n_clusters, AXI_IW_SB_INP);
+  // endfunction
 
 endpackage

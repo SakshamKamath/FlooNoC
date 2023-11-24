@@ -80,7 +80,7 @@ set_property board_part $BOARD_PART_NAME [current_project]
 # set_property part $PL_PART_NAME [current_project]
 
 source ./define_sources.tcl
-add_files -norecurse -fileset [current_fileset] ./richie_noc_ip.v
+# add_files -norecurse -fileset [current_fileset] ./richie_noc_ip.v
 source ./define_defines_includes.tcl
 add_files -norecurse -fileset constrs_1 {./richie_noc_txilzu9eg_synth.xdc ./richie_noc_txilzu9eg_impl.xdc}
 set_property used_in_implementation false [get_files ./richie_noc_txilzu9eg_synth.xdc]

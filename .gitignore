@@ -24,8 +24,8 @@ test/jobs
 # generate files
 src/floo_axi_pkg.sv
 src/floo_narrow_wide_pkg.sv
+src/soc_cfg_pkg.sv
 util/axi_cfg.hjson
-src/fpga/soc_cfg_pkg.sv
 src/fpga/richie_noc_ip.v
 src/fpga/richie_noc_ooc.sv
 src/richie_noc.sv

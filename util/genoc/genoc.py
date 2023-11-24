@@ -56,12 +56,12 @@ target='xilzu9eg'
 # Topology 
 # 0: NoC Mesh
 # 1: Fully-Connected XBAR
-topology = 1
+topology = 0
 
 # NoC topology
-n_tiles = 4
-n_tiles_x = 2
-n_tiles_y = 2
+n_tiles = 16
+n_tiles_x = 4
+n_tiles_y = 4
 
 # System
 n_clusters = n_tiles
