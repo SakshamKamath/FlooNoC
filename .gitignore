@@ -28,7 +28,6 @@ util/axi_cfg.hjson
 src/fpga/soc_cfg_pkg.sv
 src/fpga/richie_noc_ip.v
 src/fpga/richie_noc_ooc.sv
-src/fpga/richie_noc_wrapper.sv
 src/richie_noc.sv
 fpga/utils/vivado_ips/fpga_noc_params.tcl
 fpga/utils/vivado_ips/create_noc_ip.tcl

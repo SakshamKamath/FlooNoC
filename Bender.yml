@@ -49,7 +49,6 @@ sources:
     files:
       # Level 0
       - src/fpga/soc_cfg_pkg.sv
-      - src/fpga/richie_noc_wrapper.sv
       - src/fpga/richie_noc_ooc.sv
       - src/fpga/richie_noc_ip.v
 
