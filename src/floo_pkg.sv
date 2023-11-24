@@ -22,7 +22,9 @@ package floo_pkg;
     East  = 3'd2, // x increasing
     South = 3'd3, // y decreasing
     West  = 3'd4, // x decreasing
-    NumDirections
+    NumDirections // Number of IO ports of a single router:
+                  //        --> 1 for local tile + 
+                  //            4 for cardinal directions (N, S, E, W)
   } route_direction_e;
 
   typedef enum  {

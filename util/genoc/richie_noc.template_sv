@@ -49,7 +49,7 @@
  *
  * Project:         Richie
  *
- * Title:           richie_noc_ooc.sv
+ * Title:           richie_noc.sv
  *
  * Description:     Top-level.
  *
@@ -71,234 +71,165 @@ module richie_noc
   import floo_pkg::*;
   import floo_axi_pkg::*;  
 #( 
-  // Tiles mesh parameters
+  // NoC topology
   parameter int unsigned NumX                       = 2,
   parameter int unsigned NumY                       = 2,
-
   parameter int unsigned NumRoutes                  = 0,
   parameter int unsigned NumVirtChannels            = 1,
   parameter int unsigned NumPhysChannels            = 1,
 
-  // X Coordinate address offset for XY routing
-  parameter int unsigned XYAddrOffsetX              = 0, // was dependant on HBM size
-
-  // Y Coordinate address offset for XY routing
-  parameter int unsigned XYAddrOffsetY              = 0, // was dependant on HBM size
-
-  // NiC chimney parameters
+  // Chimney
   parameter bit CutAx                               = 1'b1,
   parameter bit CutRsp                              = 1'b0,
-
-  // NiC chimney parameters
-  parameter bit RoBSimple                           = 1'b1,
+  parameter [1:0] RoBType                           = NoRoB,
   parameter int unsigned ReorderBufferSize          = 32'd256,
-
   parameter int unsigned MaxTxns                    = 32,
-  
   parameter route_algo_e RouteAlgo                  = XYRouting,
   parameter int unsigned ChannelFifoDepth           = 2,
   parameter int unsigned OutputFifoDepth            = 32,
+  parameter int unsigned XYAddrOffsetX              = 0, // was dependant on HBM size
+  parameter int unsigned XYAddrOffsetY              = 0, // was dependant on HBM size
+  parameter type sram_cfg_t                         = logic,
 
-  // Only used for XYRouting
-  parameter type xy_id_t                            = xy_id_t,
-  parameter int unsigned NumAddrRules               = 0
+  // Router
+  parameter bit XYRouteOpt                          = 1'b0,
+
+  // Coordinates/ID
+  parameter type id_t                               = logic,
+  parameter int unsigned NumAddrRules               = 0,
+  parameter type addr_rule_t                        = logic
 ) (
-  input logic                               clk_i,
-  input logic                               rst_ni,
+  input logic                                       clk_i,
+  input logic                                       rst_ni,
+  input logic                                       test_enable_i,
+  input sram_cfg_t                                  sram_cfg_i,
 
-  /////////////////////
-  //   AXI Signals   //
-  /////////////////////
-
-  // - axi_in_req_t, axi_in_resp_t, etc. are created with the macro AXI_TYPEDEF_ALL in "floo_axi_pkg.sv"
-  // - The macro AXI_TYPEDEF_ALL definition is in the AXI library (under "typedef.svh")
-
-  input floo_axi_pkg::axi_in_req_t     [NumX-1:0][NumY-1:0] axi_in_req,
-  output floo_axi_pkg::axi_out_resp_t  [NumX-1:0][NumY-1:0] axi_out_rsp,
-  output floo_axi_pkg::axi_out_req_t   [NumX-1:0][NumY-1:0] axi_out_req,
-  input floo_axi_pkg::axi_in_resp_t    [NumX-1:0][NumY-1:0] axi_in_rsp
+  // AXI4 Master Interface
+  input axi_in_req_t      [NumX-1:0][NumY-1:0]      axi_mst_req,
+  output axi_in_rsp_t     [NumX-1:0][NumY-1:0]      axi_mst_rsp,
+  output axi_out_req_t    [NumX-1:0][NumY-1:0]      axi_slv_req,
+  input axi_out_rsp_t     [NumX-1:0][NumY-1:0]      axi_slv_rsp
 );
 
   /////////////////////
   //   NoC Signals   //
   /////////////////////
 
-  // IO requests/responses
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_flit_t [NumX-1:0][NumY-1:0] noc_in_req;
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_flit_t [NumX-1:0][NumY-1:0] noc_out_rsp;
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_flit_t [NumX-1:0][NumY-1:0] noc_out_req;
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_flit_t [NumX-1:0][NumY-1:0] noc_in_rsp;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumX-1:0][NumY-1:0] noc_mst_req, noc_slv_req;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX-1:0][NumY-1:0] noc_mst_rsp, noc_slv_rsp;
 
-  // Request Router
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_req_data;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_req_ready;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_req_valid;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumX:0][NumY-1:0] req_hor_pos;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumX:0][NumY-1:0] req_hor_neg;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumY:0][NumX-1:0] req_ver_pos;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumY:0][NumX-1:0] req_ver_neg;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX:0][NumY-1:0] rsp_hor_pos;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX:0][NumY-1:0] rsp_hor_neg;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_pos;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_neg;
 
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::req_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_req_data;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_req_ready;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_req_valid;
-
-  // Response Router
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_in_rsp_data;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_rsp_ready;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_in_rsp_valid;
-
-  (* DONT_TOUCH = "yes" *) floo_axi_pkg::rsp_generic_t [NumX-1:0][NumY-1:0][NumPhysChannels-1:0] noc_out_rsp_data;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_rsp_ready;
-  (* DONT_TOUCH = "yes" *) logic [NumX-1:0][NumY-1:0][NumVirtChannels-1:0] noc_out_rsp_valid;
-
-  ////////////////////////////
-  //   Network Interfaces   //
-  ////////////////////////////
+  //////////////////////
+  //   NoC Topology   //
+  //////////////////////
 
   for (genvar x = 0; x < NumX; x++) begin : gen_x
     for (genvar y = 0; y < NumX; y++) begin : gen_y 
 
-      // Coordinates/ID of the current tile
-      xy_id_t current_id;
+      id_t current_id;
+      addr_rule_t [NumAddrRules-1:0] current_id_route_map;
 
-      // assign current_id = '{x: x+1, y: y+1};
-      assign current_id = '{x: x, y: y};
+      floo_req_t [NumDirections-1:0] req_out, req_in;
+      floo_rsp_t [NumDirections-1:0] rsp_out, rsp_in;
 
-      (* DONT_TOUCH = "TRUE" *) 
+      // Assign coordinate/ID
+      assign current_id = '{x: x+1, y: y+1}; // only for simulation
+
+      // Assign routing map
+      assign current_id_route_map = '0;
+
+      // Instantiate NiC to interface tile to FlooNoC
+      (* DONT_TOUCH = "yes" *)
       floo_axi_chimney #(
         .RouteAlgo                ( RouteAlgo               ),
         .XYAddrOffsetX            ( XYAddrOffsetX           ),
         .XYAddrOffsetY            ( XYAddrOffsetY           ),
         .MaxTxns                  ( MaxTxns                 ),
+        .RoBType                  ( RoBType                 ),
         .ReorderBufferSize        ( ReorderBufferSize       ),
-        .RoBType                  ( NoRoB                   ),
+        .id_t                     ( id_t                    ),
         .CutAx                    ( CutAx                   ),
-        .CutRsp                   ( CutRsp                  ),
-        .id_t                     ( xy_id_t                 )
+        .CutRsp                   ( CutRsp                  )
       ) i_chimney (
         .clk_i                    ( clk_i                   ),
         .rst_ni                   ( rst_ni                  ),
-        .test_enable_i            ( 1'b0                    ),
-        .sram_cfg_i               ( '0                      ),
+        .test_enable_i            ( test_enable_i           ),
+        .sram_cfg_i               ( sram_cfg_i              ),
         // AXI4 side interfaces
-        .axi_in_req_i             ( axi_in_req[x][y]        ),
-        .axi_out_rsp_i            ( axi_in_rsp[x][y]        ),
-        .axi_out_req_o            ( axi_out_req[x][y]       ),
-        .axi_in_rsp_o             ( axi_out_rsp[x][y]       ),
+        .axi_in_req_i             ( axi_mst_req[x][y]       ),
+        .axi_in_rsp_o             ( axi_mst_rsp[x][y]       ),
+        .axi_out_req_o            ( axi_slv_req[x][y]       ),
+        .axi_out_rsp_i            ( axi_slv_rsp[x][y]       ),
         // Coordinates/ID of the current tile
         .id_i                     ( current_id              ),
         // NoC side interfaces
-        .floo_req_o               ( noc_out_req[x][y]       ),
-        .floo_rsp_i               ( noc_in_rsp[x][y]        ),
-        .floo_req_i               ( noc_in_req[x][y]        ),
-        .floo_rsp_o               ( noc_out_rsp[x][y]       )
-        
+        .floo_req_o               ( noc_mst_req[x][y]       ),
+        .floo_rsp_i               ( noc_mst_rsp[x][y]       ),
+        .floo_req_i               ( noc_slv_req[x][y]       ),
+        .floo_rsp_o               ( noc_slv_rsp[x][y]       )
       );
 
-      // register NoC requests/responses
-      //
-      // Note: Also necessary to unpack flit struct into req/rsp, valid and ready
-
-      spill_register #(
-        .T          ( floo_axi_pkg::req_generic_t      )
-      ) i_req_noc_out_req_arb (
-        .clk_i      ( clk_i                                 ),
-        .rst_ni     ( rst_ni                                ),
-        .data_i     ( noc_out_req[x][y].data                ),
-        .valid_i    ( noc_out_req[x][y].valid               ),
-        .ready_o    ( noc_out_req[x][y].ready               ),
-        .data_o     ( noc_out_req_data[x][y]                ),
-        .valid_o    ( noc_out_req_valid[x][y]               ),
-        .ready_i    ( noc_out_req_ready[x][y]               )
+      // Instantiate router
+      (* DONT_TOUCH = "yes" *)
+      floo_narrow_router #(
+        .NumRoutes                ( NumRoutes               ),
+        .ChannelFifoDepth         ( ChannelFifoDepth        ),
+        .OutputFifoDepth          ( OutputFifoDepth         ),
+        .RouteAlgo                ( RouteAlgo               ),
+        .XYRouteOpt               ( XYRouteOpt              ),
+        .id_t                     ( id_t                    ),
+        .addr_rule_t              ( addr_rule_t             )
+      ) i_router (
+        .clk_i                    ( clk_i                   ),
+        .rst_ni                   ( rst_ni                  ),
+        .test_enable_i            ( test_enable_i           ),
+        .id_i                     ( current_id              ),
+        .id_route_map_i           ( current_id_route_map    ),
+        .floo_req_i               ( req_in                  ),
+        .floo_req_o               ( req_out                 ),
+        .floo_rsp_i               ( rsp_in                  ),
+        .floo_rsp_o               ( rsp_out                 )
       );
 
-      spill_register #(
-        .T          ( floo_axi_pkg::rsp_generic_t      )
-      ) i_req_noc_in_rsp_arb (
-        .clk_i      ( clk_i                                 ),
-        .rst_ni     ( rst_ni                                ),
-        .data_i     ( noc_in_rsp[x][y].data                 ),
-        .valid_i    ( noc_in_rsp[x][y].valid                ),
-        .ready_o    ( noc_in_rsp[x][y].ready                ),
-        .data_o     ( noc_in_rsp_data[x][y]                 ),
-        .valid_o    ( noc_in_rsp_valid[x][y]                ),
-        .ready_i    ( noc_in_rsp_ready[x][y]                )
-      );
+      // Eject
+      assign req_in[Eject] = noc_mst_req[x][y];
+      assign noc_slv_req[x][y] = req_out[Eject];
+      assign rsp_in[Eject] = noc_slv_rsp[x][y];
+      assign noc_mst_rsp[x][y] = rsp_out[Eject];
 
-      spill_register #(
-        .T          ( floo_axi_pkg::req_generic_t      )
-      ) i_req_noc_in_req_arb (
-        .clk_i      ( clk_i                                 ),
-        .rst_ni     ( rst_ni                                ),
-        .data_i     ( noc_in_req[x][y].data                 ),
-        .valid_i    ( noc_in_req[x][y].valid                ),
-        .ready_o    ( noc_in_req[x][y].ready                ),
-        .data_o     ( noc_in_req_data[x][y]                 ),
-        .valid_o    ( noc_in_req_valid[x][y]                ),
-        .ready_i    ( noc_in_req_ready[x][y]                )
-      );
+      // East
+      assign req_in[East] = req_hor_neg[x+1][y];
+      assign req_hor_pos[x+1][y] = req_out[East];
+      assign rsp_in[East] = rsp_hor_neg[x+1][y];
+      assign rsp_hor_pos[x+1][y] = rsp_out[East];
 
-      spill_register #(
-        .T          ( floo_axi_pkg::rsp_generic_t      )
-      ) i_req_noc_out_rsp_arb (
-        .clk_i      ( clk_i                                 ),
-        .rst_ni     ( rst_ni                                ),
-        .data_i     ( noc_out_rsp[x][y].data                ),
-        .valid_i    ( noc_out_rsp[x][y].valid               ),
-        .ready_o    ( noc_out_rsp[x][y].ready               ),
-        .data_o     ( noc_out_rsp_data[x][y]                ),
-        .valid_o    ( noc_out_rsp_valid[x][y]               ),
-        .ready_i    ( noc_out_rsp_ready[x][y]               )
-      );
+      // West
+      assign req_in[West] = req_hor_pos[x][y];
+      assign req_hor_neg[x][y] = req_out[West];
+      assign rsp_in[West] = rsp_hor_pos[x][y];
+      assign rsp_hor_neg[x][y] = rsp_out[West];
+
+      // North
+      assign req_in[North] = req_ver_neg[y+1][x];
+      assign req_ver_pos[y+1][x] = req_out[North];
+      assign rsp_in[North] = rsp_ver_neg[y+1][x];
+      assign rsp_ver_pos[y+1][x] = rsp_out[North];
+
+      // South
+      assign req_in[South] = req_ver_pos[y][x];
+      assign req_ver_neg[y][x] = req_out[South];
+      assign rsp_in[South] = rsp_ver_pos[y][x];
+      assign rsp_ver_neg[y][x] = rsp_out[South];
 
     end
   end
-
-  //////////////////
-  //   NoC Mesh   //
-  //////////////////
-
-  // Request mesh
-
-  (* DONT_TOUCH = "TRUE" *) 
-  floo_mesh #(
-    .NumX             ( NumX                              ),
-    .NumY             ( NumY                              ),
-    .NumRoutes        ( NumRoutes                         ),
-    .NumPhysChannels  ( NumPhysChannels                   ),
-    .NumVirtChannels  ( NumVirtChannels                   ),
-    .RouteAlgo        ( RouteAlgo                         ),
-    .flit_t           ( floo_axi_pkg::req_generic_t       ),
-    .xy_id_t          ( xy_id_t                           )
-  ) i_req_floo_mesh (
-    .clk_i            ( clk_i                             ),
-    .rst_ni           ( rst_ni                            ),
-    .valid_i          ( noc_out_req_valid                 ),
-    .ready_o          ( noc_out_req_ready                 ),
-    .data_i           ( noc_out_req_data                  ),
-    .valid_o          ( noc_in_req_valid                  ),
-    .ready_i          ( noc_in_req_ready                  ),
-    .data_o           ( noc_in_req_data                   )
-  );
-
-  // Response mesh
-
-  (* DONT_TOUCH = "TRUE" *) 
-  floo_mesh #(
-    .NumX             ( NumX                              ),
-    .NumY             ( NumY                              ),
-    .NumRoutes        ( NumRoutes                         ),
-    .NumPhysChannels  ( NumPhysChannels                   ),
-    .NumVirtChannels  ( NumVirtChannels                   ),
-    .RouteAlgo        ( RouteAlgo                         ),
-    .ChannelFifoDepth ( ChannelFifoDepth                  ),
-    .flit_t           ( floo_axi_pkg::rsp_generic_t       ),
-    .xy_id_t          ( xy_id_t                           )
-  ) i_rsp_floo_mesh (
-    .clk_i            ( clk_i                             ),
-    .rst_ni           ( rst_ni                            ),
-    .valid_i          ( noc_out_rsp_valid                 ),
-    .ready_o          ( noc_out_rsp_ready                 ),
-    .data_i           ( noc_out_rsp_data                  ),
-    .valid_o          ( noc_in_rsp_valid                  ),
-    .ready_i          ( noc_in_rsp_ready                  ),
-    .data_o           ( noc_in_rsp_data                   )
-  );
 
 endmodule

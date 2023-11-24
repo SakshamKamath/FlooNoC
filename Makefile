@@ -15,7 +15,7 @@ MKFILE_DIR  := $(dir $(MKFILE_PATH))
 
 # Paths
 SRC_PATH = $(MKFILE_DIR)/src
-FPGA_SRC_PATH = $(MKFILE_DIR)/top_fpga
+FPGA_SRC_PATH = $(SRC_PATH)/fpga
 FPGA_PATH = $(MKFILE_DIR)/fpga
 TEST_PATH = $(MKFILE_DIR)/test
 UTILS_PATH = $(MKFILE_DIR)/util
@@ -114,12 +114,12 @@ genoc:
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ooc.template_sv > $(FPGA_SRC_PATH)/richie_noc_ooc.sv
 	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_wrapper.template_sv > $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
-	cd $(UTILS_PATH)/$@ && python $@.py richie_noc.template_sv > $(FPGA_SRC_PATH)/richie_noc.sv
+	cd $(UTILS_PATH)/$@ && python $@.py richie_noc.template_sv > $(SRC_PATH)/richie_noc.sv
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/soc_cfg_pkg.sv
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ip.v
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ooc.sv
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
-	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc.sv
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(SRC_PATH)/richie_noc.sv
 
 cleanoc:
 	rm $(UTILS_PATH)/axi_cfg.hjson
@@ -127,7 +127,7 @@ cleanoc:
 	rm $(FPGA_SRC_PATH)/richie_noc_ip.v
 	rm $(FPGA_SRC_PATH)/richie_noc_ooc.sv
 	rm $(FPGA_SRC_PATH)/richie_noc_wrapper.sv
-	rm $(FPGA_SRC_PATH)/richie_noc.sv
+	rm $(SRC_PATH)/richie_noc.sv
 	rm $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	rm $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
 	rm $(FPGA_PATH)/utils/richie/synth_noc.tcl

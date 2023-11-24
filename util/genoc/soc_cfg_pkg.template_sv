@@ -49,7 +49,7 @@
  *
  * Project:         Richie
  *
- * Title:           richie_noc_ooc.sv
+ * Title:           soc_cfg_pkg.sv
  *
  * Description:     SoC configuration package (compatible with Richie).
  *
@@ -101,22 +101,15 @@ package automatic soc_cfg_pkg;
     # Definition of parameters for NoC
   %>
 
-  // -- Tiles
+  // -- NoC topology
   localparam int unsigned N_TILES               = ${n_tiles};
   localparam int unsigned N_TILES_X             = ${n_tiles_x};
   localparam int unsigned N_TILES_Y             = ${n_tiles_y};
 
-  // -- Routing
-  localparam int unsigned NumRoutes             = 5;  
-                                                      // Number of IO ports of a single router:
-                                                      //        --> 1 for local tile + 
-                                                      //            4 for cardinal directions (N, S, E, W)
+  // -- Chimney
   localparam int unsigned NumVirtChannels       = 1;
   localparam int unsigned NumPhysChannels       = 1;
-
   localparam floo_pkg::route_algo_e RouteAlgo   = XYRouting;  // see floo_pkg
-
-  // -- Buffering
   localparam int unsigned ChannelFifoDepth      = 4;
 
   <%

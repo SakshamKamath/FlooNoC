@@ -3,7 +3,7 @@
 *transcript
 *work
 *py_env_noc
-*top_fpga
+*src/fpga
 vsim.wlf
 scripts/compile_vsim.tcl
 working_dir/*
@@ -23,13 +23,13 @@ test/jobs
 
 # generate files
 src/floo_axi_pkg.sv
+src/floo_narrow_wide_pkg.sv
 util/axi_cfg.hjson
-top_fpga/soc_cfg_pkg.sv
-top_fpga/richie_noc_ip.v
-top_fpga/richie_noc_ooc.sv
-top_fpga/richie_noc_wrapper.sv
-top_fpga/richie_noc.sv
-top_fpga/soc_bus.sv
+src/fpga/soc_cfg_pkg.sv
+src/fpga/richie_noc_ip.v
+src/fpga/richie_noc_ooc.sv
+src/fpga/richie_noc_wrapper.sv
+src/richie_noc.sv
 fpga/utils/vivado_ips/fpga_noc_params.tcl
 fpga/utils/vivado_ips/create_noc_ip.tcl
 fpga/utils/richie/synth_noc.tcl
