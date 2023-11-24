@@ -6,7 +6,7 @@
 
 `include "floo_noc/typedef.svh"
 
-module tb_floo_dma_mesh;
+module tb_floo_narrow_wide_dma_mesh;
 
   import floo_pkg::*;
   import floo_narrow_wide_pkg::*;

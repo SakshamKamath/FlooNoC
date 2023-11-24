@@ -75,8 +75,8 @@ sources:
       - test/tb_floo_rob.sv
       - test/tb_floo_dma_chimney.sv
       - test/tb_floo_dma_nw_chimney.sv
-      - test/tb_floo_dma_mesh.sv
-      - test/tb_floo_dma_mesh_narrow.sv
+      - test/tb_floo_narrow_dma_mesh.sv
+      - test/tb_floo_narrow_wide_dma_mesh.sv
 
   - target: any(synthesis,spyglass)
     files:
