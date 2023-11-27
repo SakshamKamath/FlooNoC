@@ -126,6 +126,8 @@ package automatic soc_cfg_pkg;
   localparam int unsigned NOC_MAX_TXNS = 4;
   // -- -- -- Routing Algorithm
   localparam floo_pkg::route_algo_e NOC_ROUTE_ALGO = floo_pkg::XYRouting;
+  // -- -- -- Flag to determine whether to look up the NoC coordinates in a table or from the request address
+  localparam floo_pkg::route_algo_e NOC_USE_ID_TABLE = 1'b1;
 
   // -- Router
   // -- -- -- FIFO depths

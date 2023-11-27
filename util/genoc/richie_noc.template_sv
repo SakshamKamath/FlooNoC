@@ -72,6 +72,7 @@ module richie_noc
   import floo_axi_pkg::*;  
 #( 
   // NoC topology
+  parameter int unsigned NumTiles                   = 4,
   parameter int unsigned NumX                       = 2,
   parameter int unsigned NumY                       = 2,
   parameter int unsigned NumRoutes                  = 0,
@@ -85,6 +86,7 @@ module richie_noc
   parameter int unsigned ReorderBufferSize          = 32'd256,
   parameter int unsigned MaxTxns                    = 32,
   parameter route_algo_e RouteAlgo                  = XYRouting,
+  parameter bit UseIdTable                          = 1'b0,
   parameter int unsigned XYAddrOffsetX              = 0, // was dependant on HBM size
   parameter int unsigned XYAddrOffsetY              = 0, // was dependant on HBM size
   parameter type sram_cfg_t                         = logic,
@@ -127,6 +129,28 @@ module richie_noc
   (* DONT_TOUCH = "yes" *) floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_pos;
   (* DONT_TOUCH = "yes" *) floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_neg;
 
+  /////////////////////
+  //   Address Map   //
+  /////////////////////
+
+  // [Gianluca] TO-DO: Add PULP systems address mapping (e.g. HERO)
+
+  typedef struct packed {
+    int unsigned idx;
+    logic [AxiInAddrWidth-1:0] start_addr;
+    logic [AxiInAddrWidth-1:0] end_addr;
+  } node_addr_region_id_t;
+
+  node_addr_region_id_t [NumTiles-1:0] noc_tiles_addr_regions;
+
+  for (genvar i = 0; i < NumTiles; i++) begin : gen_map_tiles
+    assign noc_tiles_addr_regions[i+1] = '{
+      idx:        i,
+      start_addr: 64'h0000_0000_0000_0000 + i * 32'h0040_0000,
+      end_addr:   64'h0000_0000_0000_0000 + i * 32'h0040_0000 + 32'h002F_FFFF
+    };
+  end
+
   //////////////////////
   //   NoC Topology   //
   //////////////////////
@@ -150,12 +174,16 @@ module richie_noc
       (* DONT_TOUCH = "yes" *)
       floo_axi_chimney #(
         .RouteAlgo                ( RouteAlgo               ),
+        .UseIdTable               ( UseIdTable              ),
         .XYAddrOffsetX            ( XYAddrOffsetX           ),
         .XYAddrOffsetY            ( XYAddrOffsetY           ),
+        .NumIDs                   ( NumTiles                ),
+        .NumRules                 ( NumTiles                ),
         .MaxTxns                  ( MaxTxns                 ),
         .RoBType                  ( RoBType                 ),
         .ReorderBufferSize        ( ReorderBufferSize       ),
         .id_t                     ( id_t                    ),
+        .id_rule_t                ( node_addr_region_id_t   ),
         .CutAx                    ( CutAx                   ),
         .CutRsp                   ( CutRsp                  )
       ) i_chimney (
@@ -170,6 +198,7 @@ module richie_noc
         .axi_out_rsp_i            ( axi_slv_rsp[x][y]       ),
         // Coordinates/ID of the current tile
         .id_i                     ( current_id              ),
+        .id_map_i                 ( noc_tiles_addr_regions  ),
         // NoC side interfaces
         .floo_req_o               ( noc_mst_req[x][y]       ),
         .floo_rsp_i               ( noc_mst_rsp[x][y]       ),

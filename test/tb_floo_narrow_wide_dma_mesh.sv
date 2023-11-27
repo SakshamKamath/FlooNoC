@@ -22,6 +22,7 @@ module tb_floo_narrow_wide_dma_mesh;
   localparam time TestTime                        = 8ns;
 
   // Topology
+  localparam int unsigned NumTiles                = soc_cfg_pkg::NOC_N_TILES;
   localparam int unsigned NumX                    = soc_cfg_pkg::NOC_N_TILES_X;
   localparam int unsigned NumY                    = soc_cfg_pkg::NOC_N_TILES_Y;
   localparam int unsigned NumMax                  = (NumX > NumY) ? NumX : NumY;

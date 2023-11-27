@@ -293,6 +293,7 @@ module richie_noc_ooc #(
 
   richie_noc #(
     // NoC topology
+    .NumTiles           ( soc_cfg_pkg::NOC_N_TILES              ),
     .NumX               ( soc_cfg_pkg::NOC_N_TILES_X            ),
     .NumY               ( soc_cfg_pkg::NOC_N_TILES_Y            ),
     .NumRoutes          ( floo_pkg::NumDirections               ),
@@ -305,6 +306,7 @@ module richie_noc_ooc #(
     .ReorderBufferSize  ( soc_cfg_pkg::NOC_ROB_SIZE             ),
     .MaxTxns            ( soc_cfg_pkg::NOC_MAX_TXNS             ),
     .RouteAlgo          ( soc_cfg_pkg::NOC_ROUTE_ALGO           ),
+    .UseIdTable         ( soc_cfg_pkg::NOC_USE_ID_TABLE         ),
     // .XYAddrOffsetX      ( XYAddrOffsetX                         ),
     // .XYAddrOffsetY      ( XYAddrOffsetY                         ),
     // Router

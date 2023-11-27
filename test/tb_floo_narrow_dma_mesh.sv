@@ -23,6 +23,7 @@ module tb_floo_narrow_dma_mesh;
   localparam time TestTime                        = 8ns;
 
   // Topology
+  localparam int unsigned NumTiles                = soc_cfg_pkg::NOC_N_TILES;
   localparam int unsigned NumX                    = soc_cfg_pkg::NOC_N_TILES_X;
   localparam int unsigned NumY                    = soc_cfg_pkg::NOC_N_TILES_Y;
   localparam int unsigned NumMax                  = (NumX > NumY) ? NumX : NumY;
@@ -196,6 +197,7 @@ module tb_floo_narrow_dma_mesh;
       .axi_out_rsp_i            ( narrow_hbm_rsp[i]       ),
       // Coordinates/ID of the current tile
       .id_i                     ( xy_id_hbm               ),
+      .id_map_i                 ( '0                      ),
       // NoC side interfaces
       .floo_req_o               ( req_hbm_out             ),
       .floo_rsp_i               ( rsp_hbm_in              ),
@@ -269,6 +271,7 @@ module tb_floo_narrow_dma_mesh;
 
   richie_noc #(
     // NoC topology
+    .NumTiles                 ( NumTiles                      ),
     .NumX                     ( NumX                          ),
     .NumY                     ( NumY                          ),
     .NumRoutes                ( NumRoutes                     ),
