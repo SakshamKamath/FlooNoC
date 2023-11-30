@@ -10,12 +10,15 @@ import random
 import argparse
 import os
 
+# Topology
+NUM_X = 2
+NUM_Y = 2
+
+# Memory
 MEM_SIZE = 2**16
-NUM_X = 4
-NUM_Y = 4
+ADDR_RULE = 1
 
 data_widths = {'wide': 512, 'narrow': 64}
-
 
 def clog2(x: int):
     """Compute the ceiling of the log2 of x."""
@@ -25,7 +28,11 @@ def clog2(x: int):
 def get_xy_base_addr(x: int, y: int):
     """Get the address of a tile in the mesh."""
     assert (x <= NUM_X and y <= NUM_Y)
-    return (x + 2**clog2(NUM_X+1)*y)*MEM_SIZE
+    if ADDR_RULE == 0:
+        address = (x + 2**clog2(NUM_X+1)*y)*MEM_SIZE
+    elif ADDR_RULE == 1:
+        address = ((y-1) + NUM_Y*(x-1))*MEM_SIZE
+    return address
 
 
 def gen_job_str(length: int,
@@ -113,6 +120,7 @@ def gen_mesh_traffic(narrow_burst_length: int,
                      rw: str,
                      type: str,
                      out_dir: str,
+                     verbose: bool = False,
                      **kwargs):
     """Generate Mesh traffic."""
     for x in range(1, NUM_X+1):
@@ -134,6 +142,8 @@ def gen_mesh_traffic(narrow_burst_length: int,
                 ext_addr = get_xy_base_addr(random.randint(1, NUM_X), random.randint(1, NUM_Y))
                 src_addr = ext_addr if rw == 'read' else local_addr
                 dst_addr = local_addr if rw == 'read' else ext_addr
+                if verbose:
+                    print('src_addr: ', hex(src_addr), '-- dst_addr: ', hex(dst_addr))
             elif type == 'onehop':
                 if not (x == 1 and y == 1):
                     wide_length = 0
@@ -168,6 +178,7 @@ def main():
     parser.add_argument('--tb', type=str, default='dma_mesh')
     parser.add_argument('--type', type=str, default='random')
     parser.add_argument('--rw', type=str, default='read')
+    parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
     kwargs = vars(args)

@@ -138,11 +138,12 @@ TRAFFIC_TB ?= dma_mesh
 TRAFFIC_TYPE ?= random
 TRAFFIC_RW ?= read
 TRAFFIC_OUTDIR ?= test/jobs
+TRAFFIC_VERBOSE ?= -v
 
 .PHONY: jobs clean-jobs
 jobs: $(TRAFFIC_GEN)
 	mkdir -p $(TRAFFIC_OUTDIR)
-	$(TRAFFIC_GEN) --out_dir $(TRAFFIC_OUTDIR) --tb $(TRAFFIC_TB) --type $(TRAFFIC_TYPE) --rw $(TRAFFIC_RW)
+	$(TRAFFIC_GEN) --out_dir $(TRAFFIC_OUTDIR) --tb $(TRAFFIC_TB) --type $(TRAFFIC_TYPE) --rw $(TRAFFIC_RW) $(TRAFFIC_VERBOSE)
 
 clean-jobs:
 	rm -rf $(TRAFFIC_OUTDIR)
