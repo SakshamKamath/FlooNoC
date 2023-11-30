@@ -413,6 +413,7 @@ initial begin
   #100ns;
   // stop simulation
   end_of_sim_o = 1'b1;
+  $display("[DMA%0d] Terminated.", JobId + 1);
 end
 
 

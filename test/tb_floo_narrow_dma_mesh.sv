@@ -33,6 +33,12 @@ module tb_floo_narrow_dma_mesh;
   localparam int unsigned NumVirtChannels         = soc_cfg_pkg::NOC_N_VIRT_CHANNELS;
   localparam int unsigned NumPhysChannels         = soc_cfg_pkg::NOC_N_PHYS_CHANNELS;
 
+  // Tile memory
+  localparam int unsigned MemSize                 = 32'h10000; // 64KB
+
+  // DMA
+  localparam int unsigned MaxTxnsPerId            = 4;
+
   // Chimney
   localparam bit CutAx                            = soc_cfg_pkg::NOC_CUT_AX;
   localparam bit CutRsp                           = soc_cfg_pkg::NOC_CUT_RSP;
@@ -43,19 +49,17 @@ module tb_floo_narrow_dma_mesh;
   localparam int unsigned ChannelFifoDepth        = soc_cfg_pkg::NOC_CH_FIFO_DEPTH;
   localparam int unsigned OutputFifoDepth         = soc_cfg_pkg::NOC_OUT_FIFO_DEPTH;
 
-  localparam int unsigned XYAddrOffsetX           = $clog2(HBMSize);
-  localparam int unsigned XYAddrOffsetY           = $clog2(HBMSize) + $clog2(NumX+1);
+  // Routing --> For ID-based routing with XYRouting
+  localparam route_algo_e UseIdTable              = soc_cfg_pkg::NOC_USE_ID_TABLE;
 
-  `FLOO_NOC_TYPEDEF_XY_ID_T(xy_id_t, NumX+2, NumY+2)
+  // The offset bit to read the X coordinate from --> For address-based routing
+  localparam int unsigned XYAddrOffsetX           = $clog2(MemSize);
 
-  // HBM memory
-  localparam int unsigned HBMChannels             = NumY;
-  localparam int unsigned HBMSize                 = 32'h10000; // 64KB
-  localparam int unsigned HBMLatency              = 100;
-  localparam int unsigned MemSize                 = HBMSize;
+  // The offset bit to read the Y coordinate from --> For address-based routing
+  localparam int unsigned XYAddrOffsetY           = $clog2(MemSize) + $clog2(NumX);
 
-  // DMA
-  localparam int unsigned MaxTxnsPerId            = 4;
+  // The type of the coordinates or IDs
+  // `FLOO_NOC_TYPEDEF_XY_ID_T(xy_id_t, NumX, NumY)
 
   /////////////////////////
   //   Generic Signals   //
@@ -73,25 +77,6 @@ module tb_floo_narrow_dma_mesh;
   axi_out_req_t  [NumX-1:0][NumY-1:0] narrow_sub_req;
   axi_out_rsp_t  [NumX-1:0][NumY-1:0] narrow_sub_rsp;
 
-  axi_out_req_t  [West:North][NumMax-1:0] narrow_hbm_req;
-  axi_out_rsp_t  [West:North][NumMax-1:0] narrow_hbm_rsp;
-
-  /////////////////////
-  //   NoC Signals   //
-  /////////////////////
-
-  floo_req_t [NumX-1:0][NumY-1:0] narrow_chimney_man_req, narrow_chimney_sub_req;
-  floo_rsp_t [NumX-1:0][NumY-1:0] narrow_chimney_man_rsp, narrow_chimney_sub_rsp;
-
-  floo_req_t [NumX:0][NumY-1:0] req_hor_pos;
-  floo_req_t [NumX:0][NumY-1:0] req_hor_neg;
-  floo_req_t [NumY:0][NumX-1:0] req_ver_pos;
-  floo_req_t [NumY:0][NumX-1:0] req_ver_neg;
-  floo_rsp_t [NumX:0][NumY-1:0] rsp_hor_pos;
-  floo_rsp_t [NumX:0][NumY-1:0] rsp_hor_neg;
-  floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_pos;
-  floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_neg;
-
   logic [NumX-1:0][NumY-1:0] end_of_sim;
 
   clk_rst_gen #(
@@ -102,166 +87,90 @@ module tb_floo_narrow_dma_mesh;
     .rst_no ( rst_n )
   );
 
-  ////////////////////////////////
-  //   HBM Model on left side   //
-  ////////////////////////////////
+  /////////////////////
+  //   Address Map   //
+  /////////////////////
 
-  floo_hbm_model #(
-    .TA           ( ApplTime                  ),
-    .TT           ( TestTime                  ),
-    .TCK          ( CyclTime                  ),
-    .Latency      ( HBMLatency                ),
-    .NumChannels  ( 1                         ),
-    .MemSize      ( HBMSize                   ),
-    .DataWidth    ( AxiOutDataWidth        ),
-    .UserWidth    ( AxiOutUserWidth        ),
-    .IdWidth      ( AxiOutIdWidth          ),
-    .axi_req_t    ( axi_out_req_t      ),
-    .axi_rsp_t    ( axi_out_rsp_t      ),
-    .aw_chan_t    ( axi_out_aw_chan_t  ),
-    .w_chan_t     ( axi_out_w_chan_t   ),
-    .b_chan_t     ( axi_out_b_chan_t   ),
-    .ar_chan_t    ( axi_out_ar_chan_t  ),
-    .r_chan_t     ( axi_out_r_chan_t   )
-  ) i_floo_narrow_hbm_model [West:North][NumMax-1:0] (
-    .clk_i      ( clk             ),
-    .rst_ni     ( rst_n           ),
-    .hbm_req_i  ( narrow_hbm_req  ),
-    .hbm_rsp_o  ( narrow_hbm_rsp  )
-  );
+  // Strategy: Look up NoC coordinates using a table
 
-  for (genvar i = North; i <= West; i++) begin : gen_hbm_chimneys
+  // Define address region type
+  typedef struct packed {
+    int unsigned idx;
+    logic [AxiInAddrWidth-1:0] start_addr;
+    logic [AxiInAddrWidth-1:0] end_addr;
+  } floo_id_rule_t;
 
-    localparam int unsigned NumChimneys = (i == North || i == South) ? NumX : NumY;
+  // Number of rules
+  localparam int unsigned NumRules = NumTiles;
 
-    floo_req_t [NumChimneys-1:0] req_hbm_in, req_hbm_out;
-    floo_rsp_t [NumChimneys-1:0] rsp_hbm_in, rsp_hbm_out;
-    xy_id_t [NumChimneys-1:0] xy_id_hbm;
-
-    if (i == North) begin : gen_north_hbm_chimneys
-      for (genvar j = 0; j < NumChimneys; j++) begin : gen_hbm_chimney_xy_id
-        assign xy_id_hbm[j] = '{x: j+1, y: NumY+1};
-      end
-      assign req_hbm_in  = req_ver_pos[NumY];
-      assign rsp_hbm_in  = rsp_ver_pos[NumY];
-      assign req_ver_neg[NumY] = req_hbm_out;
-      assign rsp_ver_neg[NumY] = rsp_hbm_out;
-    end
-    else if (i == South) begin : gen_south_hbm_chimneys
-      for (genvar j = 0; j < NumChimneys; j++) begin : gen_hbm_chimney_xy_id
-        assign xy_id_hbm[j] = '{x: j+1, y: 0};
-      end
-      assign req_hbm_in  = req_ver_neg[0];
-      assign rsp_hbm_in  = rsp_ver_neg[0];
-      assign req_ver_pos[0] = req_hbm_out;
-      assign rsp_ver_pos[0] = rsp_hbm_out;
-    end
-    else if (i == East) begin : gen_east_hbm_chimneys
-      for (genvar j = 0; j < NumChimneys; j++) begin : gen_hbm_chimney_xy_id
-        assign xy_id_hbm[j] = '{x: NumX, y: j+1};
-      end
-      assign req_hbm_in  = req_hor_pos[NumX];
-      assign rsp_hbm_in  = rsp_hor_pos[NumX];
-      assign req_hor_neg[NumX] = req_hbm_out;
-      assign rsp_hor_neg[NumX] = rsp_hbm_out;
-    end
-    else if (i == West) begin : gen_west_hbm_chimneys
-      for (genvar j = 0; j < NumChimneys; j++) begin : gen_hbm_chimney_xy_id
-        assign xy_id_hbm[j] = '{x: 0, y: j+1};
-      end
-      assign req_hbm_in  = req_hor_neg[0];
-      assign rsp_hbm_in  = rsp_hor_neg[0];
-      assign req_hor_pos[0] = req_hbm_out;
-      assign rsp_hor_pos[0] = rsp_hbm_out;
-    end
-
-    floo_axi_chimney #(
-      .RouteAlgo                ( RouteAlgo               ),
-      .XYAddrOffsetX            ( XYAddrOffsetX           ),
-      .XYAddrOffsetY            ( XYAddrOffsetY           ),
-      .MaxTxns                  ( MaxTxns                 ),
-      .RoBType                  ( RoBType                 ),
-      .ReorderBufferSize        ( ReorderBufferSize       ),
-      .id_t                     ( xy_id_t                 ),
-      .CutAx                    ( CutAx                   ),
-      .CutRsp                   ( CutRsp                  )
-    ) i_hbm_chimney [NumChimneys-1:0] (
-      .clk_i                    ( clk                     ),
-      .rst_ni                   ( rst_n                   ),
-      .sram_cfg_i               ( '0                      ),
-      .test_enable_i            ( 1'b0                    ),
-      // AXI4 side interfaces
-      .axi_in_req_i             (                         ),
-      .axi_in_rsp_o             (                         ),
-      .axi_out_req_o            ( narrow_hbm_req[i]       ),
-      .axi_out_rsp_i            ( narrow_hbm_rsp[i]       ),
-      // Coordinates/ID of the current tile
-      .id_i                     ( xy_id_hbm               ),
-      .id_map_i                 ( '0                      ),
-      // NoC side interfaces
-      .floo_req_o               ( req_hbm_out             ),
-      .floo_rsp_i               ( rsp_hbm_in              ),
-      .floo_req_i               ( req_hbm_in              ),
-      .floo_rsp_o               ( rsp_hbm_out             )
-    );
-  end
+  // Address map
+  floo_id_rule_t [NumRules-1:0] floo_addr_map;
 
   ///////////////////
   //   DMA tiles   //
   ///////////////////
 
-  for (genvar x = 0; x < NumX; x++) begin : gen_x_dma
-    for (genvar y = 0; y < NumX; y++) begin : gen_y_dma
-      
+  for (genvar y = 0; y < NumY; y++) begin : gen_dma_y
+    for (genvar x = 0; x < NumX; x++) begin : gen_dma_x 
+
       // Define DMA name
       localparam string narrow_dma_name = $sformatf("dma_%0d_%0d", x, y);
 
       // Define DMA index
-      localparam int unsigned index = y * NumX + x+1;
-      localparam MemBaseAddr = (x+1) << XYAddrOffsetX | (y+1) << XYAddrOffsetY;
+      localparam int unsigned current_id = x + NumX * y;
 
+      // Address map
+      assign floo_addr_map[current_id] = '{
+        idx:        current_id,
+        start_addr: 64'h0000_0000_0000_0000 + current_id * 32'h0001_0000,
+        end_addr:   64'h0000_0000_0000_FFFF + current_id * 32'h0001_0000
+      };
+
+      // Base address
+      localparam MemBaseAddr = 64'h0000_0000_0000_0000 + current_id * 32'h0001_0000;
+
+      // Traffic generators
       floo_dma_test_node #(
-        .TA             ( ApplTime              ),
-        .TT             ( TestTime              ),
-        .TCK            ( CyclTime              ),
-        .DataWidth      ( AxiInDataWidth        ),
-        .AddrWidth      ( AxiInAddrWidth        ),
-        .UserWidth      ( AxiInUserWidth        ),
-        .AxiIdInWidth   ( AxiOutIdWidth         ),
-        .AxiIdOutWidth  ( AxiInIdWidth          ),
-        .MemBaseAddr    ( MemBaseAddr           ),
-        .MemSize        ( MemSize               ),
-        .NumAxInFlight  ( 2*MaxTxnsPerId        ),
-        .axi_in_req_t   ( axi_out_req_t         ),
-        .axi_in_rsp_t   ( axi_out_rsp_t         ),
-        .axi_out_req_t  ( axi_in_req_t          ),
-        .axi_out_rsp_t  ( axi_in_rsp_t          ),
-        .JobId          ( 100 + index           )
+        .TA             ( ApplTime                ),
+        .TT             ( TestTime                ),
+        .TCK            ( CyclTime                ),
+        .DataWidth      ( AxiInDataWidth          ),
+        .AddrWidth      ( AxiInAddrWidth          ),
+        .UserWidth      ( AxiInUserWidth          ),
+        .AxiIdInWidth   ( AxiOutIdWidth           ),
+        .AxiIdOutWidth  ( AxiInIdWidth            ),
+        .MemBaseAddr    ( MemBaseAddr             ),
+        .MemSize        ( MemSize                 ),
+        .NumAxInFlight  ( 2*MaxTxnsPerId          ),
+        .axi_in_req_t   ( axi_out_req_t           ),
+        .axi_in_rsp_t   ( axi_out_rsp_t           ),
+        .axi_out_req_t  ( axi_in_req_t            ),
+        .axi_out_rsp_t  ( axi_in_rsp_t            ),
+        .JobId          ( 100 + current_id + 1    )
       ) i_narrow_dma_node (
-        .clk_i          ( clk                   ),
-        .rst_ni         ( rst_n                 ),
-        .axi_in_req_i   ( narrow_sub_req[x][y]  ),
-        .axi_in_rsp_o   ( narrow_sub_rsp[x][y]  ),
-        .axi_out_req_o  ( narrow_man_req[x][y]  ),
-        .axi_out_rsp_i  ( narrow_man_rsp[x][y]  ),
-        .end_of_sim_o   ( end_of_sim[x][y]      )
+        .clk_i          ( clk                     ),
+        .rst_ni         ( rst_n                   ),
+        .axi_in_req_i   ( narrow_sub_req[x][y]    ),
+        .axi_in_rsp_o   ( narrow_sub_rsp[x][y]    ),
+        .axi_out_req_o  ( narrow_man_req[x][y]    ),
+        .axi_out_rsp_i  ( narrow_man_rsp[x][y]    ),
+        .end_of_sim_o   ( end_of_sim[x][y]        )
       );
 
       axi_bw_monitor #(
-        .req_t      ( axi_in_req_t            ),
-        .rsp_t      ( axi_in_rsp_t            ),
-        .AxiIdWidth ( AxiInIdWidth            ),
-        .name       ( narrow_dma_name         )
+        .req_t          ( axi_in_req_t            ),
+        .rsp_t          ( axi_in_rsp_t            ),
+        .AxiIdWidth     ( AxiInIdWidth            ),
+        .name           ( narrow_dma_name         )
       ) i_axi_narrow_bw_monitor (
-        .clk_i        ( clk                   ),
-        .en_i         ( rst_n                 ),
-        .end_of_sim_i ( &end_of_sim           ),
-        .req_i        ( narrow_man_req[x][y]  ),
-        .rsp_i        ( narrow_man_rsp[x][y]  ),
-        .ar_in_flight_o(                      ),
-        .aw_in_flight_o(                      )
+        .clk_i          ( clk                     ),
+        .en_i           ( rst_n                   ),
+        .end_of_sim_i   ( &end_of_sim             ),
+        .req_i          ( narrow_man_req[x][y]    ),
+        .rsp_i          ( narrow_man_rsp[x][y]    ),
+        .ar_in_flight_o (                         ),
+        .aw_in_flight_o (                         )
         );
-
     end
   end
 
@@ -269,7 +178,7 @@ module tb_floo_narrow_dma_mesh;
   //   NoC Topology   //
   //////////////////////
 
-  richie_noc #(
+  floo_top #(
     // NoC topology
     .NumTiles                 ( NumTiles                      ),
     .NumX                     ( NumX                          ),
@@ -284,17 +193,22 @@ module tb_floo_narrow_dma_mesh;
     .ReorderBufferSize        ( ReorderBufferSize             ),
     .MaxTxns                  ( MaxTxns                       ),
     .RouteAlgo                ( RouteAlgo                     ),
+    .UseIdTable               ( UseIdTable                    ),
     .ChannelFifoDepth         ( ChannelFifoDepth              ),
     .OutputFifoDepth          ( OutputFifoDepth               ),
     .XYAddrOffsetX            ( XYAddrOffsetX                 ),
     .XYAddrOffsetY            ( XYAddrOffsetY                 ),
     .XYRouteOpt               ( 1'b0                          ),
-    .id_t                     ( xy_id_t                       )
+    .NumRules                 ( NumRules                      ),
+    .id_t                     ( floo_axi_pkg::xy_id_t         ),
+    .id_rule_t                ( floo_id_rule_t                )
   ) i_noc (
     .clk_i                    ( clk                           ),
     .rst_ni                   ( rst_n                         ),
     .test_enable_i            ( 1'b0                          ),
     .sram_cfg_i               ( '0                            ),
+    // Routing table
+    .id_map_i                 ( floo_addr_map                 ),
     // AXI4 side interfaces
     .axi_mst_req              ( narrow_man_req                ),
     .axi_mst_rsp              ( narrow_man_rsp                ),

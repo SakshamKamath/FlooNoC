@@ -56,7 +56,7 @@ module floo_axi_chimney
   /// Only used for IDRouting
   parameter type id_rule_t                  = logic,
   /// Type for implementation inputs and outputs
-  parameter type         sram_cfg_t         = logic
+  parameter type sram_cfg_t                 = logic
 ) (
   input  logic clk_i,
   input  logic rst_ni,
