@@ -6,6 +6,10 @@
 //
 // This file is auto-generated. Do not edit! Edit the template file instead
 
+<%
+  import math
+%>
+
 {
     name: "axi",
     protocols: [
@@ -16,10 +20,19 @@
       req: {axi: ['aw', 'w', 'ar']}
       rsp: {axi: ['b', 'r']}
     },
+
+    <%
+      # route_algo        - Routing algorithm/strategy.
+      # num_x_bits        - Number of bits for X tile.
+      # num_y_bits        - Number of bits for Y tile.
+      # addr_offset_bits  - Offset bit to read XY coordinates from. Used with the address-based routing.
+      # rob_idx_bits      - Number of bits for reorder buffer inside chimney.
+    %>
+
     routing: {
-      route_algo: XYRouting
-      num_x_bits: 3
-      num_y_bits: 3
+      route_algo: ${noc_route_algo}
+      num_x_bits: ${int(math.log2(noc_n_tiles_x))}
+      num_y_bits: ${int(math.log2(noc_n_tiles_y))}
       addr_offset_bits: 16
       rob_idx_bits: 8
     }

@@ -48,61 +48,71 @@ filename = sys.argv[1]
 ####################
 
 # Vivado project
-noc_name='richie_noc'
-prj_name='richie_noc_exilzcu102'
-prj_ip_name='richie_noc_ip'
-target='xilzu9eg'
+noc_name            = 'floo'
+noc_prj_name        = 'floo_exilzcu102'
+noc_prj_ip_name     = 'floo_ip'
+fpga_soc_target     = 'xilzu9eg'
 
 # Topology 
 # 0: NoC Mesh
 # 1: Fully-Connected XBAR
-topology = 0
+noc_topology        = 0
 
 # NoC topology
-n_tiles = 16
-n_tiles_x = 4
-n_tiles_y = 4
+noc_n_tiles         = 4
+noc_n_tiles_x       = 2
+noc_n_tiles_y       = 2
+
+# NoC routing
+noc_use_id_table    = False
+noc_route_algo      = 'XYRouting'
 
 # System
-n_clusters = n_tiles
+n_clusters          = noc_n_tiles
 
 # AXI interface
-aw=64 
-dw=64 
-iw=3+clog2(n_clusters+1)
-uw=4
-aw_pl2ps=49
-iw_pl2ps=5
-uw_pl2ps=1
-aw_ps2pl=40 
-iw_ps2pl=19
-uw_ps2pl=16
-aw_lite=32
-dw_lite=32
+aw                  = 64 
+dw                  = 64 
+iw                  = 3+clog2(n_clusters+1)
+uw                  = 4
+aw_pl2ps            = 49
+iw_pl2ps            = 5
+uw_pl2ps            = 1
+aw_ps2pl            = 40 
+iw_ps2pl            = 19
+uw_ps2pl            = 16
+aw_lite             = 32
+dw_lite             = 32
+
+###################
+##   Generator   ##
+###################
 
 target_template = Template(filename=filename)
 string = target_template.render(
-    noc_name=noc_name,
-    prj_name=prj_name,
-    prj_ip_name=prj_ip_name,
-    target=target, 
-    topology=topology,
-    n_tiles=n_tiles,
-    n_tiles_x=n_tiles_x,
-    n_tiles_y=n_tiles_y,
-    n_clusters=n_clusters,
-    aw=aw, 
-    dw=dw, 
-    iw=iw, 
-    uw=uw,
-    aw_pl2ps=aw_pl2ps, 
-    iw_pl2ps=iw_pl2ps, 
-    uw_pl2ps=uw_pl2ps,
-    aw_ps2pl=aw_ps2pl, 
-    iw_ps2pl=iw_ps2pl, 
-    uw_ps2pl=uw_ps2pl,
-    aw_lite=aw_lite, 
-    dw_lite=dw_lite,
+    noc_name            = noc_name,
+    noc_prj_name        = noc_prj_name,
+    noc_prj_ip_name     = noc_prj_ip_name,
+    fpga_soc_target     = fpga_soc_target, 
+    noc_topology        = noc_topology,
+    noc_n_tiles         = noc_n_tiles,
+    noc_n_tiles_x       = noc_n_tiles_x,
+    noc_n_tiles_y       = noc_n_tiles_y,
+    noc_use_id_table    = noc_use_id_table,
+    noc_route_algo      = noc_route_algo,
+    n_clusters          = n_clusters,
+    aw                  = aw, 
+    dw                  = dw, 
+    iw                  = iw, 
+    uw                  = uw,
+    aw_pl2ps            = aw_pl2ps, 
+    iw_pl2ps            = iw_pl2ps, 
+    uw_pl2ps            = uw_pl2ps,
+    aw_ps2pl            = aw_ps2pl, 
+    iw_ps2pl            = iw_ps2pl, 
+    uw_ps2pl            = uw_ps2pl,
+    aw_lite             = aw_lite, 
+    dw_lite             = dw_lite,
 )
 
 re_trailws = re.compile(r'[ \t\r]+$', re.MULTILINE)

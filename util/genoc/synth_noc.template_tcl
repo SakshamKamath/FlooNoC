@@ -51,7 +51,7 @@
 #
 # =====================================================================
 #
-# Project:     	GenOv
+# Project:     	FlooNoC
 #
 # Name:         synth_noc.tcl
 #
@@ -186,13 +186,13 @@ for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
   ] [get_bd_cells i_zynq_interconnect_$idx_intc]
 }
 
-# Add Richie NoC
-create_bd_cell -type ip -vlnv ethz.ch:user:richie_noc_ip:1.0 $I_NOC_NAME
+# Add FlooNoC
+create_bd_cell -type ip -vlnv ethz.ch:user:$PRJ_IP_NAME:1.0 $I_NOC_NAME\_ip
 
 # Route NoC clk and rst to Zynq
-connect_bd_net [get_bd_pins $I_NOC_NAME/clk_i] \
+connect_bd_net [get_bd_pins $I_NOC_NAME\_ip/clk_i] \
   [get_bd_pins i_zynq_ps/pl_clk0]
-connect_bd_net [get_bd_pins $I_NOC_NAME/rst_ni] \
+connect_bd_net [get_bd_pins $I_NOC_NAME\_ip/rst_ni] \
   [get_bd_pins i_sys_reset/peripheral_aresetn]
 
 # Route interconnect clk and rst to Zynq
@@ -249,7 +249,7 @@ for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
     set mst [format "mst_%01d" [expr int($idx_noc_port + ($n_noc_port_per_intc * $idx_intc))]]
     set slv [format "S%02d_AXI" [expr int($idx_noc_port + 1)]]
     connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_interconnect_$idx_intc/$slv] \
-      [get_bd_intf_pins $I_NOC_NAME/$mst]
+      [get_bd_intf_pins $I_NOC_NAME\_ip/$mst]
   }
 }
 
@@ -261,7 +261,7 @@ for {set idx_intc 0} {$idx_intc < $n_zynq_interconnects} {incr idx_intc} {
     set mst [format "M%02d_AXI" [expr int($idx_noc_port + 1)]]
     set slv [format "slv_%01d" [expr int($idx_noc_port + ($n_noc_port_per_intc * $idx_intc))]]
     connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_interconnect_$idx_intc/$mst] \
-      [get_bd_intf_pins $I_NOC_NAME/$slv]
+      [get_bd_intf_pins $I_NOC_NAME\_ip/$slv]
   }
 }
 
@@ -276,18 +276,18 @@ assign_bd_address
 # -- PS side
 for {set idx_noc_port 0} {$idx_noc_port < $N_NOC_MST} {incr idx_noc_port} {
   if {$idx_noc_port == 0} {
-    exclude_bd_addr_seg [get_bd_addr_segs i_zynq_ps/Data/SEG_i_richie_noc_Reg]
+    exclude_bd_addr_seg [get_bd_addr_segs i_zynq_ps/Data/SEG_i_${noc_name}_Reg]
   } else {
-    exclude_bd_addr_seg [get_bd_addr_segs i_zynq_ps/Data/SEG_i_richie_noc_Reg$idx_noc_port]
+    exclude_bd_addr_seg [get_bd_addr_segs i_zynq_ps/Data/SEG_i_${noc_name}_Reg$idx_noc_port]
   }
 }
 
 # -- NoC side
 for {set idx_noc_port 0} {$idx_noc_port < $N_NOC_MST} {incr idx_noc_port} {
   if {$idx_noc_port == 0} {
-    exclude_bd_addr_seg [get_bd_addr_segs i_richie_noc/Data/SEG_i_richie_noc_Reg]
+    exclude_bd_addr_seg [get_bd_addr_segs i_${noc_name}/Data/SEG_i_${noc_name}_Reg]
   } else {
-    exclude_bd_addr_seg [get_bd_addr_segs i_richie_noc/Data/SEG_i_richie_noc_Reg$idx_noc_port]
+    exclude_bd_addr_seg [get_bd_addr_segs i_${noc_name}/Data/SEG_i_${noc_name}_Reg$idx_noc_port]
   }
 }
 
@@ -319,7 +319,7 @@ export_ip_user_files -of_objects [get_ips $PRJ_NAME\_$I_NOC_NAME\_0] \
 # Note: Direct name substitution because of conflicts between Mako and tcl syntaxes
 set string_name "$PRJ_NAME"
 append string_name "_"
-append string_name "$I_NOC_NAME"
+append string_name "$I_NOC_NAME\_ip"
 append string_name "_0"
 eval [exec sed {s/current_fileset/get_filesets $string_name/} \
   $VIVADO_IPS_DIR\/define_defines_includes_no_simset.tcl]

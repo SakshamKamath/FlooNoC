@@ -18,7 +18,7 @@
 
     =====================================================================
 
-    Project:        GenOv
+    Project:        GeNoC
 
     Title:          Template
 
@@ -47,9 +47,9 @@
  *
  * =====================================================================
  *
- * Project:         Richie
+ * Project:         FlooNoC
  *
- * Title:           richie_noc.sv
+ * Title:           floo_top.sv
  *
  * Description:     Top-level.
  *
@@ -61,13 +61,13 @@
  * 
  *                  Edit the corresponding template file instead:
  * 
- *                      ==> 'FlooNoC/util/genoc/richie_noc.template_sv'
+ *                      ==> 'FlooNoC/util/genoc/floo_top.template_sv'
  *
  * ===================================================================== */
 
 `include "floo_noc/typedef.svh"
 
-module richie_noc 
+module floo_top 
   import floo_pkg::*;
   import floo_axi_pkg::*;  
 #( 
@@ -87,8 +87,8 @@ module richie_noc
   parameter int unsigned MaxTxns                    = 32,
   parameter route_algo_e RouteAlgo                  = XYRouting,
   parameter bit UseIdTable                          = 1'b0,
-  parameter int unsigned XYAddrOffsetX              = 0, // was dependant on HBM size
-  parameter int unsigned XYAddrOffsetY              = 0, // was dependant on HBM size
+  parameter int unsigned XYAddrOffsetX              = 0,
+  parameter int unsigned XYAddrOffsetY              = 0,
   parameter type sram_cfg_t                         = logic,
 
   // Router
@@ -98,13 +98,16 @@ module richie_noc
 
   // Coordinates/ID
   parameter type id_t                               = logic,
-  parameter int unsigned NumAddrRules               = 0,
-  parameter type addr_rule_t                        = logic
+  parameter type id_rule_t                          = logic,
+  parameter int unsigned NumRules                   = 0
 ) (
   input logic                                       clk_i,
   input logic                                       rst_ni,
   input logic                                       test_enable_i,
   input sram_cfg_t                                  sram_cfg_i,
+
+  // Routing table
+  input  id_rule_t [NumRules-1:0]                   id_map_i,
 
   // AXI4 Master Interface
   input axi_in_req_t      [NumX-1:0][NumY-1:0]      axi_mst_req,
@@ -120,55 +123,30 @@ module richie_noc
   (* DONT_TOUCH = "yes" *) floo_req_t [NumX-1:0][NumY-1:0] noc_mst_req, noc_slv_req;
   (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX-1:0][NumY-1:0] noc_mst_rsp, noc_slv_rsp;
 
-  (* DONT_TOUCH = "yes" *) floo_req_t [NumX:0][NumY-1:0] req_hor_pos;
-  (* DONT_TOUCH = "yes" *) floo_req_t [NumX:0][NumY-1:0] req_hor_neg;
-  (* DONT_TOUCH = "yes" *) floo_req_t [NumY:0][NumX-1:0] req_ver_pos;
-  (* DONT_TOUCH = "yes" *) floo_req_t [NumY:0][NumX-1:0] req_ver_neg;
-  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX:0][NumY-1:0] rsp_hor_pos;
-  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX:0][NumY-1:0] rsp_hor_neg;
-  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_pos;
-  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumY:0][NumX-1:0] rsp_ver_neg;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumX-2:0][NumY-1:0] req_hor_pos;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumX-2:0][NumY-1:0] req_hor_neg;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumX-1:0][NumY-2:0] req_ver_pos;
+  (* DONT_TOUCH = "yes" *) floo_req_t [NumX-1:0][NumY-2:0] req_ver_neg;
 
-  /////////////////////
-  //   Address Map   //
-  /////////////////////
-
-  // [Gianluca] TO-DO: Add PULP systems address mapping (e.g. HERO)
-
-  typedef struct packed {
-    int unsigned idx;
-    logic [AxiInAddrWidth-1:0] start_addr;
-    logic [AxiInAddrWidth-1:0] end_addr;
-  } node_addr_region_id_t;
-
-  node_addr_region_id_t [NumTiles-1:0] noc_tiles_addr_regions;
-
-  for (genvar i = 0; i < NumTiles; i++) begin : gen_map_tiles
-    assign noc_tiles_addr_regions[i+1] = '{
-      idx:        i,
-      start_addr: 64'h0000_0000_0000_0000 + i * 32'h0040_0000,
-      end_addr:   64'h0000_0000_0000_0000 + i * 32'h0040_0000 + 32'h002F_FFFF
-    };
-  end
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX-2:0][NumY-1:0] rsp_hor_pos;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX-2:0][NumY-1:0] rsp_hor_neg;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX-1:0][NumY-2:0] rsp_ver_pos;
+  (* DONT_TOUCH = "yes" *) floo_rsp_t [NumX-1:0][NumY-2:0] rsp_ver_neg;
 
   //////////////////////
   //   NoC Topology   //
   //////////////////////
 
-  for (genvar x = 0; x < NumX; x++) begin : gen_x
-    for (genvar y = 0; y < NumX; y++) begin : gen_y 
+  for (genvar y = 0; y < NumY; y++) begin : gen_noc_y
+    for (genvar x = 0; x < NumX; x++) begin : gen_noc_x 
 
       id_t current_id;
-      addr_rule_t [NumAddrRules-1:0] current_id_route_map;
 
       floo_req_t [NumDirections-1:0] req_out, req_in;
       floo_rsp_t [NumDirections-1:0] rsp_out, rsp_in;
 
       // Assign coordinate/ID
-      assign current_id = '{x: x+1, y: y+1}; // only for simulation
-
-      // Assign routing map
-      assign current_id_route_map = '0;
+      assign current_id = '{x: x, y: y};
 
       // Instantiate NiC to interface tile to FlooNoC
       (* DONT_TOUCH = "yes" *)
@@ -177,13 +155,13 @@ module richie_noc
         .UseIdTable               ( UseIdTable              ),
         .XYAddrOffsetX            ( XYAddrOffsetX           ),
         .XYAddrOffsetY            ( XYAddrOffsetY           ),
-        .NumIDs                   ( NumTiles                ),
-        .NumRules                 ( NumTiles                ),
+        .NumIDs                   ( NumRules                ),
+        .NumRules                 ( NumRules                ),
         .MaxTxns                  ( MaxTxns                 ),
         .RoBType                  ( RoBType                 ),
         .ReorderBufferSize        ( ReorderBufferSize       ),
         .id_t                     ( id_t                    ),
-        .id_rule_t                ( node_addr_region_id_t   ),
+        .id_rule_t                ( id_rule_t               ),
         .CutAx                    ( CutAx                   ),
         .CutRsp                   ( CutRsp                  )
       ) i_chimney (
@@ -198,7 +176,7 @@ module richie_noc
         .axi_out_rsp_i            ( axi_slv_rsp[x][y]       ),
         // Coordinates/ID of the current tile
         .id_i                     ( current_id              ),
-        .id_map_i                 ( noc_tiles_addr_regions  ),
+        .id_map_i                 ( id_map_i                ),
         // NoC side interfaces
         .floo_req_o               ( noc_mst_req[x][y]       ),
         .floo_rsp_i               ( noc_mst_rsp[x][y]       ),
@@ -216,50 +194,63 @@ module richie_noc
         .OutputFifoDepth          ( OutputFifoDepth         ),
         .RouteAlgo                ( RouteAlgo               ),
         .XYRouteOpt               ( XYRouteOpt              ),
+        .NumRules                 ( NumRules                ),
+        .IdWidth                  ( $bits(id_t)             ),
         .id_t                     ( id_t                    ),
-        .addr_rule_t              ( addr_rule_t             )
+        .id_rule_t                ( id_rule_t               )
       ) i_router (
         .clk_i                    ( clk_i                   ),
         .rst_ni                   ( rst_ni                  ),
         .test_enable_i            ( test_enable_i           ),
         .id_i                     ( current_id              ),
-        .id_route_map_i           ( current_id_route_map    ),
+        .id_map_i                 ( id_map_i                ),
         .floo_req_i               ( req_in                  ),
         .floo_req_o               ( req_out                 ),
         .floo_rsp_i               ( rsp_in                  ),
         .floo_rsp_o               ( rsp_out                 )
       );
 
-      // Eject
-      assign req_in[Eject] = noc_mst_req[x][y];
-      assign noc_slv_req[x][y] = req_out[Eject];
-      assign rsp_in[Eject] = noc_slv_rsp[x][y];
-      assign noc_mst_rsp[x][y] = rsp_out[Eject];
+      always_comb begin
+        req_in[West:North] = '0;
+        rsp_in[West:North] = '0;
 
-      // East
-      assign req_in[East] = req_hor_neg[x+1][y];
-      assign req_hor_pos[x+1][y] = req_out[East];
-      assign rsp_in[East] = rsp_hor_neg[x+1][y];
-      assign rsp_hor_pos[x+1][y] = rsp_out[East];
+        req_in[Eject] = noc_mst_req[x][y];
+        noc_slv_req[x][y] = req_out[Eject];
+        rsp_in[Eject] = noc_slv_rsp[x][y];
+        noc_mst_rsp[x][y] = rsp_out[Eject];
 
-      // West
-      assign req_in[West] = req_hor_pos[x][y];
-      assign req_hor_neg[x][y] = req_out[West];
-      assign rsp_in[West] = rsp_hor_pos[x][y];
-      assign rsp_hor_neg[x][y] = rsp_out[West];
+        // North
+        if (y < NumY-1) begin
+          req_in[North]         = req_ver_neg[x][y];
+          req_ver_pos[x][y]     = req_out[North];
+          rsp_in[North]         = rsp_ver_neg[x][y];
+          rsp_ver_pos[x][y]     = rsp_out[North];
+        end
 
-      // North
-      assign req_in[North] = req_ver_neg[y+1][x];
-      assign req_ver_pos[y+1][x] = req_out[North];
-      assign rsp_in[North] = rsp_ver_neg[y+1][x];
-      assign rsp_ver_pos[y+1][x] = rsp_out[North];
+        // South
+        if (y > 0) begin
+          req_in[South]         = req_ver_pos[x][y-1];
+          req_ver_neg[x][y-1]   = req_out[South];
+          rsp_in[South]         = rsp_ver_pos[x][y-1];
+          rsp_ver_neg[x][y-1]   = rsp_out[South];
+        end
 
-      // South
-      assign req_in[South] = req_ver_pos[y][x];
-      assign req_ver_neg[y][x] = req_out[South];
-      assign rsp_in[South] = rsp_ver_pos[y][x];
-      assign rsp_ver_neg[y][x] = rsp_out[South];
+        // East
+        if (x < NumX-1) begin
+          req_in[East]          = req_hor_neg[x][y];
+          req_hor_pos[x][y]     = req_out[East];
+          rsp_in[East]          = rsp_hor_neg[x][y];
+          rsp_hor_pos[x][y]     = rsp_out[East];
+        end
 
+        // West
+        if (x > 0) begin
+          req_in[West]          = req_hor_pos[x-1][y];
+          req_hor_neg[x-1][y]   = req_out[West];
+          rsp_in[West]          = rsp_hor_pos[x-1][y];
+          rsp_hor_neg[x-1][y]   = rsp_out[West];
+        end
+      end  
     end
   end
 

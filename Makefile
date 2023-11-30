@@ -81,7 +81,7 @@ endif
 # Generation Flow #
 ###################
 
-TARGET_OV := my_richie_noc
+TARGET_OV := floo_noc
 TARGET_BOARD := zcu102
 
 export TARGET_OV TARGET_BOARD
@@ -105,29 +105,29 @@ clean-sources: cleanoc
 
 genoc:
 	mkdir -p $(FPGA_SRC_PATH)
-	mkdir -p $(FPGA_PATH)/utils/richie
+	mkdir -p $(FPGA_PATH)/utils/floo
 	cd $(UTILS_PATH)/$@ && python $@.py axi_cfg.template_hjson > $(UTILS_PATH)/axi_cfg.hjson
 	cd $(UTILS_PATH)/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
-	cd $(UTILS_PATH)/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/richie/synth_noc.tcl
-	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ip.template_v > $(FPGA_SRC_PATH)/richie_noc_ip.v
-	cd $(UTILS_PATH)/$@ && python $@.py richie_noc_ooc.template_sv > $(FPGA_SRC_PATH)/richie_noc_ooc.sv
-	cd $(UTILS_PATH)/$@ && python $@.py richie_noc.template_sv > $(SRC_PATH)/richie_noc.sv
+	cd $(UTILS_PATH)/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/floo/synth_noc.tcl
+	cd $(UTILS_PATH)/$@ && python $@.py floo_ip.template_v > $(FPGA_SRC_PATH)/floo_ip.v
+	cd $(UTILS_PATH)/$@ && python $@.py floo_ooc.template_sv > $(FPGA_SRC_PATH)/floo_ooc.sv
+	cd $(UTILS_PATH)/$@ && python $@.py floo_top.template_sv > $(SRC_PATH)/floo_top.sv
 	cd $(UTILS_PATH)/$@ && python $@.py soc_cfg_pkg.template_sv > $(SRC_PATH)/soc_cfg_pkg.sv
-	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ip.v
-	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/richie_noc_ooc.sv
-	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(SRC_PATH)/richie_noc.sv
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/floo_ip.v
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(FPGA_SRC_PATH)/floo_ooc.sv
+	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(SRC_PATH)/floo_top.sv
 	$(VERIBLE_FMT) --inplace --try_wrap_long_lines $(SRC_PATH)/soc_cfg_pkg.sv
 
 cleanoc:
 	rm $(UTILS_PATH)/axi_cfg.hjson
-	rm $(FPGA_SRC_PATH)/richie_noc_ip.v
-	rm $(FPGA_SRC_PATH)/richie_noc_ooc.sv
-	rm $(SRC_PATH)/richie_noc.sv
+	rm $(FPGA_SRC_PATH)/floo_ip.v
+	rm $(FPGA_SRC_PATH)/floo_ooc.sv
+	rm $(SRC_PATH)/floo_top.sv
 	rm $(SRC_PATH)/soc_cfg_pkg.sv
 	rm $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	rm $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
-	rm $(FPGA_PATH)/utils/richie/synth_noc.tcl
+	rm $(FPGA_PATH)/utils/floo/synth_noc.tcl
 
 ######################
 # Traffic Generation #

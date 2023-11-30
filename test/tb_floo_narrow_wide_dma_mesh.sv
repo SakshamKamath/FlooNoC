@@ -29,6 +29,16 @@ module tb_floo_narrow_wide_dma_mesh;
 
   localparam int unsigned NumRoutes               = floo_pkg::NumDirections;
 
+  // HBM memory
+  localparam int unsigned HBMChannels             = NumY;
+  localparam int unsigned HBMSize                 = 32'h10000; // 64KB
+  localparam int unsigned HBMLatency              = 100;
+  localparam int unsigned MemSize                 = HBMSize;
+
+  // DMA
+  localparam int unsigned WideMaxTxnsPerId        = 32;
+  localparam int unsigned NarrowMaxTxnsPerId      = 4;
+
   // Chimney
   localparam bit CutAx                            = soc_cfg_pkg::NOC_CUT_AX;
   localparam bit CutRsp                           = soc_cfg_pkg::NOC_CUT_RSP;
@@ -43,16 +53,6 @@ module tb_floo_narrow_wide_dma_mesh;
   localparam int unsigned OutputFifoDepth         = soc_cfg_pkg::NOC_OUT_FIFO_DEPTH;
 
   `FLOO_NOC_TYPEDEF_XY_ID_T(xy_id_t, NumX+2, NumY+2)
-
-  // HBM memory
-  localparam int unsigned HBMChannels             = NumY;
-  localparam int unsigned HBMSize                 = 32'h10000; // 64KB
-  localparam int unsigned HBMLatency              = 100;
-  localparam int unsigned MemSize                 = HBMSize;
-
-  // DMA
-  localparam int unsigned WideMaxTxnsPerId        = 32;
-  localparam int unsigned NarrowMaxTxnsPerId      = 4;
 
   /////////////////////////
   //   Generic Signals   //

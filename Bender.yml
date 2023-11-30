@@ -45,13 +45,13 @@ sources:
   - src/floo_narrow_wide_router.sv
   # Level 3
   - src/floo_mesh.sv
-  - src/richie_noc.sv
+  - src/floo_top.sv
 
   - target: fpga
     files:
       # Level 0
-      - src/fpga/richie_noc_ooc.sv
-      - src/fpga/richie_noc_ip.v
+      - src/fpga/floo_ooc.sv
+      - src/fpga/floo_ip.v
 
   - target: test
     include_dirs:

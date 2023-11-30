@@ -22,7 +22,7 @@
 
     Title:          Template
 
-    Description:    TCL script to create NoC IP for the Vivado® IP block design.
+    Description:    TCL script to create FlooNoC IP for the Vivado® IP block design.
 
     Date:           13.10.2023
 
@@ -51,7 +51,7 @@
 #
 # =====================================================================
 #
-# Project:     	GenOv
+# Project:     	FlooNoC
 #
 # Name: 		    create_noc_ip.tcl
 #
@@ -80,14 +80,13 @@ set_property board_part $BOARD_PART_NAME [current_project]
 # set_property part $PL_PART_NAME [current_project]
 
 source ./define_sources.tcl
-# add_files -norecurse -fileset [current_fileset] ./richie_noc_ip.v
 source ./define_defines_includes.tcl
-add_files -norecurse -fileset constrs_1 {./richie_noc_txilzu9eg_synth.xdc ./richie_noc_txilzu9eg_impl.xdc}
-set_property used_in_implementation false [get_files ./richie_noc_txilzu9eg_synth.xdc]
-set_property used_in_synthesis false [get_files ./richie_noc_txilzu9eg_impl.xdc]
+add_files -norecurse -fileset constrs_1 {./floo_txilzu9eg_synth.xdc ./floo_txilzu9eg_impl.xdc}
+set_property used_in_implementation false [get_files ./floo_txilzu9eg_synth.xdc]
+set_property used_in_synthesis false [get_files ./floo_txilzu9eg_impl.xdc]
 
 # Select top
-set_property top richie_noc_ip [current_fileset]
+set_property top $PRJ_IP_NAME [current_fileset]
 
 # Set synthesis properties
 set_param synth.elaboration.rodinMoreOptions "rt::set_parameter var_size_limit 20000000"
@@ -119,7 +118,7 @@ set_property bus_type_vlnv xilinx.com:signal:reset:1.0 $rst
 ipx::add_port_map RST $rst
 set_property physical_name rst_ni [ipx::get_port_maps RST -of_objects $rst]
 
-% for i in range(n_tiles): 
+% for i in range(noc_n_tiles): 
 # AXI Master ${i}
 ipx::add_bus_interface mst_${i} [ipx::current_core]
 set mst_${i} [ipx::get_bus_interfaces mst_${i} -of_objects [ipx::current_core]]
@@ -178,7 +177,7 @@ foreach pair $portmap_${i} {
 ipx::associate_bus_interfaces -busif mst_${i} -clock clk [ipx::current_core]
 % endfor
 
-% for i in range(n_tiles): 
+% for i in range(noc_n_tiles): 
 # AXI Slave ${i}
 ipx::add_bus_interface slv_${i} [ipx::current_core]
 set slv_${i} [ipx::get_bus_interfaces slv_${i} -of_objects [ipx::current_core]]

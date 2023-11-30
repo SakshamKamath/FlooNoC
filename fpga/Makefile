@@ -1,18 +1,8 @@
-# =====================================================================
-# Project:      Richie NoC
-# Title:        Makefile
-# Description:  FPGA build flow recipes
-#
-# $Date:        13.10.2023
-#
-# ===================================================================== */
-#
 # Copyright 2023 University of Modena and Reggio Emilia.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
-#
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Author: Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 
 # =====================================================================
 # Variables
@@ -22,7 +12,7 @@ ROOT 					= $(patsubst %/,%, $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 FPGA_BUILD_DIR 			:= $(ROOT)/build
 
-FPGA_UTILS_RICHIE 		:= $(ROOT)/utils/richie
+FPGA_UTILS_FLOO			:= $(ROOT)/utils/floo
 FPGA_UTILS_VIVADO 		:= $(ROOT)/utils/vivado_ips
 FPGA_UTILS_AREA 		:= $(ROOT)/utils/area
 
@@ -63,7 +53,7 @@ build_fpga: synth_noc
 
 synth_noc: check_exist clean_fpga create_noc_ip
 	@$(VIVADO) $(VIVADO_OPT) \
-		-source $(FPGA_UTILS_RICHIE)/synth_noc.tcl \
+		-source $(FPGA_UTILS_FLOO)/synth_noc.tcl \
 		-tclargs $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_prj $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips
 
 create_noc_ip: clean_noc_fpga build_env

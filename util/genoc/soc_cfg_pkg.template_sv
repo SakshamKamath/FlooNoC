@@ -18,7 +18,7 @@
 
     =====================================================================
 
-    Project:        GenOv
+    Project:        GeNoC
 
     Title:          Template
 
@@ -47,7 +47,7 @@
  *
  * =====================================================================
  *
- * Project:         Richie
+ * Project:         FlooNoC
  *
  * Title:           soc_cfg_pkg.sv
  *
@@ -77,6 +77,10 @@ package automatic soc_cfg_pkg;
     # Definition of parameters for clock domain
   %>
 
+  //////////////////////
+  //   Clock domain   //
+  //////////////////////
+
   // -- Decoupling of cluster clock domain
   localparam bit          ASYNC = 1'b0;
   localparam int unsigned DC_BUF_W = 8;
@@ -84,6 +88,10 @@ package automatic soc_cfg_pkg;
   <%
     # Definition of parameters for AXI interfaces
   %>
+
+  ////////////////////////
+  //   AXI interfaces   //
+  ////////////////////////
 
   // -- AXI
   localparam int unsigned AXI_AW = ${aw}; // [bit]
@@ -101,17 +109,31 @@ package automatic soc_cfg_pkg;
     # Definition of parameters for NoC
   %>
 
+  /////////////
+  //   NoC   //
+  /////////////
+
   // -- NoC topology
   // -- -- -- Total number of tiles
-  localparam int unsigned NOC_N_TILES = ${n_tiles};
+  localparam int unsigned NOC_N_TILES = ${noc_n_tiles};
   // -- -- -- Number of tiles over X direction
-  localparam int unsigned NOC_N_TILES_X = ${n_tiles_x};
+  localparam int unsigned NOC_N_TILES_X = ${noc_n_tiles_x};
   // -- -- -- Number of tiles over Y direction
-  localparam int unsigned NOC_N_TILES_Y = ${n_tiles_y};
+  localparam int unsigned NOC_N_TILES_Y = ${noc_n_tiles_y};
   // -- -- -- Number of virtual channels
   localparam int unsigned NOC_N_VIRT_CHANNELS = 1;
   // -- -- -- Number of physical channels
   localparam int unsigned NOC_N_PHYS_CHANNELS = 1;
+
+  // -- NoC routing
+  // -- -- -- Routing Algorithm
+  localparam floo_pkg::route_algo_e NOC_ROUTE_ALGO = floo_pkg::${noc_route_algo};
+  // -- -- -- Flag to determine whether to look up the NoC coordinates in a table or from the request address
+  % if (noc_use_id_table):
+  localparam floo_pkg::route_algo_e NOC_USE_ID_TABLE = 1'b1;
+  % else:
+  localparam floo_pkg::route_algo_e NOC_USE_ID_TABLE = 1'b0;
+  % endif
 
   // -- Chimney
   // -- -- -- Cut timing paths of outgoing requests
@@ -124,10 +146,6 @@ package automatic soc_cfg_pkg;
   localparam int unsigned NOC_ROB_SIZE = 4;
   // -- -- -- Maximum number of non-atomic outstanding requests
   localparam int unsigned NOC_MAX_TXNS = 4;
-  // -- -- -- Routing Algorithm
-  localparam floo_pkg::route_algo_e NOC_ROUTE_ALGO = floo_pkg::XYRouting;
-  // -- -- -- Flag to determine whether to look up the NoC coordinates in a table or from the request address
-  localparam floo_pkg::route_algo_e NOC_USE_ID_TABLE = 1'b1;
 
   // -- Router
   // -- -- -- FIFO depths
@@ -135,8 +153,20 @@ package automatic soc_cfg_pkg;
   localparam int unsigned NOC_OUT_FIFO_DEPTH = 4;
 
   <%
+    # Definition of parameters for SoC bus
+  %>
+
+  //////////////////////////
+  //   SoC interconnect   //
+  //////////////////////////
+
+  <%
     # Definition of parameters for clusters
   %>
+
+  /////////////////
+  //   Cluster   //
+  /////////////////
 
   // -- Cluster
   localparam int unsigned N_CLUSTERS = ${n_clusters};
@@ -145,17 +175,17 @@ package automatic soc_cfg_pkg;
     # Definition of parameters for memory hierarchy
   %>
 
-  // WIP: To add once integrated in richie
-
-  <%
-    # Definition of parameters for SoC bus
-  %>
-
-  // WIP: To add once integrated in richie
+  ////////////////
+  //   Memory   //
+  ////////////////
 
   <%
     # Definition of data types
   %>
+
+  ////////////////////
+  //   Data types   //
+  ////////////////////
 
   typedef logic             [5:0] cluster_id_t;
   typedef logic      [AXI_DW-1:0] data_t;
@@ -173,17 +203,5 @@ package automatic soc_cfg_pkg;
   typedef logic [AXI_LITE_AW-1:0]   lite_addr_t;
   typedef logic [AXI_LITE_DW-1:0]   lite_data_t;
   typedef logic [AXI_LITE_DW/8-1:0] lite_strb_t;
-
-  <%
-    # Definition of functions
-  %>
-
-  // function int unsigned oup_id_w(input int unsigned n_clusters, inp_id_w);
-  //   return inp_id_w + cf_math_pkg::clog2(n_slaves(n_clusters));
-  // endfunction
-
-  // function int unsigned axi_iw_sb_oup(input int unsigned n_clusters);
-  //   return oup_id_w(n_clusters, AXI_IW_SB_INP);
-  // endfunction
 
 endpackage
