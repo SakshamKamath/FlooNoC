@@ -12,8 +12,8 @@ ROOT 					= $(patsubst %/,%, $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 FPGA_BUILD_DIR 			:= $(ROOT)/build
 
-FPGA_UTILS_FLOO			:= $(ROOT)/utils/floo
-FPGA_UTILS_VIVADO 		:= $(ROOT)/utils/vivado_ips
+FPGA_UTILS_PRJ			:= $(ROOT)/utils/floo
+FPGA_UTILS_IPS 			:= $(ROOT)/utils/vivado_ips
 FPGA_UTILS_AREA 		:= $(ROOT)/utils/area
 
 BENDER 					?= bender
@@ -49,11 +49,9 @@ report_area:
 # Recipes:		FPGA project
 # =====================================================================
 
-build_fpga: synth_noc
-
-synth_noc: check_exist clean_fpga create_noc_ip
+build_fpga: check_exist clean_fpga create_noc_ip
 	@$(VIVADO) $(VIVADO_OPT) \
-		-source $(FPGA_UTILS_FLOO)/synth_noc.tcl \
+		-source $(FPGA_UTILS_PRJ)/floo_fpga_build.tcl \
 		-tclargs $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_prj $(FPGA_BUILD_DIR)/$(TARGET_OV)/vivado_ips
 
 create_noc_ip: clean_noc_fpga build_env
@@ -75,7 +73,7 @@ fpga_scripts: $(BENDER_PKG) $(BENDER_LOCK) $(BUILD_ENV)
 $(FPGA_BUILD_DIR)/$(TARGET_OV):
 	@echo "FPGA build directory -> $@"
 	@mkdir -p $@/vivado_ips
-	@cp $(FPGA_UTILS_VIVADO)/* $@/vivado_ips
+	@cp -r $(FPGA_UTILS_IPS)/* $@/vivado_ips
 
 ../bender: ../Makefile
 	@$(MAKE) -C .. bender

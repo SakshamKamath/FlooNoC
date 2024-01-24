@@ -137,8 +137,8 @@ module floo_top
   //   NoC Topology   //
   //////////////////////
 
-  for (genvar y = 0; y < NumY; y++) begin : gen_noc_y
-    for (genvar x = 0; x < NumX; x++) begin : gen_noc_x 
+  for (genvar x = 0; x < NumX; x++) begin : gen_noc_x
+    for (genvar y = 0; y < NumY; y++) begin : gen_noc_y 
 
       id_t current_id;
 

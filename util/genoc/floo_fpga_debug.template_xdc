@@ -1,0 +1,811 @@
+<%
+'''
+    =====================================================================
+
+    Copyright (C) 2023 University of Modena and Reggio Emilia
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    =====================================================================
+
+    Project:        GeNoC
+
+    Title:          Template
+
+    Description:    Instantiate ILA probles to debug a FlooNoC FPGA project.
+
+    Date:           1.12.2023
+
+    Author: 	      Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+
+    =====================================================================
+
+'''  
+%>
+
+# =====================================================================
+#
+# Copyright (C) 2023 University of Modena and Reggio Emilia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# =====================================================================
+#
+# Project:     	FlooNoC
+#
+# Name:         floo_fpga_debug.xdc
+#
+# Description: 	Instantiate ILA probles to debug a FlooNoC FPGA project.
+#
+# Date:         1.12.2023
+#
+# Author: 	    Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+#
+# Note:         THIS FILE IS AUTO-GENERATED. DO NOT EDIT! 
+#               Edit the corresponding template file instead:
+#
+#                     ==> 'FlooNoC/util/genoc/floo_fpga_debug.template_xdc'
+#
+# =====================================================================
+
+# Set signals to debug
+% for i in range(noc_n_tiles_to_debug): 
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[1]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[44]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[12]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_ready_i]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_ready_o]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[0]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[42]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[58]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[1]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[9]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[10]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[48]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[6]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[54]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[15]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[47]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[63]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[48]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[43]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[41]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[57]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[0]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[6]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[8]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[63]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[47]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[15]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[5]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[53]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[14]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[46]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[62]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[42]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[10]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_valid_o]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_valid_o]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[15]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[47]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[40]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[56]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[15]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[5]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[62]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[46]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[14]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[4]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[52]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[13]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[45]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[61]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[14]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[41]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[8]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_ready_i]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_ready_i]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[46]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[55]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[14]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[4]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[9]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[61]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[45]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[13]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[3]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[51]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[12]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[44]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[60]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[44]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[13]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[40]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[45]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[12]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[60]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[6]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[54]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[13]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[3]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[2]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[50]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[43]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[59]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[43]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[12]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[9]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_valid_i]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[44]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[59]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[5]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[53]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[12]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[2]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[1]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[49]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[10]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[42]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[58]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[10]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[6]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_ready_o]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[43]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[42]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[58]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[4]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[52]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[1]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[0]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[48]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[8]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[41]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[57]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[5]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_valid_i]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[10]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[42]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[8]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[41]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[57]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[3]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[51]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[10]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[0]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[15]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[47]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[63]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[40]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[56]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[4]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_valid]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[8]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[41]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[2]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[50]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[8]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[15]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[56]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[40]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[14]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[46]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[62]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[9]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[55]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[40]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[3]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_ready_o]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[1]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[49]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[14]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[55]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[9]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[13]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[45]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[61]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[6]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[54]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[0]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[6]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[2]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_valid_o]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_ready]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[9]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[0]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[48]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[9]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[13]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[54]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[12]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[44]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[60]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[5]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[53]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[6]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[1]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_valid_i]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[47]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[63]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[6]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[22]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[38]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[12]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[15]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[53]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[5]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[43]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[59]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[4]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[52]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[5]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[48]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[0]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_ready_i]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[4]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[52]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[14]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[46]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[62]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[5]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[21]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[37]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[10]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[42]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[58]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[3]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[51]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[3]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[4]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[47]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[31]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[15]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_valid]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[51]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[13]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[45]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[61]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[4]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[20]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[36]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[10]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[26]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[8]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[41]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[57]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[2]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[50]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[2]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[3]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[30]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[46]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[14]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_valid_o]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_ready_o]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[50]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[12]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[28]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[44]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[60]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[3]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[8]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[25]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[35]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[19]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[40]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[56]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[1]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[49]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[29]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[2]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[13]}]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_ready]
+set_property MARK_DEBUG true [get_nets ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_valid_i]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[45]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[1]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[17]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[33]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[49]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[11]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[27]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[43]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[59]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[2]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[18]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[34]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[7]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[24]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[9]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[23]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[39]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[55]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[0]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[16]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[32]}]
+set_property MARK_DEBUG true [get_nets {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[48]}]
+% endfor
+
+# Create ILA core
+create_debug_core u_ila_0 ila
+
+# Set ILA core
+set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
+set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]
+set_property C_DATA_DEPTH 4096 [get_debug_cores u_ila_0]
+set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]
+set_property C_INPUT_PIPE_STAGES 1 [get_debug_cores u_ila_0]
+set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
+set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
+
+set_property port_width 1 [get_debug_ports u_ila_0/clk]
+connect_debug_port u_ila_0/clk [get_nets [list ${noc_prj_name}_i/i_zynq_ps/inst/pl_clk0]]
+
+<%
+    # Overall number of probes (depend on how many signals you debug)
+    n_probes_per_tile = 28
+%>
+
+# Connect ILA core to debug signals
+% for i in range(noc_n_tiles_to_debug): 
+
+<%
+  probe_id = i * n_probes_per_tile
+%>
+
+  % if (probe_id>0):
+create_debug_port u_ila_0 probe
+  % endif 
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 64 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[39]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[40]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[41]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[42]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[43]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[44]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[45]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[46]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[47]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[48]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[49]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[50]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[51]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[52]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[53]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[54]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[55]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[56]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[57]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[58]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[59]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[60]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[61]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[62]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_data_i[63]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 49 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[39]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[40]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[41]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[42]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[43]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[44]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[45]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[46]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[47]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_addr_o[48]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 40 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_addr_i[39]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 49 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[39]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[40]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[41]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[42]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[43]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[44]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[45]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[46]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[47]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_addr_o[48]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 64 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[39]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[40]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[41]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[42]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[43]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[44]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[45]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[46]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[47]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[48]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[49]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[50]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[51]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[52]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[53]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[54]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[55]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[56]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[57]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[58]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[59]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[60]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[61]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[62]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_data_o[63]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 64 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[39]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[40]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[41]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[42]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[43]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[44]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[45]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[46]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[47]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[48]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[49]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[50]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[51]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[52]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[53]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[54]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[55]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[56]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[57]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[58]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[59]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[60]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[61]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[62]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_data_i[63]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 64 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[39]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[40]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[41]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[42]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[43]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[44]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[45]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[46]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[47]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[48]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[49]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[50]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[51]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[52]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[53]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[54]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[55]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[56]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[57]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[58]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[59]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[60]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[61]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[62]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_data_o[63]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 40 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[0]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[1]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[2]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[3]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[4]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[5]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[6]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[7]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[8]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[9]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[10]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[11]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[12]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[13]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[14]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[15]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[16]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[17]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[18]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[19]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[20]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[21]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[22]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[23]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[24]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[25]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[26]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[27]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[28]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[29]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[30]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[31]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[32]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[33]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[34]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[35]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[36]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[37]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[38]} {${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_addr_i[39]}]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_ready_i]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_ar_valid_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_ready_i]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_aw_valid_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_ready_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_r_valid_i]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_ready_i]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/mst_${i}_w_valid_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_ready]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_ready_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_valid]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_ar_valid_i]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_ready]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_ready_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_valid]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_aw_valid_i]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_ready_i]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_r_valid_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_ready_o]]
+
+<%
+  probe_id += 1
+%>
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe${probe_id}]
+set_property port_width 1 [get_debug_ports u_ila_0/probe${probe_id}]
+connect_debug_port u_ila_0/probe${probe_id} [get_nets [list ${noc_prj_name}_i/i_${noc_name}_ip/inst/slv_${i}_w_valid_i]]
+% endfor
+
+set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
+set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
+set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
+connect_debug_port dbg_hub/clk [get_nets u_ila_0_pl_clk0]

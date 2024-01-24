@@ -22,7 +22,11 @@
 
     Title:          Template
 
-    Description:    TCL script to synthesize NoC IP for the Vivado® flow.
+    Description:    TCL script to synthesize a FlooNoC IP for the Vivado® flow.
+                    The IP is connected to the Zynq Host Processor via a cascade
+                    of AXI-4 Interconnects. The goal is mainly to deploy the NoC
+                    on a target FPGA-based SoC, so as to profile the IP area
+                    overhead, with no other functional purposes. 
 
     Date:           13.10.2023
 
@@ -53,18 +57,22 @@
 #
 # Project:     	FlooNoC
 #
-# Name:         synth_noc.tcl
+# Name:         floo_fpga_profile.tcl
 #
-# Description: 	TCL script to synthesize NoC IP for the Vivado® flow.
+# Description: 	TCL script to synthesize a FlooNoC IP for the Vivado® flow.
+#               The IP is connected to the Zynq Host Processor via a cascade
+#               of AXI-4 Interconnects. The goal is mainly to deploy the NoC
+#               on a target FPGA-based SoC, so as to profile the IP area
+#               overhead, with no other functional purposes. 
 #
 # Date:         13.10.2023
 #
 # Author: 	    Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
 #
-# Note:         	THIS FILE IS AUTO-GENERATED. DO NOT EDIT! 
-#               	Edit the corresponding template file instead:
+# Note:         THIS FILE IS AUTO-GENERATED. DO NOT EDIT! 
+#               Edit the corresponding template file instead:
 #
-#                 		==> 'FlooNoC/util/genoc/synth_noc.template_tcl'
+#                     ==> 'FlooNoC/util/genoc/floo_fpga_profile.template_tcl'
 #
 # =====================================================================
 
@@ -144,6 +152,10 @@ set n_intc_ports_slv($idx_intc) [expr int($n_noc_ports_slv($idx_intc) + $N_ZYNQ_
 
 # Note: Refer to the following link for errors in passing variables to the Vivado block design:
       # https://support.xilinx.com/s/question/0D52E00006hpgpKSAQ/configure-generic-parameters-of-a-custom-ip-based-on-variable-value?language=en_US
+
+#
+# ASSEMBLE SOC
+# 
 
 # Add Zynq UltraScale+ Processor System
 create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.3 i_zynq_ps

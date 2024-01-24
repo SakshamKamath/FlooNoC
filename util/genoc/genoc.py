@@ -48,41 +48,47 @@ filename = sys.argv[1]
 ####################
 
 # Vivado project
-noc_name            = 'floo'
-noc_prj_name        = 'floo_exilzcu102'
-noc_prj_ip_name     = 'floo_ip'
-fpga_soc_target     = 'xilzu9eg'
+noc_name                = 'floo'
+noc_prj_name            = 'floo_exilzcu102_2x2'
+noc_prj_ip_name         = 'floo_ip'
+fpga_soc_target         = 'xilzu9eg'
 
 # Topology 
 # 0: NoC Mesh
 # 1: Fully-Connected XBAR
-noc_topology        = 0
+noc_topology            = 0
 
 # NoC topology
-noc_n_tiles         = 4
-noc_n_tiles_x       = 2
-noc_n_tiles_y       = 2
+noc_n_tiles             = 4
+noc_n_tiles_x           = 2
+noc_n_tiles_y           = 2
 
 # NoC routing
-noc_use_id_table    = False
-noc_route_algo      = 'XYRouting'
+noc_use_id_table        = True
+noc_route_algo          = 'XYRouting'
 
 # System
-n_clusters          = noc_n_tiles
+n_clusters              = noc_n_tiles
 
 # AXI interface
-aw                  = 64 
-dw                  = 64 
-iw                  = 3+clog2(n_clusters+1)
-uw                  = 4
-aw_pl2ps            = 49
-iw_pl2ps            = 5
-uw_pl2ps            = 1
-aw_ps2pl            = 40 
-iw_ps2pl            = 19
-uw_ps2pl            = 16
-aw_lite             = 32
-dw_lite             = 32
+aw                      = 64 
+dw                      = 64 
+iw                      = 3+clog2(n_clusters+1)
+uw                      = 4
+aw_pl2ps                = 49
+iw_pl2ps                = 5
+uw_pl2ps                = 1
+aw_ps2pl                = 40 
+iw_ps2pl                = 19
+uw_ps2pl                = 16
+aw_lite                 = 32
+dw_lite                 = 32
+
+# SoC
+traffic_type            = 1 # 0: AXI Traffic Generator, 1: HLS Traffic Generator, 2: PULP Cluster
+
+# FPGA debug (ILA)
+noc_n_tiles_to_debug    = noc_n_tiles
 
 ###################
 ##   Generator   ##
@@ -90,29 +96,31 @@ dw_lite             = 32
 
 target_template = Template(filename=filename)
 string = target_template.render(
-    noc_name            = noc_name,
-    noc_prj_name        = noc_prj_name,
-    noc_prj_ip_name     = noc_prj_ip_name,
-    fpga_soc_target     = fpga_soc_target, 
-    noc_topology        = noc_topology,
-    noc_n_tiles         = noc_n_tiles,
-    noc_n_tiles_x       = noc_n_tiles_x,
-    noc_n_tiles_y       = noc_n_tiles_y,
-    noc_use_id_table    = noc_use_id_table,
-    noc_route_algo      = noc_route_algo,
-    n_clusters          = n_clusters,
-    aw                  = aw, 
-    dw                  = dw, 
-    iw                  = iw, 
-    uw                  = uw,
-    aw_pl2ps            = aw_pl2ps, 
-    iw_pl2ps            = iw_pl2ps, 
-    uw_pl2ps            = uw_pl2ps,
-    aw_ps2pl            = aw_ps2pl, 
-    iw_ps2pl            = iw_ps2pl, 
-    uw_ps2pl            = uw_ps2pl,
-    aw_lite             = aw_lite, 
-    dw_lite             = dw_lite,
+    noc_name                = noc_name,
+    noc_prj_name            = noc_prj_name,
+    noc_prj_ip_name         = noc_prj_ip_name,
+    fpga_soc_target         = fpga_soc_target, 
+    noc_topology            = noc_topology,
+    noc_n_tiles             = noc_n_tiles,
+    noc_n_tiles_x           = noc_n_tiles_x,
+    noc_n_tiles_y           = noc_n_tiles_y,
+    noc_use_id_table        = noc_use_id_table,
+    noc_route_algo          = noc_route_algo,
+    n_clusters              = n_clusters,
+    aw                      = aw, 
+    dw                      = dw, 
+    iw                      = iw, 
+    uw                      = uw,
+    aw_pl2ps                = aw_pl2ps, 
+    iw_pl2ps                = iw_pl2ps, 
+    uw_pl2ps                = uw_pl2ps,
+    aw_ps2pl                = aw_ps2pl, 
+    iw_ps2pl                = iw_ps2pl, 
+    uw_ps2pl                = uw_ps2pl,
+    aw_lite                 = aw_lite, 
+    dw_lite                 = dw_lite,
+    traffic_type            = traffic_type,
+    noc_n_tiles_to_debug    = noc_n_tiles_to_debug,
 )
 
 re_trailws = re.compile(r'[ \t\r]+$', re.MULTILINE)

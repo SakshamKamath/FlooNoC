@@ -22,7 +22,7 @@
 
     Title:          Template
 
-    Description:    TCL script to create FlooNoC IP for the Vivado® IP block design.
+    Description:    Create FlooNoC IP using the AMD Vivado Suite.
 
     Date:           13.10.2023
 
@@ -55,7 +55,7 @@
 #
 # Name: 		    create_noc_ip.tcl
 #
-# Description: 	TCL script to create NoC IP for the Vivado® IP block design.
+# Description: 	Create FlooNoC IP using the AMD Vivado Suite.
 #
 # Date:         13.10.2023
 #

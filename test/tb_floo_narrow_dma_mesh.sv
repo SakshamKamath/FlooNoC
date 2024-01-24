@@ -38,6 +38,7 @@ module tb_floo_narrow_dma_mesh;
 
   // DMA
   localparam int unsigned MaxTxnsPerId            = 4;
+  localparam bit EnableDMADebug                   = 0;
 
   // Chimney
   localparam bit CutAx                            = soc_cfg_pkg::NOC_CUT_AX;
@@ -50,16 +51,13 @@ module tb_floo_narrow_dma_mesh;
   localparam int unsigned OutputFifoDepth         = soc_cfg_pkg::NOC_OUT_FIFO_DEPTH;
 
   // Routing --> For ID-based routing with XYRouting
-  localparam route_algo_e UseIdTable              = soc_cfg_pkg::NOC_USE_ID_TABLE;
+  localparam bit UseIdTable                       = soc_cfg_pkg::NOC_USE_ID_TABLE;
 
   // The offset bit to read the X coordinate from --> For address-based routing
   localparam int unsigned XYAddrOffsetX           = $clog2(MemSize);
 
   // The offset bit to read the Y coordinate from --> For address-based routing
   localparam int unsigned XYAddrOffsetY           = $clog2(MemSize) + $clog2(NumX);
-
-  // The type of the coordinates or IDs
-  // `FLOO_NOC_TYPEDEF_XY_ID_T(xy_id_t, NumX, NumY)
 
   /////////////////////////
   //   Generic Signals   //
@@ -94,30 +92,30 @@ module tb_floo_narrow_dma_mesh;
   // Strategy: Look up NoC coordinates using a table
 
   // Define address region type
-  typedef struct packed {
-    int unsigned idx;
-    logic [AxiInAddrWidth-1:0] start_addr;
-    logic [AxiInAddrWidth-1:0] end_addr;
-  } floo_id_rule_t;
+  // typedef struct packed {
+  //   int unsigned idx;
+  //   logic [AxiInAddrWidth-1:0] start_addr;
+  //   logic [AxiInAddrWidth-1:0] end_addr;
+  // } floo_id_rule_t;
 
   // Number of rules
-  localparam int unsigned NumRules = NumTiles;
+  localparam int unsigned NumRules = soc_cfg_pkg::NOC_N_RULES;
 
   // Address map
-  floo_id_rule_t [NumRules-1:0] floo_addr_map;
+  soc_cfg_pkg::floo_id_rule_t [NumRules-1:0] floo_addr_map;
 
   ///////////////////
   //   DMA tiles   //
   ///////////////////
 
-  for (genvar y = 0; y < NumY; y++) begin : gen_dma_y
-    for (genvar x = 0; x < NumX; x++) begin : gen_dma_x 
+  for (genvar x = 0; x < NumX; x++) begin : gen_dma_x
+    for (genvar y = 0; y < NumY; y++) begin : gen_dma_y 
 
       // Define DMA name
       localparam string narrow_dma_name = $sformatf("dma_%0d_%0d", x, y);
 
       // Define DMA index
-      localparam int unsigned current_id = x + NumX * y;
+      localparam int unsigned current_id = y + NumY * x;
 
       // Address map
       assign floo_addr_map[current_id] = '{
@@ -140,13 +138,14 @@ module tb_floo_narrow_dma_mesh;
         .AxiIdInWidth   ( AxiOutIdWidth           ),
         .AxiIdOutWidth  ( AxiInIdWidth            ),
         .MemBaseAddr    ( MemBaseAddr             ),
-        .MemSize        ( MemSize                 ),
+        .MemSize        ( MemSize - 1'b1          ),
         .NumAxInFlight  ( 2*MaxTxnsPerId          ),
         .axi_in_req_t   ( axi_out_req_t           ),
         .axi_in_rsp_t   ( axi_out_rsp_t           ),
         .axi_out_req_t  ( axi_in_req_t            ),
         .axi_out_rsp_t  ( axi_in_rsp_t            ),
-        .JobId          ( 100 + current_id + 1    )
+        .JobId          ( 100 + current_id + 1    ),
+        .EnableDebug    ( EnableDMADebug          )
       ) i_narrow_dma_node (
         .clk_i          ( clk                     ),
         .rst_ni         ( rst_n                   ),
@@ -201,8 +200,8 @@ module tb_floo_narrow_dma_mesh;
     .XYRouteOpt               ( 1'b0                          ),
     .NumRules                 ( NumRules                      ),
     .id_t                     ( floo_axi_pkg::xy_id_t         ),
-    .id_rule_t                ( floo_id_rule_t                )
-  ) i_noc (
+    .id_rule_t                ( soc_cfg_pkg::floo_id_rule_t   )
+  ) i_noc_top (
     .clk_i                    ( clk                           ),
     .rst_ni                   ( rst_n                         ),
     .test_enable_i            ( 1'b0                          ),

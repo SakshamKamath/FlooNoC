@@ -81,7 +81,7 @@ endif
 # Generation Flow #
 ###################
 
-TARGET_OV := floo_noc
+TARGET_OV := floo_exilzcu102_2x2
 TARGET_BOARD := zcu102
 
 export TARGET_OV TARGET_BOARD
@@ -109,7 +109,9 @@ genoc:
 	cd $(UTILS_PATH)/$@ && python $@.py axi_cfg.template_hjson > $(UTILS_PATH)/axi_cfg.hjson
 	cd $(UTILS_PATH)/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
-	cd $(UTILS_PATH)/$@ && python $@.py synth_noc.template_tcl > $(FPGA_PATH)/utils/floo/synth_noc.tcl
+	cd $(UTILS_PATH)/$@ && python $@.py floo_fpga_debug.template_xdc > $(FPGA_PATH)/utils/vivado_ips/floo_fpga_debug.xdc
+	cd $(UTILS_PATH)/$@ && python $@.py floo_fpga_build.template_tcl > $(FPGA_PATH)/utils/floo/floo_fpga_build.tcl
+	cd $(UTILS_PATH)/$@ && python $@.py tb_floo_narrow_dma_mesh.wave.template_tcl > $(TEST_PATH)/tb_floo_narrow_dma_mesh.wave.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py floo_ip.template_v > $(FPGA_SRC_PATH)/floo_ip.v
 	cd $(UTILS_PATH)/$@ && python $@.py floo_ooc.template_sv > $(FPGA_SRC_PATH)/floo_ooc.sv
 	cd $(UTILS_PATH)/$@ && python $@.py floo_top.template_sv > $(SRC_PATH)/floo_top.sv
@@ -127,7 +129,8 @@ cleanoc:
 	rm $(SRC_PATH)/soc_cfg_pkg.sv
 	rm $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	rm $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
-	rm $(FPGA_PATH)/utils/floo/synth_noc.tcl
+	rm $(FPGA_PATH)/utils/floo/floo_fpga_build.tcl
+	rm $(TEST_PATH)/tb_floo_narrow_dma_mesh.wave.tcl
 
 ######################
 # Traffic Generation #
@@ -142,8 +145,9 @@ TRAFFIC_VERBOSE ?= -v
 
 .PHONY: jobs clean-jobs
 jobs: $(TRAFFIC_GEN)
+	rm -rf $@.txt
 	mkdir -p $(TRAFFIC_OUTDIR)
-	$(TRAFFIC_GEN) --out_dir $(TRAFFIC_OUTDIR) --tb $(TRAFFIC_TB) --type $(TRAFFIC_TYPE) --rw $(TRAFFIC_RW) $(TRAFFIC_VERBOSE)
+	$(TRAFFIC_GEN) --out_dir $(TRAFFIC_OUTDIR) --tb $(TRAFFIC_TB) --type $(TRAFFIC_TYPE) --rw $(TRAFFIC_RW) $(TRAFFIC_VERBOSE) >> $@.txt
 
 clean-jobs:
 	rm -rf $(TRAFFIC_OUTDIR)

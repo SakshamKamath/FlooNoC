@@ -80,3 +80,33 @@ if {[regexp -- $design_run_name $runlist]} {
 
     }
 }
+
+# ================================================= #
+# Create utilization reports for implemented design #
+# ================================================= #
+
+# Design run type
+set ::design_run_type "impl"
+set ::design_run_name "impl_1"
+
+# Design run state
+set ::design_run_status [get_property STATUS [get_runs $design_run_name]]
+set ::design_run_progress [get_property PROGRESS [get_runs $design_run_name]]
+
+# Open runlist 
+set runlist [get_runs $design_run_type*]
+
+# Check if run exist
+if {[regexp -- $design_run_name $runlist]} {
+
+    # Check if run has completed
+    if { [regexp -- Complete $design_run_status] && [regexp -- 100% $design_run_progress]} {
+
+        # Open design run
+        open_run $design_run_name
+
+        # Export report into CSV
+        source $area_utils/get_util_csv.tcl
+
+    }
+}

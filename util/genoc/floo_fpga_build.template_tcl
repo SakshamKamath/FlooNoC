@@ -1,0 +1,688 @@
+<%
+'''
+    =====================================================================
+
+    Copyright (C) 2023 University of Modena and Reggio Emilia
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    =====================================================================
+
+    Project:        GeNoC
+
+    Title:          Template
+
+    Description:    Build a FlooNoC FPGA project using the AMD Vivado Suite.
+
+    Date:           1.12.2023
+
+    Author: 	      Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+
+    =====================================================================
+
+'''  
+%>
+
+# =====================================================================
+#
+# Copyright (C) 2023 University of Modena and Reggio Emilia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# =====================================================================
+#
+# Project:     	FlooNoC
+#
+# Name:         floo_fpga_build.tcl
+#
+# Description: 	Build a FlooNoC FPGA project using the AMD Vivado Suite.
+#
+# Date:         1.12.2023
+#
+# Author: 	    Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+#
+# Note:         THIS FILE IS AUTO-GENERATED. DO NOT EDIT! 
+#               Edit the corresponding template file instead:
+#
+#                     ==> 'FlooNoC/util/genoc/floo_fpga_build.template_tcl'
+#
+# =====================================================================
+
+# Vivado project location.
+set PRJ_PATH [lindex $argv 0]
+puts "Vivado project is going to be located in $PRJ_PATH\."
+
+# Vivado IPs location.
+set VIVADO_IPS_DIR [lindex $argv 1]
+
+# Source parameters
+source $VIVADO_IPS_DIR\/fpga_noc_params.tcl
+
+#
+# CREATE BLOCK DESIGN FOR ZYNQ + NOC
+# 
+
+# Create project
+create_project $PRJ_NAME $PRJ_PATH -part $PL_PART_NAME
+set_property board_part $BOARD_PART_NAME [current_project]
+
+# Set synthesis properties
+set_param synth.elaboration.rodinMoreOptions "rt::set_parameter var_size_limit 20000000"
+
+# Add NoC IP to user library
+set_property ip_repo_paths $VIVADO_IPS_DIR [current_project]
+update_ip_catalog
+
+% if (traffic_type == 1):
+# Add HLS traffic generator IP to user library
+set_property ip_repo_paths $VIVADO_IPS_DIR [current_project]
+update_ip_catalog
+% endif
+
+# Create block design
+create_bd_design "$PRJ_NAME"
+update_compile_order -fileset sources_1
+
+#
+# SET VARIABLES
+# 
+
+# Maximum number of interconnect ports (per interconnect)
+set n_max_ports_xbar 16
+
+# Number of traffic generator groups
+set n_tgen_groups [expr int(($N_NOC_SLV)/($n_max_ports_xbar))]
+if {($N_NOC_SLV)%($n_max_ports_xbar)>0} {
+  incr n_tgen_groups
+}
+
+# Number of BRAM groups
+set n_bram_groups [expr int(($N_NOC_MST)/($n_max_ports_xbar))]
+if {($N_NOC_MST)%($n_max_ports_xbar)>0} {
+  incr n_bram_groups
+}
+
+# Number of traffic generators (per group)
+for {set i 0} {$i < ($n_tgen_groups - 1)} {incr i} {
+  set n_tgen_per_xbar($i) [expr int($n_max_ports_xbar)]
+}
+set n_tgen_per_xbar($i) [expr int($N_NOC_SLV - $n_max_ports_xbar * ($n_tgen_groups - 1))]
+
+# Number of BRAMs (per group)
+for {set i 0} {$i < ($n_bram_groups - 1)} {incr i} {
+  set n_bram_per_xbar($i) [expr int($n_max_ports_xbar)]
+}
+set n_bram_per_xbar($i) [expr int($N_NOC_MST - $n_max_ports_xbar * ($n_bram_groups - 1))]
+
+#
+# ASSEMBLE SOC
+# 
+
+# Add Zynq UltraScale+ Processor System (Host)
+create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.3 i_zynq_ps
+apply_bd_automation -rule xilinx.com:bd_rule:zynq_ultra_ps_e -config {apply_board_preset "1" }   [get_bd_cells i_zynq_ps]
+set_property -dict [list \
+  CONFIG.PSU__USE__M_AXI_GP0 {1} \
+  CONFIG.PSU__USE__M_AXI_GP1 {1} \
+  CONFIG.PSU__USE__S_AXI_GP2 {1} \
+  CONFIG.PSU__USE__S_AXI_GP3 {0} \
+  CONFIG.PSU__MAXIGP0__DATA_WIDTH {64} \
+  CONFIG.PSU__MAXIGP1__DATA_WIDTH {64} \
+  CONFIG.PSU__SAXIGP2__DATA_WIDTH {64} \
+  CONFIG.PSU__USE__IRQ1 {1} \
+] [get_bd_cells i_zynq_ps]
+
+for {set idx_mst 0} {$idx_mst < ($N_ZYNQ_MST)} {incr idx_mst} {
+  set clk [format "maxihpm$idx_mst\_fpd_aclk" $idx_mst]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0]   [get_bd_pins i_zynq_ps/$clk]
+}
+
+for {set idx_slv 0} {$idx_slv < ($N_ZYNQ_SLV)} {incr idx_slv} {
+  set clk [format "saxihp$idx_slv\_fpd_aclk" $idx_slv]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0]   [get_bd_pins i_zynq_ps/$clk]
+}
+
+# Configure PL frequency
+set_property -dict [list \
+  CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ "$PL_FREQMHZ"] [get_bd_cells i_zynq_ps]
+
+# Add System Reset
+create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 i_sys_reset
+connect_bd_net [get_bd_pins i_zynq_ps/pl_resetn0] \
+  [get_bd_pins i_sys_reset/ext_reset_in]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_sys_reset/slowest_sync_clk]
+
+# Add AXI Interconnects for Host MST to traffic generators
+
+# - Demux Host MST toward traffic generator groups
+create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 i_xbar_host2tgen
+set_property -dict [list \
+  CONFIG.NUM_MI $n_tgen_groups \
+  CONFIG.NUM_SI {1} \
+  CONFIG.STRATEGY {1} \
+] [get_bd_cells i_xbar_host2tgen]
+
+set clk [format "ACLK" 0]
+set rst [format "ARESETN" 0]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_xbar_host2tgen/$clk]
+connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+  [get_bd_pins i_xbar_host2tgen/$rst]
+
+set clk [format "S%02d_ACLK" 0]
+set rst [format "S%02d_ARESETN" 0]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_xbar_host2tgen/$clk]
+connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+  [get_bd_pins i_xbar_host2tgen/$rst]
+
+set clk [format "M%02d_ACLK" 0]
+set rst [format "M%02d_ARESETN" 0]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_xbar_host2tgen/$clk]
+connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+  [get_bd_pins i_xbar_host2tgen/$rst]
+
+# - Demux Host MST toward single traffic generators in a group
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 i_xbar_host2tgen_group_$i
+  set_property -dict [list \
+    CONFIG.NUM_MI $n_tgen_per_xbar($i) \
+    CONFIG.NUM_SI {1} \
+    CONFIG.STRATEGY {1} \
+  ] [get_bd_cells i_xbar_host2tgen_group_$i]
+}
+
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  set clk [format "ACLK" 0]
+  set rst [format "ARESETN" 0]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+    [get_bd_pins i_xbar_host2tgen_group_$i/$clk]
+  connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+    [get_bd_pins i_xbar_host2tgen_group_$i/$rst]
+
+  set clk [format "S%02d_ACLK" 0]
+  set rst [format "S%02d_ARESETN" 0]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+    [get_bd_pins i_xbar_host2tgen_group_$i/$clk]
+  connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+    [get_bd_pins i_xbar_host2tgen_group_$i/$rst]
+
+  for {set j 0} {$j < $n_tgen_per_xbar($i)} {incr j} {
+    set clk [format "M%02d_ACLK" $j]
+    set rst [format "M%02d_ARESETN" $j]
+    connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+      [get_bd_pins i_xbar_host2tgen_group_$i/$clk]
+    connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+      [get_bd_pins i_xbar_host2tgen_group_$i/$rst]
+  }
+}
+
+% if (traffic_type == 0):
+# Add AXI traffic generators
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  for {set j 0} {$j < $n_tgen_per_xbar($i)} {incr j} {
+    create_bd_cell -type ip -vlnv xilinx.com:ip:axi_traffic_gen:3.0 axi_traffic_gen_$i\_$j
+    set_property -dict [list \
+      CONFIG.C_M_AXI_DATA_WIDTH {64} \
+      CONFIG.C_S_AXI_DATA_WIDTH {64} \
+    ] [get_bd_cells traffic_gen_$i\_$j]
+  }
+}
+
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  for {set j 0} {$j < $n_tgen_per_xbar($i)} {incr j} {
+    set clk [format "s_axi_aclk" 0]
+    set rst [format "s_axi_aresetn" 0]
+    connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+      [get_bd_pins traffic_gen_$i\_$j/$clk]
+    connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+      [get_bd_pins traffic_gen_$i\_$j/$rst]
+  }
+}
+% elif (traffic_type == 1):
+# Add HLS traffic generators
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  for {set j 0} {$j < $n_tgen_per_xbar($i)} {incr j} {
+    create_bd_cell -type ip -vlnv xilinx.com:hls:traffic_gen:1.0 traffic_gen_$i\_$j
+  }
+}
+
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  for {set j 0} {$j < $n_tgen_per_xbar($i)} {incr j} {
+    set clk [format "ap_clk" 0]
+    set rst [format "ap_rst_n" 0]
+    connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+      [get_bd_pins traffic_gen_$i\_$j/$clk]
+    connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+      [get_bd_pins traffic_gen_$i\_$j/$rst]
+  }
+}
+% endif
+
+# Add FlooNoC
+create_bd_cell -type ip -vlnv ethz.ch:user:$PRJ_IP_NAME:1.0 $I_NOC_NAME\_ip
+
+set clk [format "clk_i" 0]
+set rst [format "rst_ni" 0]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins $I_NOC_NAME\_ip/$clk]
+connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+  [get_bd_pins $I_NOC_NAME\_ip/$rst]
+
+# Add BRAM controllers (NoC-side)
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 $I_NOC_NAME\_axi_bram_ctrl_$i\_$j
+    set_property -dict [list \
+      CONFIG.DATA_WIDTH {64} \
+      CONFIG.ECC_TYPE {0} \
+      CONFIG.SINGLE_PORT_BRAM {1} \
+    ] [get_bd_cells $I_NOC_NAME\_axi_bram_ctrl_$i\_$j]
+  }
+}
+
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    set clk [format "s_axi_aclk" 0]
+    set rst [format "s_axi_aresetn" 0]
+    connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+      [get_bd_pins $I_NOC_NAME\_axi_bram_ctrl_$i\_$j/$clk]
+    connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+      [get_bd_pins $I_NOC_NAME\_axi_bram_ctrl_$i\_$j/$rst]
+  }
+}
+
+# Add BRAMs
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 axi_bram_$i\_$j
+    set_property -dict [list \
+      CONFIG.Memory_Type {True_Dual_Port_RAM} \
+      CONFIG.Enable_B {Use_ENB_Pin} \
+      CONFIG.Use_RSTB_Pin {true} \
+      CONFIG.Port_B_Clock {100} \
+      CONFIG.Port_B_Write_Rate {50} \
+      CONFIG.Port_B_Enable_Rate {100} \
+    ] [get_bd_cells axi_bram_$i\_$j]
+  }
+}
+
+# Add BRAM controllers (Host-side)
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 host_axi_bram_ctrl_$i\_$j
+    set_property -dict [list \
+      CONFIG.DATA_WIDTH {64} \
+      CONFIG.ECC_TYPE {0} \
+      CONFIG.SINGLE_PORT_BRAM {1} \
+    ] [get_bd_cells host_axi_bram_ctrl_$i\_$j]
+  }
+}
+
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    set clk [format "s_axi_aclk" 0]
+    set rst [format "s_axi_aresetn" 0]
+    connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+      [get_bd_pins host_axi_bram_ctrl_$i\_$j/$clk]
+    connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+      [get_bd_pins host_axi_bram_ctrl_$i\_$j/$rst]
+  }
+}
+
+# Add AXI Interconnects for Host MST to BRAMs
+
+# - Demux Host MST toward traffic generator groups
+create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 i_xbar_host2bram
+set_property -dict [list \
+  CONFIG.NUM_MI $n_tgen_groups \
+  CONFIG.NUM_SI {1} \
+  CONFIG.STRATEGY {1} \
+] [get_bd_cells i_xbar_host2bram]
+
+set clk [format "ACLK" 0]
+set rst [format "ARESETN" 0]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_xbar_host2bram/$clk]
+connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+  [get_bd_pins i_xbar_host2bram/$rst]
+
+set clk [format "S%02d_ACLK" 0]
+set rst [format "S%02d_ARESETN" 0]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_xbar_host2bram/$clk]
+connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+  [get_bd_pins i_xbar_host2bram/$rst]
+
+set clk [format "M%02d_ACLK" 0]
+set rst [format "M%02d_ARESETN" 0]
+connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+  [get_bd_pins i_xbar_host2bram/$clk]
+connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+  [get_bd_pins i_xbar_host2bram/$rst]
+
+# - Demux Host MST toward single traffic generators in a group
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 i_xbar_host2bram_group_$i
+  set_property -dict [list \
+    CONFIG.NUM_MI $n_bram_per_xbar($i) \
+    CONFIG.NUM_SI {1} \
+    CONFIG.STRATEGY {1} \
+  ] [get_bd_cells i_xbar_host2bram_group_$i]
+}
+
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  set clk [format "ACLK" 0]
+  set rst [format "ARESETN" 0]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+    [get_bd_pins i_xbar_host2bram_group_$i/$clk]
+  connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+    [get_bd_pins i_xbar_host2bram_group_$i/$rst]
+
+  set clk [format "S%02d_ACLK" 0]
+  set rst [format "S%02d_ARESETN" 0]
+  connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+    [get_bd_pins i_xbar_host2bram_group_$i/$clk]
+  connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+    [get_bd_pins i_xbar_host2bram_group_$i/$rst]
+
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    set clk [format "M%02d_ACLK" $j]
+    set rst [format "M%02d_ARESETN" $j]
+    connect_bd_net [get_bd_pins i_zynq_ps/pl_clk0] \
+      [get_bd_pins i_xbar_host2bram_group_$i/$clk]
+    connect_bd_net [get_bd_pins i_sys_reset/peripheral_aresetn] \
+      [get_bd_pins i_xbar_host2bram_group_$i/$rst]
+  }
+}
+
+# Connect Host MST -> traffic generators -> FlooNoC
+
+# - Connect Host MST toward traffic generator groups
+connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_ps/M_AXI_HPM0_FPD] \
+  [get_bd_intf_pins i_xbar_host2tgen/S00_AXI]
+  
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  set mst [format "M%02d_AXI" [expr int($i)]]
+  set slv [format "S%02d_AXI" [expr int(0)]]
+  connect_bd_intf_net -boundary_type upper \
+    [get_bd_intf_pins i_xbar_host2tgen/$mst] \
+    [get_bd_intf_pins i_xbar_host2tgen_group_$i/$slv]
+}
+
+# - Connect Host MST toward single traffic generators in a group
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  for {set j 0} {$j < $n_tgen_per_xbar($i)} {incr j} {
+    set mst [format "M%02d_AXI" [expr int($j)]]
+% if (traffic_type == 0):
+    set slv "S_AXI"
+% elif (traffic_type == 1):
+    set slv "s_axi_control"
+% endif
+    connect_bd_intf_net -boundary_type upper \
+      [get_bd_intf_pins i_xbar_host2tgen_group_$i/$mst] \
+      [get_bd_intf_pins traffic_gen_$i\_$j/$slv]
+  }
+}
+
+# - Connect traffic generators to NoC slaves
+for {set i 0} {$i < $n_tgen_groups} {incr i} {
+  for {set j 0} {$j < $n_tgen_per_xbar($i)} {incr j} {
+% if (traffic_type == 0):
+    set mst "M_AXI"
+% elif (traffic_type == 1):
+    set mst "m_axi_traffic_dst"
+% endif
+    set slv [format "slv_%01d" [expr int($j + ($n_tgen_groups * $i))]]
+    connect_bd_intf_net -boundary_type upper \
+      [get_bd_intf_pins traffic_gen_$i\_$j/$mst] \
+      [get_bd_intf_pins $I_NOC_NAME\_ip/$slv]
+  }
+}
+
+# - Connect NoC masters to BRAM controllers (NoC-side)
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    set mst [format "mst_%01d" [expr int($j + ($n_tgen_groups * $i))]]
+    set slv "S_AXI"
+    connect_bd_intf_net -boundary_type upper \
+      [get_bd_intf_pins $I_NOC_NAME\_ip/$mst] \
+      [get_bd_intf_pins $I_NOC_NAME\_axi_bram_ctrl_$i\_$j/$slv]  
+  }
+}
+
+# - Connect BRAM controllers (NoC-side) to BRAMs
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    set mst "BRAM_PORTA"
+    set slv "BRAM_PORTA"
+    connect_bd_intf_net -boundary_type upper \
+      [get_bd_intf_pins $I_NOC_NAME\_axi_bram_ctrl_$i\_$j/$mst] \
+      [get_bd_intf_pins axi_bram_$i\_$j/$slv]
+  }
+}
+
+# - Connect BRAM controllers (Host-side) to BRAMs
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    set mst "BRAM_PORTA"
+    set slv "BRAM_PORTB"
+    connect_bd_intf_net -boundary_type upper \
+      [get_bd_intf_pins host_axi_bram_ctrl_$i\_$j/$mst] \
+      [get_bd_intf_pins axi_bram_$i\_$j/$slv]
+  }
+}
+
+# - Connect Host MST toward BRAM controller groups
+connect_bd_intf_net -boundary_type upper [get_bd_intf_pins i_zynq_ps/M_AXI_HPM1_FPD] \
+  [get_bd_intf_pins i_xbar_host2bram/S00_AXI]
+  
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  set mst [format "M%02d_AXI" [expr int($i)]]
+  set slv [format "S%02d_AXI" [expr int(0)]]
+  connect_bd_intf_net -boundary_type upper \
+    [get_bd_intf_pins i_xbar_host2bram/$mst] \
+    [get_bd_intf_pins i_xbar_host2bram_group_$i/$slv]
+}
+
+# - Connect Host MST toward single BRAM controllers in a group
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+    set mst [format "M%02d_AXI" [expr int($j)]]
+    set slv "S_AXI"
+    connect_bd_intf_net -boundary_type upper \
+      [get_bd_intf_pins i_xbar_host2bram_group_$i/$mst] \
+      [get_bd_intf_pins host_axi_bram_ctrl_$i\_$j/$slv]
+  }
+}
+
+#
+# ADDRESS MAP
+#
+
+# Map NoC master/slaves
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+
+    set target_name host_axi_bram_ctrl_$i\_$j
+
+    set base_addr_hex 0x00B0000000
+    set range_opt "8K"
+    set range_dec [expr int(8*1024)]
+    set range_hex [format 0x%X [expr {$range_dec}]]
+
+    if {$i==0} {
+      set nocid $j
+    } else {
+      set nocid [expr {$j + $i * $n_bram_per_xbar($i-1)}]
+    }
+
+    set offset_hex [format 0x%x [expr {$base_addr_hex + $range_hex * $nocid}]] 
+
+% if (traffic_type == 0):
+    # Map AXI traffic generators (NoC-side)
+    assign_bd_address -offset $offset_hex -range $range_opt [get_bd_addr_segs i_floo_ip/slv_$nocid/Reg]
+% elif (traffic_type == 1):
+    # Map HLS traffic generators (NoC-side)
+    assign_bd_address -offset $offset_hex -range $range_opt [get_bd_addr_segs i_floo_ip/slv_$nocid/Reg]
+% endif
+
+    # Map BRAM controllers (NoC-side)
+    assign_bd_address -offset $offset_hex -range $range_opt [get_bd_addr_segs i_floo_axi_bram_ctrl_$i\_$j/S_AXI/Mem0]
+    
+    # Map BRAM controllers (Host-side)
+    assign_bd_address -offset $offset_hex -range $range_opt [get_bd_addr_segs host_axi_bram_ctrl_$i\_$j/S_AXI/Mem0]
+  }
+}
+
+% if (traffic_type == 0):
+# Map register file of AXI traffic generators (Host-side)
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+
+    set target_name host_axi_bram_ctrl_$i\_$j
+
+    set base_addr_hex 0x00A0000000
+    set range_opt "16K"
+    set range_dec [expr int(16*1024)]
+    set range_hex [format 0x%X [expr {$range_dec}]]
+
+    if {$i==0} {
+      set offset_hex [format 0x%x [expr {$base_addr_hex + $range_hex * $j}]]
+    } else {
+      set offset_hex [format 0x%x [expr {$base_addr_hex + $range_hex * ($j + $i * $n_bram_per_xbar($i-1))}]]
+    }
+    
+    assign_bd_address -offset $offset_hex -range $range_opt [get_bd_addr_segs axi_traffic_gen_$i\_$j/S_AXI/Reg0]
+  }
+}
+% elif (traffic_type == 1):
+# Map register file of HLS traffic generators (Host-side)
+for {set i 0} {$i < $n_bram_groups} {incr i} {
+  for {set j 0} {$j < $n_bram_per_xbar($i)} {incr j} {
+
+    set target_name host_axi_bram_ctrl_$i\_$j
+
+    set base_addr_hex 0x00A0000000
+    set range_opt "16K"
+    set range_dec [expr int(16*1024)]
+    set range_hex [format 0x%X [expr {$range_dec}]]
+
+    if {$i==0} {
+      set offset_hex [format 0x%x [expr {$base_addr_hex + $range_hex * $j}]]
+    } else {
+      set offset_hex [format 0x%x [expr {$base_addr_hex + $range_hex * ($j + $i * $n_bram_per_xbar($i-1))}]]
+    }
+    
+    assign_bd_address -offset $offset_hex -range $range_opt [get_bd_addr_segs traffic_gen_$i\_$j/s_axi_control/Reg]
+  }
+}
+% endif
+
+# Validate and save Top-Level Block Design
+save_bd_design
+validate_bd_design
+save_bd_design
+close_bd_design [get_bd_designs $PRJ_NAME]
+
+make_wrapper -files [get_files \
+  $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd \
+] -top
+add_files -norecurse \
+  $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/hdl/$PRJ_NAME\_wrapper.v
+
+# Create targets and runs for IPs.
+generate_target all \
+  [get_files $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd]
+export_ip_user_files -of_objects \
+  [get_files $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd] \
+  -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] \
+  $PRJ_PATH/$PRJ_NAME.srcs/sources_1/bd/$PRJ_NAME/$PRJ_NAME.bd \
+]
+export_ip_user_files -of_objects [get_ips $PRJ_NAME\_$I_NOC_NAME\_0] \
+  -no_script -sync -force -quiet
+
+# Define include and defines again for PULP.
+# Note: Direct name substitution because of conflicts between Mako and tcl syntaxes
+set string_name "$PRJ_NAME"
+append string_name "_"
+append string_name "$I_NOC_NAME\_ip"
+append string_name "_0"
+eval [exec sed {s/current_fileset/get_filesets $string_name/} \
+  $VIVADO_IPS_DIR\/define_defines_includes_no_simset.tcl]
+
+#
+# FPGA SYNTHESIS
+#
+
+# Set strategies
+# set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+set_property strategy Flow_AreaOptimized_high [get_runs synth_1]
+set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY rebuilt [get_runs synth_1]
+set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
+
+# Include debug settings.
+if {[expr { $IS_NOC_DEBUG }]} {
+  add_files -fileset constrs_1 $VIVADO_IPS_DIR\/floo_fpga_debug.xdc
+  set_property target_constrs_file $VIVADO_IPS_DIR\/floo_fpga_debug.xdc [current_fileset -constrset]
+}
+
+# Launch synthesis
+launch_runs synth_1 -jobs 12
+wait_on_run synth_1
+
+#
+# FPGA IMPLEMENTATION
+#
+
+# Set strategies
+set_property strategy Congestion_SpreadLogic_low [get_runs impl_1]
+
+# Launch implementation
+launch_runs impl_1 -jobs 12
+wait_on_run impl_1
+
+# Check timing constraints.
+open_run impl_1
+set timingrep [report_timing_summary -no_header -no_detailed_paths -return_string]
+if {! [string match -nocase {*timing constraints are met*} $timingrep]} {
+  send_msg_id {USER 1-1} ERROR {Timing constraints were not met.}
+  return -code error
+}
+
+# Generate Bitstream
+launch_runs impl_1 -to_step write_bitstream -jobs 12
+wait_on_run impl_1
+
+# Export Hardware Definition file.
+file mkdir $PRJ_PATH/$PRJ_NAME.sdk
+write_hwdef -force -file $PRJ_PATH/$PRJ_NAME.sdk/$PRJ_NAME\_wrapper.hdf
+
+# Export bitstream file.
+file copy -force $PRJ_PATH/$PRJ_NAME.runs/impl_1/$PRJ_NAME\_wrapper.bit $PRJ_PATH/$PRJ_NAME.sdk/$PRJ_NAME\_wrapper.bit
+
+# Export Xilinx Support Archive (XSA) file.
+write_hw_platform -fixed -force -include_bit -file $PRJ_PATH/$PRJ_NAME\_wrapper.xsa

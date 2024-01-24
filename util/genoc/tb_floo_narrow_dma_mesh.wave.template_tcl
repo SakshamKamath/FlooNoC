@@ -1,0 +1,91 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+onerror {resume}
+quietly WaveActivateNextPane {} 0
+
+delete wave *
+
+set tb_name tb_floo_narrow_dma_mesh
+
+set dma_tiles [find instances -bydu floo_dma_test_node -nodu]
+
+##############
+# Parameters #
+##############
+
+<%
+    noc_n_routes = 5
+    noc_n_virt_channels = 1
+%>
+
+###########################
+# FlooNoC component waves #
+###########################
+
+% for x in range(noc_n_tiles_x): 
+    % for y in range(noc_n_tiles_y): 
+
+# DMA manager
+# - req port
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "dma" \                            
+                {tb_floo_narrow_dma_mesh/gen_dma_x[${x}]/gen_dma_y[${y}]/i_narrow_dma_node/axi_out_req_o}
+# - rsp port
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "dma" \                            
+                {tb_floo_narrow_dma_mesh/gen_dma_x[${x}]/gen_dma_y[${y}]/i_narrow_dma_node/axi_out_rsp_i}
+
+# DMA subordinate
+# - req port
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "dma" \                                                        
+                {tb_floo_narrow_dma_mesh/gen_dma_x[${x}]/gen_dma_y[${y}]/i_narrow_dma_node/axi_in_req_i}
+# - rsp port
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "dma" \                                                        
+                {tb_floo_narrow_dma_mesh/gen_dma_x[${x}]/gen_dma_y[${y}]/i_narrow_dma_node/axi_in_rsp_o}
+
+# Chimney
+# - top
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "chimney" -group "top" \                                       
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_chimney/*}
+# - route computation
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "chimney" -group "route-comp-0" \                                
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_chimney/i_floo_narrow_route_comp[0]/*}
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "chimney" -group "route-comp-1" \                                
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_chimney/i_floo_narrow_route_comp[1]/*}
+
+# Router
+# - top
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "router" -group "top" \                                        
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_router/*}
+
+# - route select
+        % for nr in range(noc_n_routes):
+            % for nv in range(noc_n_virt_channels):
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "router" -group "route select-${nr}-${nv}" \                                        
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_router/i_req_floo_router/gen_input[${nr}]/gen_virt_input[${nv}]/i_route_select/*}
+            % endfor
+        % endfor
+
+    % endfor
+% endfor
+
+TreeUpdate [SetDefaultTree]
+quietly wave cursor active 1
+configure wave -namecolwidth 220
+configure wave -valuecolwidth 110
+configure wave -justifyvalue left
+configure wave -signalnamewidth 1
+configure wave -snapdistance 10
+configure wave -datasetprefix 0
+configure wave -rowmargin 4
+configure wave -childrowmargin 2
+configure wave -gridoffset 0
+configure wave -gridperiod 1
+configure wave -griddelta 40
+configure wave -timeline 0
+configure wave -timelineunits ns
+update
+
+cat jobs.txt
+
+run -a

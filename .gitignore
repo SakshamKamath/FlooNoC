@@ -32,3 +32,4 @@ src/floo_top.sv
 fpga/utils/vivado_ips/fpga_noc_params.tcl
 fpga/utils/vivado_ips/create_noc_ip.tcl
 fpga/utils/floo/synth_noc.tcl
+test/tb_floo_narrow_dma_mesh.wave.tcl

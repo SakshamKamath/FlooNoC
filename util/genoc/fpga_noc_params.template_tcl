@@ -72,6 +72,13 @@
 set prj_dir [lindex $argv 0]
 puts "Vivado project is going to be located in $prj_dir\."
 
+<%
+    if(noc_n_tiles_to_debug>0):
+        is_fpga_noc_debug = 1
+    else:
+        is_fpga_noc_debug = 0
+%>
+
 #
 # DEFINE PARAMETERS
 # 
@@ -84,8 +91,11 @@ set BOARD_PART_NAME "xilinx.com:zcu102:part0:3.3"
 % endif
 set I_NOC_NAME "i_${noc_name}"
 set N_NOC_TILES ${noc_n_tiles}
+set N_NOC_TILES_X ${noc_n_tiles_x}
+set N_NOC_TILES_Y ${noc_n_tiles_y}
 set N_NOC_MST ${noc_n_tiles}
 set N_NOC_SLV ${noc_n_tiles}
-set N_ZYNQ_MST 1
+set N_ZYNQ_MST 2
 set N_ZYNQ_SLV 1
 set PL_FREQMHZ 50
+set IS_NOC_DEBUG ${is_fpga_noc_debug}

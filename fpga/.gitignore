@@ -1,6 +1,12 @@
-.Xil/
-/hero_exilzcu102*/
+# Project files
+/build/*
+
+# FPGA tool files
 vivado*.jou
 vivado*.log
 vivado*.str
-/build/*
+.Xil/
+
+# Auto generated sources
+utils/floo/floo_fpga_build.tcl
+utils/vivado_ips/floo_fpga_debug.xdc
