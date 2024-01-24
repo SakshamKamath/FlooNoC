@@ -149,13 +149,9 @@ module richie_noc
       // Instantiate NiC to interface tile to FlooNoC
       (* DONT_TOUCH = "yes" *)
       floo_axi_chimney #(
-        .RouteAlgo                ( RouteAlgo               ),
-        .XYAddrOffsetX            ( XYAddrOffsetX           ),
-        .XYAddrOffsetY            ( XYAddrOffsetY           ),
         .MaxTxns                  ( MaxTxns                 ),
         .RoBType                  ( RoBType                 ),
         .ReorderBufferSize        ( ReorderBufferSize       ),
-        .id_t                     ( id_t                    ),
         .CutAx                    ( CutAx                   ),
         .CutRsp                   ( CutRsp                  )
       ) i_chimney (

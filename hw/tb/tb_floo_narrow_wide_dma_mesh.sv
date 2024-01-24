@@ -11,54 +11,15 @@ module tb_floo_narrow_wide_dma_mesh;
 
   import floo_pkg::*;
   import floo_narrow_wide_pkg::*;
-  import soc_cfg_pkg::*;  
 
-  ////////////////////
-  //   Parameters   //
-  ////////////////////
+  localparam time CyclTime = 10ns;
+  localparam time ApplTime = 2ns;
+  localparam time TestTime = 8ns;
 
-  // Simulation
-  localparam time CyclTime                        = 10ns;
-  localparam time ApplTime                        = 2ns;
-  localparam time TestTime                        = 8ns;
+  localparam int unsigned NumX = 4;
+  localparam int unsigned NumY = 4;
+  localparam int unsigned NumMax = (NumX > NumY) ? NumX : NumY;
 
-  // Topology
-  localparam int unsigned NumX                    = soc_cfg_pkg::NOC_N_TILES_X;
-  localparam int unsigned NumY                    = soc_cfg_pkg::NOC_N_TILES_Y;
-  localparam int unsigned NumMax                  = (NumX > NumY) ? NumX : NumY;
-
-  localparam int unsigned NumRoutes               = floo_pkg::NumDirections;
-
-  // Chimney
-  localparam bit CutAx                            = soc_cfg_pkg::NOC_CUT_AX;
-  localparam bit CutRsp                           = soc_cfg_pkg::NOC_CUT_RSP;
-  localparam int unsigned NarrowReorderBufferSize = soc_cfg_pkg::NOC_ROB_SIZE;
-  localparam int unsigned WideReorderBufferSize   = 32'd64;
-  localparam int unsigned NarrowMaxTxns           = soc_cfg_pkg::NOC_MAX_TXNS;
-  localparam int unsigned WideMaxTxns             = 32;
-  localparam route_algo_e RouteAlgo               = soc_cfg_pkg::NOC_ROUTE_ALGO;
-  localparam int unsigned XYAddrOffsetX           = $clog2(HBMSize);
-  localparam int unsigned XYAddrOffsetY           = $clog2(HBMSize) + $clog2(NumX+1);
-  localparam int unsigned ChannelFifoDepth        = soc_cfg_pkg::NOC_CH_FIFO_DEPTH;
-  localparam int unsigned OutputFifoDepth         = soc_cfg_pkg::NOC_OUT_FIFO_DEPTH;
-
-<<<<<<<< HEAD:hw/test/tb_floo_narrow_wide_dma_mesh.sv
-  `FLOO_NOC_TYPEDEF_XY_ID_T(xy_id_t, NumX+2, NumY+2)
-
-  // HBM memory
-  localparam int unsigned HBMChannels             = NumY;
-  localparam int unsigned HBMSize                 = 32'h10000; // 64KB
-  localparam int unsigned HBMLatency              = 100;
-  localparam int unsigned MemSize                 = HBMSize;
-
-  // DMA
-  localparam int unsigned WideMaxTxnsPerId        = 32;
-  localparam int unsigned NarrowMaxTxnsPerId      = 4;
-
-  /////////////////////////
-  //   Generic Signals   //
-  /////////////////////////
-========
   localparam int unsigned HBMLatency = 100;
   localparam axi_narrow_in_addr_t HBMSize = 48'h10000; // 64KB
   localparam axi_narrow_in_addr_t MemSize = HBMSize;
@@ -78,7 +39,6 @@ module tb_floo_narrow_wide_dma_mesh;
   localparam int unsigned WideMaxTxns = 32;
   localparam int unsigned ChannelFifoDepth = 2;
   localparam int unsigned OutputFifoDepth = 32;
->>>>>>>> 608b959024193ecff2a92bee77b565ba64de91d2:hw/tb/tb_floo_dma_mesh.sv
 
   logic clk, rst_n;
 
@@ -400,7 +360,7 @@ module tb_floo_narrow_wide_dma_mesh;
       );
 
       floo_narrow_wide_router #(
-        .NumRoutes        ( NumRoutes         ),
+        .NumRoutes        ( NumDirections     ),
         .ChannelFifoDepth ( ChannelFifoDepth  ),
         .OutputFifoDepth  ( OutputFifoDepth   ),
         .RouteAlgo        ( RouteAlgo         ),

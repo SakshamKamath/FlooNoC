@@ -168,7 +168,6 @@ def main():
     """Main function."""
     # parse arguments
     parser = argparse.ArgumentParser()
-<<<<<<< HEAD
     parser.add_argument('--out_dir', type=str, default='test/jobs')
     parser.add_argument('--num_narrow_bursts', type=int, default=10)
     parser.add_argument('--num_wide_bursts', type=int, default=0)
@@ -176,19 +175,8 @@ def main():
     parser.add_argument('--wide_burst_length', type=int, default=0)
     parser.add_argument('--bidir', action='store_true')
     parser.add_argument('--tb', type=str, default='dma_mesh')
-    parser.add_argument('--type', type=str, default='random')
+    parser.add_argument('--traffic_type', type=str, default='random')
     parser.add_argument('--rw', type=str, default='read')
-=======
-    parser.add_argument("--out_dir", type=str, default="test/jobs")
-    parser.add_argument("--num_narrow_bursts", type=int, default=10)
-    parser.add_argument("--num_wide_bursts", type=int, default=100)
-    parser.add_argument("--narrow_burst_length", type=int, default=1)
-    parser.add_argument("--wide_burst_length", type=int, default=16)
-    parser.add_argument("--bidir", action="store_true")
-    parser.add_argument("--tb", type=str, default="dma_mesh")
-    parser.add_argument("--traffic_type", type=str, default="random")
-    parser.add_argument("--rw", type=str, default="read")
->>>>>>> 608b959024193ecff2a92bee77b565ba64de91d2
     args = parser.parse_args()
 
     kwargs = vars(args)

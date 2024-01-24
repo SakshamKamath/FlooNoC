@@ -108,10 +108,8 @@ module tb_floo_narrow_dma_mesh;
   floo_hbm_model #(
     .TA           ( ApplTime                  ),
     .TT           ( TestTime                  ),
-    .TCK          ( CyclTime                  ),
     .Latency      ( HBMLatency                ),
     .NumChannels  ( 1                         ),
-    .MemSize      ( HBMSize                   ),
     .DataWidth    ( AxiOutDataWidth        ),
     .UserWidth    ( AxiOutUserWidth        ),
     .IdWidth      ( AxiOutIdWidth          ),
@@ -175,13 +173,9 @@ module tb_floo_narrow_dma_mesh;
     end
 
     floo_axi_chimney #(
-      .RouteAlgo                ( RouteAlgo               ),
-      .XYAddrOffsetX            ( XYAddrOffsetX           ),
-      .XYAddrOffsetY            ( XYAddrOffsetY           ),
       .MaxTxns                  ( MaxTxns                 ),
       .RoBType                  ( RoBType                 ),
       .ReorderBufferSize        ( ReorderBufferSize       ),
-      .id_t                     ( xy_id_t                 ),
       .CutAx                    ( CutAx                   ),
       .CutRsp                   ( CutRsp                  )
     ) i_hbm_chimney [NumChimneys-1:0] (
@@ -221,7 +215,6 @@ module tb_floo_narrow_dma_mesh;
       floo_dma_test_node #(
         .TA             ( ApplTime              ),
         .TT             ( TestTime              ),
-        .TCK            ( CyclTime              ),
         .DataWidth      ( AxiInDataWidth        ),
         .AddrWidth      ( AxiInAddrWidth        ),
         .UserWidth      ( AxiInUserWidth        ),
@@ -249,7 +242,7 @@ module tb_floo_narrow_dma_mesh;
         .req_t      ( axi_in_req_t            ),
         .rsp_t      ( axi_in_rsp_t            ),
         .AxiIdWidth ( AxiInIdWidth            ),
-        .name       ( narrow_dma_name         )
+        .Name       ( narrow_dma_name         )
       ) i_axi_narrow_bw_monitor (
         .clk_i        ( clk                   ),
         .en_i         ( rst_n                 ),
