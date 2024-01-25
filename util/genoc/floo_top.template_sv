@@ -151,7 +151,6 @@ module floo_top
       // Instantiate NiC to interface tile to FlooNoC
       (* DONT_TOUCH = "yes" *)
       floo_axi_chimney #(
-        .RouteAlgo                ( RouteAlgo               ),
         .UseIdTable               ( UseIdTable              ),
         .XYAddrOffsetX            ( XYAddrOffsetX           ),
         .XYAddrOffsetY            ( XYAddrOffsetY           ),

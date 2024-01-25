@@ -334,7 +334,7 @@ module floo_ooc #(
     .OutputFifoDepth    ( soc_cfg_pkg::NOC_OUT_FIFO_DEPTH       ),
     .XYRouteOpt         ( 1'b0                                  ),
     .NumRules           ( soc_cfg_pkg::NOC_N_RULES              ),
-    .id_t               ( floo_axi_pkg::xy_id_t                 ),
+    .id_t               ( floo_axi_pkg::id_t                    ),
     .id_rule_t          ( soc_cfg_pkg::floo_id_rule_t           )
   ) i_floo_top (
     .clk_i              ( clk_i                                 ), 
