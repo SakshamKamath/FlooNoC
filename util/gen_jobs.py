@@ -14,7 +14,9 @@ NUM_X = 2
 NUM_Y = 2
 
 # Memory
-MEM_SIZE = 2**16
+MEM_SIZE = '0x0000_0000_0001_0000' # 64KB
+NOC_BASE = '0x0000_0000_B000_0000'
+NOC_SIZE = '0x0000_0000_0000_2000'
 ADDR_RULE = 1
 
 data_widths = {"wide": 512, "narrow": 64}
@@ -28,9 +30,11 @@ def get_xy_base_addr(x: int, y: int):
     """Get the address of a tile in the mesh."""
     assert x <= NUM_X+1 and y <= NUM_Y+1
     if ADDR_RULE == 0:
-        address = (x + 2 ** clog2(NUM_X + 2) * y) * MEM_SIZE
+        print("Address rule 0")
+        address = (x + 2 ** clog2(NUM_X + 2) * y) * int(MEM_SIZE, 16)
     elif ADDR_RULE == 1:
-        address = ((y - 1) + NUM_Y * (x - 1)) * MEM_SIZE
+        print("Address rule 1")
+        address = int(NOC_BASE, 16) + ((y - 1) + NUM_Y * (x - 1)) * int(NOC_SIZE, 16)
     return address
 
 
@@ -82,9 +86,9 @@ def gen_chimney2chimney_traffic(
         if bidir or i == 0:
             for _ in range(num_narrow_bursts):
                 length = narrow_burst_length * data_widths["narrow"] / 8
-                assert length <= MEM_SIZE
-                src_addr = 0 if rw == "write" else MEM_SIZE
-                dst_addr = MEM_SIZE if rw == "write" else 0
+                assert length <= int(MEM_SIZE, 16)
+                src_addr = 0 if rw == "write" else int(MEM_SIZE, 16)
+                dst_addr = int(MEM_SIZE, 16) if rw == "write" else 0
                 job_str = gen_job_str(length, src_addr, dst_addr)
                 jobs += job_str
         emit_jobs(jobs, out_dir, "chimney2chimney", i)
@@ -107,9 +111,9 @@ def gen_nw_chimney2chimney_traffic(
         narrow_jobs = ""
         wide_length = wide_burst_length * data_widths["wide"] / 8
         narrow_length = narrow_burst_length * data_widths["narrow"] / 8
-        assert wide_length <= MEM_SIZE and narrow_length <= MEM_SIZE
-        src_addr = 0 if rw == "write" else MEM_SIZE
-        dst_addr = MEM_SIZE if rw == "write" else 0
+        assert wide_length <= int(MEM_SIZE, 16) and narrow_length <= int(MEM_SIZE, 16)
+        src_addr = 0 if rw == "write" else int(MEM_SIZE, 16)
+        dst_addr = int(MEM_SIZE, 16) if rw == "write" else 0
         if bidir or i == 0:
             for _ in range(num_wide_bursts):
                 wide_jobs += gen_job_str(wide_length, src_addr, dst_addr)
@@ -138,7 +142,7 @@ def gen_mesh_traffic(
             narrow_jobs = ""
             wide_length = wide_burst_length * data_widths["wide"] / 8
             narrow_length = narrow_burst_length * data_widths["narrow"] / 8
-            assert wide_length <= MEM_SIZE and narrow_length <= MEM_SIZE
+            assert wide_length <= int(MEM_SIZE, 16) and narrow_length <= int(MEM_SIZE, 16)
             if traffic_type == "hbm":
                 # Tile x=0 are the HBM channels
                 # Each core read from the channel of its y coordinate
@@ -147,12 +151,14 @@ def gen_mesh_traffic(
                 src_addr = hbm_addr if rw == "read" else local_addr
                 dst_addr = local_addr if rw == "read" else hbm_addr
             elif traffic_type == "random":
+                print("Random mesh traffic")
                 local_addr = get_xy_base_addr(x, y)
                 ext_addr = get_xy_base_addr(random.randint(1, NUM_X), random.randint(1, NUM_Y))
                 src_addr = ext_addr if rw == "read" else local_addr
                 dst_addr = local_addr if rw == "read" else ext_addr
                 if verbose:
-                    print("src_addr: ", hex(src_addr), "-- dst_addr: ", hex(dst_addr))
+                    print("local_addr: ", '0x{0:08X}'.format(local_addr), "-- ext_addr: ", '0x{0:08X}'.format(ext_addr))
+                    print("src_addr: ", '0x{0:08X}'.format(src_addr), "-- dst_addr: ", '0x{0:08X}'.format(dst_addr))
             elif traffic_type == "onehop":
                 if not (x == 1 and y == 1):
                     wide_length = 0

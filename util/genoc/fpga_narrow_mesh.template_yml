@@ -1,0 +1,64 @@
+# Copyright 2024 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+<%
+  import math
+%>
+
+name: "fpga_narrow_mesh"
+description: "flit configuration for narrow-only AXI4 interfaces"
+
+routing:
+  route_algo: "XY"
+  use_id_table: true
+  addr_offset_bits: 16
+  num_id_bits: 3
+  num_x_bits: 3
+  num_y_bits: 3
+
+protocols:
+  - name: "axi"
+    type: "AXI4"
+    direction: "manager"
+    data_width: ${dw}
+    addr_width: ${aw}
+    id_width: ${iw}
+    user_width: ${uw}
+  - name: "axi"
+    type: "AXI4"
+    direction: "subordinate"
+    data_width: ${dw}
+    addr_width: ${aw}
+    id_width: ${iw}
+    user_width: ${uw}
+
+endpoints:
+  - name: "cluster"
+    array: [${noc_n_tiles_x}, ${noc_n_tiles_y}]
+    addr_range:
+      base: ${noc_base_address}
+      size: ${noc_size_address}
+    mgr_port_protocol:
+      - "axi"
+    sbr_port_protocol:
+      - "axi"
+    id_offset:
+      x: 0
+      y: 0
+
+routers:
+  - name: "router"
+    array: [${noc_n_tiles_x}, ${noc_n_tiles_y}] 
+    auto_connect: true
+
+connections:
+  - src: "cluster"
+    dst: "router"
+    src_range:
+    - [0, ${noc_n_tiles_x-1}]
+    - [0, ${noc_n_tiles_y-1}]
+    dst_range:
+    - [0, ${noc_n_tiles_x-1}]
+    - [0, ${noc_n_tiles_y-1}]
+    bidirectional: true

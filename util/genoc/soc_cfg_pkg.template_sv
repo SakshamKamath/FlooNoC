@@ -129,22 +129,6 @@ package automatic soc_cfg_pkg;
   // -- Routing
   // -- -- -- Routing Algorithm
   localparam floo_pkg::route_algo_e NOC_ROUTE_ALGO = floo_pkg::${noc_route_algo};
-  // -- -- -- Flag to determine whether to look up the NoC coordinates in a table or from the request address
-  % if (noc_use_id_table):
-  localparam bit NOC_USE_ID_TABLE = 1'b1;
-  % else:
-  localparam bit NOC_USE_ID_TABLE = 1'b0;
-  % endif
-
-  // -- Address mapping
-  // -- -- -- Address region rule
-  typedef struct packed {
-    int unsigned idx;
-    logic [floo_axi_pkg::AxiInAddrWidth-1:0] start_addr;
-    logic [floo_axi_pkg::AxiInAddrWidth-1:0] end_addr;
-  } floo_id_rule_t;
-  // -- -- -- Number of rules
-  localparam int unsigned NOC_N_RULES = NOC_N_TILES;
 
   // -- Chimney
   // -- -- -- Cut timing paths of outgoing requests

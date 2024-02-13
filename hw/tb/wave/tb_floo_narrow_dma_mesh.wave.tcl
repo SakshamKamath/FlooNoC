@@ -40,6 +40,10 @@ add wave -noupdate -expand -group "floonoc" -group "X=0, Y=0" -group "chimney" -
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[0]/*}
 add wave -noupdate -expand -group "floonoc" -group "X=0, Y=0" -group "chimney" -group "route-comp-1" \
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[1]/*}
+add wave -noupdate -expand -group "floonoc" -group "X=0, Y=0" -group "chimney" -group "route-comp-0" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[0]/gen_table_routing/*}
+add wave -noupdate -expand -group "floonoc" -group "X=0, Y=0" -group "chimney" -group "route-comp-1" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[1]/gen_table_routing/*}
 
 # Router
 # - top
@@ -83,6 +87,10 @@ add wave -noupdate -expand -group "floonoc" -group "X=1, Y=0" -group "chimney" -
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[0]/*}
 add wave -noupdate -expand -group "floonoc" -group "X=1, Y=0" -group "chimney" -group "route-comp-1" \
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[1]/*}
+add wave -noupdate -expand -group "floonoc" -group "X=1, Y=0" -group "chimney" -group "route-comp-0" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[0]/gen_table_routing/*}
+add wave -noupdate -expand -group "floonoc" -group "X=1, Y=0" -group "chimney" -group "route-comp-1" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[0]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[1]/gen_table_routing/*}
 
 # Router
 # - top
@@ -126,6 +134,10 @@ add wave -noupdate -expand -group "floonoc" -group "X=0, Y=1" -group "chimney" -
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[0]/*}
 add wave -noupdate -expand -group "floonoc" -group "X=0, Y=1" -group "chimney" -group "route-comp-1" \
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[1]/*}
+add wave -noupdate -expand -group "floonoc" -group "X=0, Y=1" -group "chimney" -group "route-comp-0" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[0]/gen_table_routing/*}
+add wave -noupdate -expand -group "floonoc" -group "X=0, Y=1" -group "chimney" -group "route-comp-1" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[0]/i_chimney/i_floo_narrow_route_comp[1]/gen_table_routing/*}
 
 # Router
 # - top
@@ -169,6 +181,10 @@ add wave -noupdate -expand -group "floonoc" -group "X=1, Y=1" -group "chimney" -
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[0]/*}
 add wave -noupdate -expand -group "floonoc" -group "X=1, Y=1" -group "chimney" -group "route-comp-1" \
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[1]/*}
+add wave -noupdate -expand -group "floonoc" -group "X=1, Y=1" -group "chimney" -group "route-comp-0" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[0]/gen_table_routing/*}
+add wave -noupdate -expand -group "floonoc" -group "X=1, Y=1" -group "chimney" -group "route-comp-1" \
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[1]/gen_noc_y[1]/i_chimney/i_floo_narrow_route_comp[1]/gen_table_routing/*}
 
 # Router
 # - top

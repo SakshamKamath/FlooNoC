@@ -52,6 +52,10 @@ add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "chim
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_chimney/i_floo_narrow_route_comp[0]/*}
 add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "chimney" -group "route-comp-1" \                                
                 {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_chimney/i_floo_narrow_route_comp[1]/*}
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "chimney" -group "route-comp-0" \                                
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_chimney/i_floo_narrow_route_comp[0]/gen_table_routing/*}
+add wave -noupdate -expand -group "floonoc" -group "X=${y}, Y=${x}" -group "chimney" -group "route-comp-1" \                                
+                {tb_floo_narrow_dma_mesh/i_noc_top/gen_noc_x[${x}]/gen_noc_y[${y}]/i_chimney/i_floo_narrow_route_comp[1]/gen_table_routing/*}
 
 # Router
 # - top

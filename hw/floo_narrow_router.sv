@@ -23,7 +23,6 @@ module floo_narrow_router
     parameter int unsigned IdWidth          = 0,
     parameter type         id_t             = logic[IdWidth-1:0],
     /// Used for ID-based routing
-    parameter int unsigned NumRules         = 0,
     parameter type         id_rule_t        = logic
 ) (
   input  logic                              clk_i,
@@ -31,7 +30,6 @@ module floo_narrow_router
   input  logic                              test_enable_i,
 
   input  id_t                               id_i,
-  input  id_rule_t [NumRules-1:0]           id_map_i,
 
   input   floo_req_t [NumInputs-1:0]        floo_req_i,
   input   floo_rsp_t [NumOutputs-1:0]       floo_rsp_i,
@@ -78,14 +76,14 @@ module floo_narrow_router
     .XYRouteOpt       ( XYRouteOpt              ),
     .IdWidth          ( IdWidth                 ),
     .id_t             ( id_t                    ),
-    .NumAddrRules     ( NumRules                ),
+    .NumAddrRules     ( AddrMapNumRules         ),
     .addr_rule_t      ( id_rule_t               )
   ) i_req_floo_router (
     .clk_i,
     .rst_ni,
     .test_enable_i,
-    .xy_id_i(id_i),
-    .id_route_map_i ( id_map_i      ),
+    .xy_id_i        ( id_i          ),
+    .id_route_map_i ( AddrMap       ),
     .valid_i        ( req_valid_in  ),
     .ready_o        ( req_ready_out ),
     .data_i         ( req_in        ),
@@ -107,14 +105,14 @@ module floo_narrow_router
     .IdWidth          ( IdWidth                 ),
     .flit_t           ( floo_rsp_generic_flit_t ),
     .id_t             ( id_t                    ),
-    .NumAddrRules     ( NumRules                ),
+    .NumAddrRules     ( AddrMapNumRules         ),
     .addr_rule_t      ( id_rule_t               )
   ) i_rsp_floo_router (
     .clk_i,
     .rst_ni,
     .test_enable_i,
     .xy_id_i        ( id_i          ),
-    .id_route_map_i ( id_map_i      ),
+    .id_route_map_i ( AddrMap       ),
     .valid_i        ( rsp_valid_in  ),
     .ready_o        ( rsp_ready_out ),
     .data_i         ( rsp_in        ),

@@ -289,26 +289,6 @@ module floo_ooc #(
   floo_axi_pkg::axi_out_req_t [${noc_n_tiles_x}-1:0][${noc_n_tiles_y}-1:0] from_noc_req;
   floo_axi_pkg::axi_in_rsp_t  [${noc_n_tiles_x}-1:0][${noc_n_tiles_y}-1:0] to_noc_rsp;
 
-  soc_cfg_pkg::floo_id_rule_t [soc_cfg_pkg::NOC_N_RULES-1:0] floo_addr_map;
-
-  // Define address map of NoC tiles
-  // -- Note: It must be aligned to what is defined in Vivado Block Design
-  for (genvar x = 0; x < soc_cfg_pkg::NOC_N_TILES_X; x++) begin : gen_dma_x
-    for (genvar y = 0; y < soc_cfg_pkg::NOC_N_TILES_Y; y++) begin : gen_dma_y 
-
-      // Define tile index
-      localparam int unsigned current_id = y + soc_cfg_pkg::NOC_N_TILES_Y * x;
-
-      // Address map
-      assign floo_addr_map[current_id] = '{
-        idx:        current_id,
-        start_addr: 64'h0000_0000_B000_0000 + current_id * 32'h0000_2000,
-        end_addr:   64'h0000_0000_B000_1FFF + current_id * 32'h0000_2000
-      };
-
-    end
-  end
-
   floo_top #(
     // NoC topology
     .NumTiles           ( soc_cfg_pkg::NOC_N_TILES              ),
@@ -324,25 +304,19 @@ module floo_ooc #(
     .ReorderBufferSize  ( soc_cfg_pkg::NOC_ROB_SIZE             ),
     .MaxTxns            ( soc_cfg_pkg::NOC_MAX_TXNS             ),
     .RouteAlgo          ( soc_cfg_pkg::NOC_ROUTE_ALGO           ),
-    .UseIdTable         ( soc_cfg_pkg::NOC_USE_ID_TABLE         ),
   % if (noc_route_algo == 'XYRouting'):
-    .XYAddrOffsetX      ( floo_axi_pkg::XAddrOffset             ),
-    .XYAddrOffsetY      ( floo_axi_pkg::YAddrOffset             ),
+    .XYAddrOffsetX      ( floo_axi_pkg::XYAddrOffsetX           ),
+    .XYAddrOffsetY      ( floo_axi_pkg::XYAddrOffsetY           ),
   % endif
     // Router
     .ChannelFifoDepth   ( soc_cfg_pkg::NOC_CH_FIFO_DEPTH        ),
     .OutputFifoDepth    ( soc_cfg_pkg::NOC_OUT_FIFO_DEPTH       ),
     .XYRouteOpt         ( 1'b0                                  ),
-    .NumRules           ( soc_cfg_pkg::NOC_N_RULES              ),
-    .id_t               ( floo_axi_pkg::id_t                    ),
-    .id_rule_t          ( soc_cfg_pkg::floo_id_rule_t           )
+    .id_t               ( floo_axi_pkg::id_t                    )
   ) i_floo_top (
     .clk_i              ( clk_i                                 ), 
     .rst_ni             ( rst_ni                                ),
     .test_enable_i      ( 1'b0                                  ),
-    .sram_cfg_i         ( '0                                    ),
-    // Routing table
-    .id_map_i           ( floo_addr_map                         ),
     // AXI4 side interfaces
     .axi_mst_req        ( to_noc_req                            ),
     .axi_mst_rsp        ( to_noc_rsp                            ),

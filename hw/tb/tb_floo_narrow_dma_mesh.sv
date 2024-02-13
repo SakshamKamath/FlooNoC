@@ -50,9 +50,6 @@ module tb_floo_narrow_dma_mesh;
   localparam int unsigned ChannelFifoDepth        = soc_cfg_pkg::NOC_CH_FIFO_DEPTH;
   localparam int unsigned OutputFifoDepth         = soc_cfg_pkg::NOC_OUT_FIFO_DEPTH;
 
-  // Routing --> For ID-based routing with XYRouting
-  localparam bit UseIdTable                       = soc_cfg_pkg::NOC_USE_ID_TABLE;
-
   // The offset bit to read the X coordinate from --> For address-based routing
   localparam int unsigned XYAddrOffsetX           = $clog2(MemSize);
 
@@ -85,25 +82,6 @@ module tb_floo_narrow_dma_mesh;
     .rst_no ( rst_n )
   );
 
-  /////////////////////
-  //   Address Map   //
-  /////////////////////
-
-  // Strategy: Look up NoC coordinates using a table
-
-  // Define address region type
-  // typedef struct packed {
-  //   int unsigned idx;
-  //   logic [AxiInAddrWidth-1:0] start_addr;
-  //   logic [AxiInAddrWidth-1:0] end_addr;
-  // } floo_id_rule_t;
-
-  // Number of rules
-  localparam int unsigned NumRules = soc_cfg_pkg::NOC_N_RULES;
-
-  // Address map
-  soc_cfg_pkg::floo_id_rule_t [NumRules-1:0] floo_addr_map;
-
   ///////////////////
   //   DMA tiles   //
   ///////////////////
@@ -111,21 +89,11 @@ module tb_floo_narrow_dma_mesh;
   for (genvar x = 0; x < NumX; x++) begin : gen_dma_x
     for (genvar y = 0; y < NumY; y++) begin : gen_dma_y 
 
-      // Define DMA name
-      localparam string narrow_dma_name = $sformatf("dma_%0d_%0d", x, y);
-
       // Define DMA index
       localparam int unsigned current_id = y + NumY * x;
 
-      // Address map
-      assign floo_addr_map[current_id] = '{
-        idx:        current_id,
-        start_addr: 64'h0000_0000_0000_0000 + current_id * 32'h0001_0000,
-        end_addr:   64'h0000_0000_0000_FFFF + current_id * 32'h0001_0000
-      };
-
       // Base address
-      localparam MemBaseAddr = 64'h0000_0000_0000_0000 + current_id * 32'h0001_0000;
+      localparam MemBaseAddr = 64'h0000_0000_B000_0000 + current_id * 64'h0000_0000_0000_2000;
 
       // Traffic generators
       floo_dma_test_node #(
@@ -155,17 +123,38 @@ module tb_floo_narrow_dma_mesh;
         .end_of_sim_o   ( end_of_sim[x][y]        )
       );
 
+      // Define DMA monitor name
+      localparam string narrow_dma_man_name = $sformatf("dma_man_%0d_%0d", x, y);
+
       axi_bw_monitor #(
         .req_t          ( axi_in_req_t            ),
         .rsp_t          ( axi_in_rsp_t            ),
         .AxiIdWidth     ( AxiInIdWidth            ),
-        .Name           ( narrow_dma_name         )
-      ) i_axi_narrow_bw_monitor (
+        .Name           ( narrow_dma_man_name     )
+      ) i_axi_narrow_bw_monitor_man (
         .clk_i          ( clk                     ),
         .en_i           ( rst_n                   ),
         .end_of_sim_i   ( &end_of_sim             ),
         .req_i          ( narrow_man_req[x][y]    ),
         .rsp_i          ( narrow_man_rsp[x][y]    ),
+        .ar_in_flight_o (                         ),
+        .aw_in_flight_o (                         )
+        );
+
+      // Define DMA monitor name
+      localparam string narrow_dma_sub_name = $sformatf("dma_sub_%0d_%0d", x, y);
+
+      axi_bw_monitor #(
+        .req_t          ( axi_in_req_t            ),
+        .rsp_t          ( axi_in_rsp_t            ),
+        .AxiIdWidth     ( AxiInIdWidth            ),
+        .Name           ( narrow_dma_sub_name     )
+      ) i_axi_narrow_bw_monitor_sub (
+        .clk_i          ( clk                     ),
+        .en_i           ( rst_n                   ),
+        .end_of_sim_i   ( &end_of_sim             ),
+        .req_i          ( narrow_sub_req[x][y]    ),
+        .rsp_i          ( narrow_sub_rsp[x][y]    ),
         .ar_in_flight_o (                         ),
         .aw_in_flight_o (                         )
         );
@@ -191,22 +180,17 @@ module tb_floo_narrow_dma_mesh;
     .ReorderBufferSize        ( ReorderBufferSize             ),
     .MaxTxns                  ( MaxTxns                       ),
     .RouteAlgo                ( RouteAlgo                     ),
-    .UseIdTable               ( UseIdTable                    ),
+    .XYAddrOffsetX            ( floo_axi_pkg::XYAddrOffsetX   ),
+    .XYAddrOffsetY            ( floo_axi_pkg::XYAddrOffsetY   ),
+    // Router
     .ChannelFifoDepth         ( ChannelFifoDepth              ),
     .OutputFifoDepth          ( OutputFifoDepth               ),
-    .XYAddrOffsetX            ( XYAddrOffsetX                 ),
-    .XYAddrOffsetY            ( XYAddrOffsetY                 ),
     .XYRouteOpt               ( 1'b0                          ),
-    .NumRules                 ( NumRules                      ),
-    .id_t                     ( floo_axi_pkg::id_t            ),
-    .id_rule_t                ( soc_cfg_pkg::floo_id_rule_t   )
+    .id_t                     ( floo_axi_pkg::id_t            )
   ) i_noc_top (
     .clk_i                    ( clk                           ),
     .rst_ni                   ( rst_n                         ),
     .test_enable_i            ( 1'b0                          ),
-    .sram_cfg_i               ( '0                            ),
-    // Routing table
-    .id_map_i                 ( floo_addr_map                 ),
     // AXI4 side interfaces
     .axi_mst_req              ( narrow_man_req                ),
     .axi_mst_rsp              ( narrow_man_rsp                ),

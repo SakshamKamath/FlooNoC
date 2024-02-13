@@ -66,6 +66,8 @@ noc_n_tiles_y           = 2
 # NoC routing
 noc_use_id_table        = True
 noc_route_algo          = 'XYRouting'
+noc_base_address        = '0x0000_0000_B000_0000'
+noc_size_address        = '0x0000_0000_0000_2000'
 
 # System
 n_clusters              = noc_n_tiles
@@ -106,6 +108,8 @@ string = target_template.render(
     noc_n_tiles_y           = noc_n_tiles_y,
     noc_use_id_table        = noc_use_id_table,
     noc_route_algo          = noc_route_algo,
+    noc_base_address        = noc_base_address,
+    noc_size_address        = noc_size_address,
     n_clusters              = n_clusters,
     aw                      = aw, 
     dw                      = dw, 

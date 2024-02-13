@@ -86,7 +86,6 @@ module floo_top
   parameter int unsigned ReorderBufferSize          = 32'd256,
   parameter int unsigned MaxTxns                    = 32,
   parameter route_algo_e RouteAlgo                  = XYRouting,
-  parameter bit UseIdTable                          = 1'b0,
   parameter int unsigned XYAddrOffsetX              = 0,
   parameter int unsigned XYAddrOffsetY              = 0,
   parameter type sram_cfg_t                         = logic,
@@ -98,16 +97,11 @@ module floo_top
 
   // Coordinates/ID
   parameter type id_t                               = logic,
-  parameter type id_rule_t                          = logic,
-  parameter int unsigned NumRules                   = 0
+  parameter type id_rule_t                          = logic
 ) (
   input logic                                       clk_i,
   input logic                                       rst_ni,
   input logic                                       test_enable_i,
-  input sram_cfg_t                                  sram_cfg_i,
-
-  // Routing table
-  input  id_rule_t [NumRules-1:0]                   id_map_i,
 
   // AXI4 Master Interface
   input axi_in_req_t      [NumX-1:0][NumY-1:0]      axi_mst_req,
@@ -151,23 +145,18 @@ module floo_top
       // Instantiate NiC to interface tile to FlooNoC
       (* DONT_TOUCH = "yes" *)
       floo_axi_chimney #(
-        .UseIdTable               ( UseIdTable              ),
-        .XYAddrOffsetX            ( XYAddrOffsetX           ),
-        .XYAddrOffsetY            ( XYAddrOffsetY           ),
-        .NumIDs                   ( NumRules                ),
-        .NumRules                 ( NumRules                ),
+        .EnMgrPort                ( 1'b1                    ),
+        .EnSbrPort                ( 1'b1                    ),
         .MaxTxns                  ( MaxTxns                 ),
         .RoBType                  ( RoBType                 ),
         .ReorderBufferSize        ( ReorderBufferSize       ),
-        .id_t                     ( id_t                    ),
-        .id_rule_t                ( id_rule_t               ),
         .CutAx                    ( CutAx                   ),
         .CutRsp                   ( CutRsp                  )
       ) i_chimney (
         .clk_i                    ( clk_i                   ),
         .rst_ni                   ( rst_ni                  ),
         .test_enable_i            ( test_enable_i           ),
-        .sram_cfg_i               ( sram_cfg_i              ),
+        .sram_cfg_i               ( '0                      ),
         // AXI4 side interfaces
         .axi_in_req_i             ( axi_mst_req[x][y]       ),
         .axi_in_rsp_o             ( axi_mst_rsp[x][y]       ),
@@ -175,7 +164,6 @@ module floo_top
         .axi_out_rsp_i            ( axi_slv_rsp[x][y]       ),
         // Coordinates/ID of the current tile
         .id_i                     ( current_id              ),
-        .id_map_i                 ( id_map_i                ),
         // NoC side interfaces
         .floo_req_o               ( noc_mst_req[x][y]       ),
         .floo_rsp_i               ( noc_mst_rsp[x][y]       ),
@@ -193,7 +181,6 @@ module floo_top
         .OutputFifoDepth          ( OutputFifoDepth         ),
         .RouteAlgo                ( RouteAlgo               ),
         .XYRouteOpt               ( XYRouteOpt              ),
-        .NumRules                 ( NumRules                ),
         .IdWidth                  ( $bits(id_t)             ),
         .id_t                     ( id_t                    ),
         .id_rule_t                ( id_rule_t               )
@@ -202,7 +189,6 @@ module floo_top
         .rst_ni                   ( rst_ni                  ),
         .test_enable_i            ( test_enable_i           ),
         .id_i                     ( current_id              ),
-        .id_map_i                 ( id_map_i                ),
         .floo_req_i               ( req_in                  ),
         .floo_req_o               ( req_out                 ),
         .floo_rsp_i               ( rsp_in                  ),

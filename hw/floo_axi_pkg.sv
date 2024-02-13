@@ -24,32 +24,32 @@ package floo_axi_pkg;
   } axi_ch_e;
 
 
-  localparam int unsigned AxiInAddrWidth = 32;
+  localparam int unsigned AxiInAddrWidth = 64;
   localparam int unsigned AxiInDataWidth = 64;
-  localparam int unsigned AxiInIdWidth = 3;
-  localparam int unsigned AxiInUserWidth = 1;
+  localparam int unsigned AxiInIdWidth = 5;
+  localparam int unsigned AxiInUserWidth = 4;
 
 
-  localparam int unsigned AxiOutAddrWidth = 32;
+  localparam int unsigned AxiOutAddrWidth = 64;
   localparam int unsigned AxiOutDataWidth = 64;
-  localparam int unsigned AxiOutIdWidth = 3;
-  localparam int unsigned AxiOutUserWidth = 1;
+  localparam int unsigned AxiOutIdWidth = 5;
+  localparam int unsigned AxiOutUserWidth = 4;
 
 
-  typedef logic [31:0] axi_in_addr_t;
+  typedef logic [63:0] axi_in_addr_t;
   typedef logic [63:0] axi_in_data_t;
   typedef logic [7:0] axi_in_strb_t;
-  typedef logic [2:0] axi_in_id_t;
-  typedef logic [0:0] axi_in_user_t;
+  typedef logic [4:0] axi_in_id_t;
+  typedef logic [3:0] axi_in_user_t;
   `AXI_TYPEDEF_ALL_CT(axi_in, axi_in_req_t, axi_in_rsp_t, axi_in_addr_t, axi_in_id_t, axi_in_data_t,
                       axi_in_strb_t, axi_in_user_t)
 
 
-  typedef logic [31:0] axi_out_addr_t;
+  typedef logic [63:0] axi_out_addr_t;
   typedef logic [63:0] axi_out_data_t;
   typedef logic [7:0] axi_out_strb_t;
-  typedef logic [2:0] axi_out_id_t;
-  typedef logic [0:0] axi_out_user_t;
+  typedef logic [4:0] axi_out_id_t;
+  typedef logic [3:0] axi_out_user_t;
   `AXI_TYPEDEF_ALL_CT(axi_out, axi_out_req_t, axi_out_rsp_t, axi_out_addr_t, axi_out_id_t,
                       axi_out_data_t, axi_out_strb_t, axi_out_user_t)
 
@@ -60,11 +60,11 @@ package floo_axi_pkg;
   /////////////////////////
 
   localparam route_algo_e RouteAlgo = XYRouting;
-  localparam bit UseIdTable = 1'b0;
+  localparam bit UseIdTable = 1'b1;
   localparam int unsigned NumXBits = 3;
   localparam int unsigned NumYBits = 3;
-  localparam int unsigned XYAddrOffsetX = 16;
-  localparam int unsigned XYAddrOffsetY = 19;
+  localparam int unsigned XYAddrOffsetX = 32;
+  localparam int unsigned XYAddrOffsetY = 32;
   localparam int unsigned IdAddrOffset = 0;
 
 
@@ -94,9 +94,21 @@ package floo_axi_pkg;
   //   Address Map   //
   /////////////////////
 
-  typedef logic addr_map_rule_t;
-  localparam int unsigned AddrMapNumRules = 0;
-  localparam addr_map_rule_t AddrMap = '0;
+  typedef struct packed {
+    id_t idx;
+    logic [63:0] start_addr;
+    logic [63:0] end_addr;
+  } addr_map_rule_t;
+
+  localparam int unsigned AddrMapNumRules = 4;
+
+  localparam addr_map_rule_t [3:0] AddrMap = '{
+      '{idx: '{x: 0, y: 0}, start_addr: 64'h0000_0000_B000_0000, end_addr: 64'h0000_0000_B000_1FFF},
+      '{idx: '{x: 0, y: 1}, start_addr: 64'h0000_0000_B000_2000, end_addr: 64'h0000_0000_B000_3FFF},
+      '{idx: '{x: 1, y: 0}, start_addr: 64'h0000_0000_B000_4000, end_addr: 64'h0000_0000_B000_5FFF},
+      '{idx: '{x: 1, y: 1}, start_addr: 64'h0000_0000_B000_6000, end_addr: 64'h0000_0000_B000_7FFF}
+  };
+
 
   ////////////////////////
   //   Flits Typedefs   //
@@ -105,12 +117,12 @@ package floo_axi_pkg;
   typedef struct packed {
     hdr_t hdr;
     axi_in_aw_chan_t aw;
-    logic [2:0] rsvd;
   } floo_axi_aw_flit_t;
 
   typedef struct packed {
     hdr_t hdr;
     axi_in_w_chan_t w;
+    logic [30:0] rsvd;
   } floo_axi_w_flit_t;
 
   typedef struct packed {
@@ -122,7 +134,7 @@ package floo_axi_pkg;
   typedef struct packed {
     hdr_t hdr;
     axi_in_ar_chan_t ar;
-    logic [8:0] rsvd;
+    logic [5:0] rsvd;
   } floo_axi_ar_flit_t;
 
   typedef struct packed {
@@ -132,12 +144,12 @@ package floo_axi_pkg;
 
   typedef struct packed {
     hdr_t hdr;
-    logic [73:0] rsvd;
+    logic [107:0] rsvd;
   } floo_req_generic_flit_t;
 
   typedef struct packed {
     hdr_t hdr;
-    logic [70:0] rsvd;
+    logic [75:0] rsvd;
   } floo_rsp_generic_flit_t;
 
 

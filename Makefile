@@ -84,13 +84,17 @@ endif
 FLOOGEN ?= floogen
 
 FLOOGEN_OUT_DIR ?= $(MKFILE_DIR)generated
-FLOOGEN_PKG_OUT_DIR ?= $(MKFILE_DIR)hw
+FLOOGEN_PKG_OUT_DIR ?= $(MKFILE_DIR)generated
 FLOOGEN_CFG_DIR ?= $(MKFILE_DIR)floogen/examples
 FLOOGEN_TPL_DIR ?= $(MKFILE_DIR)floogen/templates
 
 FLOOGEN_PKG_CFG ?= $(shell find $(FLOOGEN_CFG_DIR) -name "*_pkg.yml")
 FLOOGEN_PKG_SRC ?= $(patsubst $(FLOOGEN_CFG_DIR)/%_pkg.yml,$(FLOOGEN_PKG_OUT_DIR)/floo_%_pkg.sv,$(FLOOGEN_PKG_CFG))
 FLOOGEN_TPL ?= $(shell find $(FLOOGEN_TPL_DIR) -name "*.mako")
+
+FLOOGEN_ARGS ?= --visualize
+
+FLOOGEN_CFG ?= $(FLOOGEN_CFG_DIR)/fpga_narrow_mesh.yml
 
 .PHONY: install-floogen pkg-sources sources clean-sources
 
@@ -108,9 +112,9 @@ clean-sources:
 	rm -rf $(FLOOGEN_OUT_DIR)
 	rm -f $(FLOOGEN_PKG_SRC)
 
-##########################
-# Richie Generation Flow #
-##########################
+####################
+# Richie Toolchain #
+####################
 
 TARGET_OV := floo_exilzcu102_2x2
 TARGET_BOARD := zcu102
@@ -120,7 +124,7 @@ export TARGET_OV TARGET_BOARD
 genoc:
 	mkdir -p $(FPGA_HW_PATH)
 	mkdir -p $(FPGA_PATH)/utils/floo
-	cd $(UTILS_PATH)/$@ && python $@.py axi_cfg.template_hjson > $(UTILS_PATH)/axi_cfg.hjson
+	cd $(UTILS_PATH)/$@ && python $@.py fpga_narrow_mesh.template_yml > $(FLOOGEN_CFG_DIR)/fpga_narrow_mesh.yml
 	cd $(UTILS_PATH)/$@ && python $@.py fpga_noc_params.template_tcl > $(FPGA_PATH)/utils/vivado_ips/fpga_noc_params.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py create_noc_ip.template_tcl > $(FPGA_PATH)/utils/vivado_ips/create_noc_ip.tcl
 	cd $(UTILS_PATH)/$@ && python $@.py floo_fpga_debug.template_xdc > $(FPGA_PATH)/utils/vivado_ips/floo_fpga_debug.xdc
@@ -161,7 +165,11 @@ TRAFFIC_OPTION ?= -v
 jobs: $(TRAFFIC_GEN)
 	rm -rf $@.txt
 	mkdir -p $(TRAFFIC_OUTDIR)
-	$(TRAFFIC_GEN) --out_dir $(TRAFFIC_OUTDIR) --tb $(TRAFFIC_TB) --traffic_type $(TRAFFIC_TYPE) --rw $(TRAFFIC_RW) $(TRAFFIC_OPTION) >> $@.txt
+	$(TRAFFIC_GEN) \
+		--out_dir $(TRAFFIC_OUTDIR) \
+		--tb $(TRAFFIC_TB) \
+		--traffic_type $(TRAFFIC_TYPE) \
+		--rw $(TRAFFIC_RW) $(TRAFFIC_OPTION) >> $@.txt
 
 clean-jobs:
 	rm -rf $(TRAFFIC_OUTDIR)
