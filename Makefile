@@ -98,14 +98,17 @@ FLOOGEN_CFG ?= $(FLOOGEN_CFG_DIR)/fpga_narrow_mesh.yml
 
 .PHONY: install-floogen pkg-sources sources clean-sources
 
+check-floogen:
+	@which $(FLOOGEN) > /dev/null || (echo "Error: floogen not found. Please install floogen." && exit 1)
+
 install-floogen:
 	@which $(FLOOGEN) > /dev/null || (echo "Installing floogen..." && pip install .)
 
-pkg-sources: install-floogen $(FLOOGEN_PKG_SRC)
+pkg-sources: check-floogen $(FLOOGEN_PKG_SRC)
 $(FLOOGEN_PKG_OUT_DIR)/floo_%_pkg.sv: $(FLOOGEN_CFG_DIR)/%_pkg.yml $(FLOOGEN_TPL)
 	$(FLOOGEN) -c $< --only-pkg --pkg-outdir $(FLOOGEN_PKG_OUT_DIR) $(FLOOGEN_ARGS)
 
-sources: install-floogen
+sources: check-floogen
 	$(FLOOGEN) -c $(FLOOGEN_CFG) -o $(FLOOGEN_OUT_DIR) --pkg-outdir $(FLOOGEN_PKG_OUT_DIR) $(FLOOGEN_ARGS)
 
 clean-sources:
