@@ -15,24 +15,35 @@ package floo_axi_pkg;
   ////////////////////////
 
   typedef enum logic [2:0] {
-    AxiAw = 0,
-    AxiW = 1,
-    AxiAr = 2,
-    AxiB = 3,
-    AxiR = 4,
-    NumAxiChannels = 5
+    AxiAw = 3'd0,
+    AxiW = 3'd1,
+    AxiAr = 3'd2,
+    AxiB = 3'd3,
+    AxiR = 3'd4,
+    NumAxiChannels = 3'd5
   } axi_ch_e;
 
 
+  // localparam int unsigned AxiInAddrWidth = 64;
+  // localparam int unsigned AxiInDataWidth = 64;
+  // localparam int unsigned AxiInIdWidth = 5;
+  // localparam int unsigned AxiInUserWidth = 4;
+
+
+  // localparam int unsigned AxiOutAddrWidth = 64;
+  // localparam int unsigned AxiOutDataWidth = 64;
+  // localparam int unsigned AxiOutIdWidth = 5;
+  // localparam int unsigned AxiOutUserWidth = 4;
+
+  // More similar to HERO
   localparam int unsigned AxiInAddrWidth = 64;
   localparam int unsigned AxiInDataWidth = 64;
-  localparam int unsigned AxiInIdWidth = 5;
-  localparam int unsigned AxiInUserWidth = 4;
-
+  localparam int unsigned AxiInIdWidth = 1;
+  localparam int unsigned AxiInUserWidth = 1;
 
   localparam int unsigned AxiOutAddrWidth = 64;
   localparam int unsigned AxiOutDataWidth = 64;
-  localparam int unsigned AxiOutIdWidth = 5;
+  localparam int unsigned AxiOutIdWidth = 1;
   localparam int unsigned AxiOutUserWidth = 4;
 
 
@@ -69,8 +80,9 @@ package floo_axi_pkg;
 
 
   typedef logic [3:0] rob_idx_t;
-  typedef logic [2:0] x_bits_t;
-  typedef logic [2:0] y_bits_t;
+  typedef logic [NumXBits-1:0] x_bits_t;
+  typedef logic [NumYBits-1:0] y_bits_t;
+
   typedef struct packed {
     x_bits_t x;
     y_bits_t y;
@@ -90,27 +102,87 @@ package floo_axi_pkg;
     axi_ch_e axi_ch;
   } hdr_t;
 
-
-
   /////////////////////
   //   Address Map   //
   /////////////////////
+
+  localparam int unsigned SamNumRules = 4;
 
   typedef struct packed {
     id_t idx;
     logic [63:0] start_addr;
     logic [63:0] end_addr;
-  } addr_map_rule_t;
+  } sam_rule_t;
 
-  localparam int unsigned AddrMapNumRules = 4;
-
-  localparam addr_map_rule_t [3:0] AddrMap = '{
-      '{idx: '{x: 0, y: 0}, start_addr: 64'h0000_0000_B000_0000, end_addr: 64'h0000_0000_B000_1FFF},
-      '{idx: '{x: 0, y: 1}, start_addr: 64'h0000_0000_B000_2000, end_addr: 64'h0000_0000_B000_3FFF},
-      '{idx: '{x: 1, y: 0}, start_addr: 64'h0000_0000_B000_4000, end_addr: 64'h0000_0000_B000_5FFF},
-      '{idx: '{x: 1, y: 1}, start_addr: 64'h0000_0000_B000_6000, end_addr: 64'h0000_0000_B000_7FFF}
+  // Address map 2x2
+  localparam sam_rule_t [SamNumRules-1:0] Sam = '{
+    '{idx: '{x: 0, y: 0}, start_addr: 64'h0000_0000_1800_0000, end_addr: 64'h0000_0000_1801_FFFF},
+    '{idx: '{x: 0, y: 1}, start_addr: 64'h0000_0000_1802_0000, end_addr: 64'h0000_0000_1803_FFFF},
+    '{idx: '{x: 1, y: 0}, start_addr: 64'h0000_0000_1804_0000, end_addr: 64'h0000_0000_1805_FFFF},
+    '{idx: '{x: 1, y: 1}, start_addr: 64'h0000_0000_1806_0000, end_addr: 64'h0000_0000_1807_FFFF}
   };
 
+  // // Address map 3x3
+  // localparam sam_rule_t [SamNumRules-1:0] Sam = '{
+  //   '{idx: '{x: 0, y: 0}, start_addr: 64'h0000_0000_1800_0000, end_addr: 64'h0000_0000_1801_FFFF},
+  //   '{idx: '{x: 0, y: 1}, start_addr: 64'h0000_0000_1802_0000, end_addr: 64'h0000_0000_1803_FFFF},
+  //   '{idx: '{x: 0, y: 2}, start_addr: 64'h0000_0000_1804_0000, end_addr: 64'h0000_0000_1805_FFFF},
+  //   '{idx: '{x: 1, y: 0}, start_addr: 64'h0000_0000_1806_0000, end_addr: 64'h0000_0000_1807_FFFF},
+  //   '{idx: '{x: 1, y: 1}, start_addr: 64'h0000_0000_1808_0000, end_addr: 64'h0000_0000_1809_FFFF},
+  //   '{idx: '{x: 1, y: 2}, start_addr: 64'h0000_0000_180A_0000, end_addr: 64'h0000_0000_180B_FFFF},
+  //   '{idx: '{x: 2, y: 0}, start_addr: 64'h0000_0000_180C_0000, end_addr: 64'h0000_0000_180D_FFFF},
+  //   '{idx: '{x: 2, y: 1}, start_addr: 64'h0000_0000_180E_0000, end_addr: 64'h0000_0000_180F_FFFF},
+  //   '{idx: '{x: 2, y: 2}, start_addr: 64'h0000_0000_1810_0000, end_addr: 64'h0000_0000_1811_FFFF}
+  // };
+
+  // // Address map 4x4
+  // localparam sam_rule_t [SamNumRules-1:0] Sam = '{
+  //   '{idx: '{x: 0, y: 0}, start_addr: 64'h0000_0000_1800_0000, end_addr: 64'h0000_0000_1801_FFFF},
+  //   '{idx: '{x: 0, y: 1}, start_addr: 64'h0000_0000_1802_0000, end_addr: 64'h0000_0000_1803_FFFF},
+  //   '{idx: '{x: 0, y: 2}, start_addr: 64'h0000_0000_1804_0000, end_addr: 64'h0000_0000_1805_FFFF},
+  //   '{idx: '{x: 0, y: 3}, start_addr: 64'h0000_0000_1806_0000, end_addr: 64'h0000_0000_1807_FFFF},
+  //   '{idx: '{x: 1, y: 0}, start_addr: 64'h0000_0000_1808_0000, end_addr: 64'h0000_0000_1809_FFFF},
+  //   '{idx: '{x: 1, y: 1}, start_addr: 64'h0000_0000_180A_0000, end_addr: 64'h0000_0000_180B_FFFF},
+  //   '{idx: '{x: 1, y: 2}, start_addr: 64'h0000_0000_180C_0000, end_addr: 64'h0000_0000_180D_FFFF},
+  //   '{idx: '{x: 1, y: 3}, start_addr: 64'h0000_0000_180E_0000, end_addr: 64'h0000_0000_180F_FFFF},
+  //   '{idx: '{x: 2, y: 0}, start_addr: 64'h0000_0000_1810_0000, end_addr: 64'h0000_0000_1811_FFFF},
+  //   '{idx: '{x: 2, y: 1}, start_addr: 64'h0000_0000_1812_0000, end_addr: 64'h0000_0000_1813_FFFF},
+  //   '{idx: '{x: 2, y: 2}, start_addr: 64'h0000_0000_1814_0000, end_addr: 64'h0000_0000_1815_FFFF},
+  //   '{idx: '{x: 2, y: 3}, start_addr: 64'h0000_0000_1816_0000, end_addr: 64'h0000_0000_1817_FFFF},
+  //   '{idx: '{x: 3, y: 0}, start_addr: 64'h0000_0000_1818_0000, end_addr: 64'h0000_0000_1819_FFFF},
+  //   '{idx: '{x: 3, y: 1}, start_addr: 64'h0000_0000_181A_0000, end_addr: 64'h0000_0000_181B_FFFF},
+  //   '{idx: '{x: 3, y: 2}, start_addr: 64'h0000_0000_181C_0000, end_addr: 64'h0000_0000_181D_FFFF},
+  //   '{idx: '{x: 3, y: 3}, start_addr: 64'h0000_0000_181E_0000, end_addr: 64'h0000_0000_181F_FFFF}
+  // };
+
+  // // Address map 5x5
+  // localparam sam_rule_t [SamNumRules-1:0] Sam = '{
+  //   '{idx: '{x: 0, y: 0}, start_addr: 64'h0000_0000_1800_0000, end_addr: 64'h0000_0000_1801_FFFF},
+  //   '{idx: '{x: 0, y: 1}, start_addr: 64'h0000_0000_1802_0000, end_addr: 64'h0000_0000_1803_FFFF},
+  //   '{idx: '{x: 0, y: 2}, start_addr: 64'h0000_0000_1804_0000, end_addr: 64'h0000_0000_1805_FFFF},
+  //   '{idx: '{x: 0, y: 3}, start_addr: 64'h0000_0000_1806_0000, end_addr: 64'h0000_0000_1807_FFFF},
+  //   '{idx: '{x: 0, y: 4}, start_addr: 64'h0000_0000_1808_0000, end_addr: 64'h0000_0000_1809_FFFF},
+  //   '{idx: '{x: 1, y: 0}, start_addr: 64'h0000_0000_180A_0000, end_addr: 64'h0000_0000_180B_FFFF},
+  //   '{idx: '{x: 1, y: 1}, start_addr: 64'h0000_0000_180C_0000, end_addr: 64'h0000_0000_180D_FFFF},
+  //   '{idx: '{x: 1, y: 2}, start_addr: 64'h0000_0000_180E_0000, end_addr: 64'h0000_0000_180F_FFFF},
+  //   '{idx: '{x: 1, y: 3}, start_addr: 64'h0000_0000_1810_0000, end_addr: 64'h0000_0000_1811_FFFF},
+  //   '{idx: '{x: 1, y: 4}, start_addr: 64'h0000_0000_1812_0000, end_addr: 64'h0000_0000_1813_FFFF},
+  //   '{idx: '{x: 2, y: 0}, start_addr: 64'h0000_0000_1814_0000, end_addr: 64'h0000_0000_1815_FFFF},
+  //   '{idx: '{x: 2, y: 1}, start_addr: 64'h0000_0000_1816_0000, end_addr: 64'h0000_0000_1817_FFFF},
+  //   '{idx: '{x: 2, y: 2}, start_addr: 64'h0000_0000_1818_0000, end_addr: 64'h0000_0000_1819_FFFF},
+  //   '{idx: '{x: 2, y: 3}, start_addr: 64'h0000_0000_181A_0000, end_addr: 64'h0000_0000_181B_FFFF},
+  //   '{idx: '{x: 2, y: 4}, start_addr: 64'h0000_0000_181C_0000, end_addr: 64'h0000_0000_181D_FFFF},
+  //   '{idx: '{x: 3, y: 0}, start_addr: 64'h0000_0000_181E_0000, end_addr: 64'h0000_0000_181F_FFFF},
+  //   '{idx: '{x: 3, y: 1}, start_addr: 64'h0000_0000_1820_0000, end_addr: 64'h0000_0000_1821_FFFF},
+  //   '{idx: '{x: 3, y: 2}, start_addr: 64'h0000_0000_1822_0000, end_addr: 64'h0000_0000_1823_FFFF},
+  //   '{idx: '{x: 3, y: 3}, start_addr: 64'h0000_0000_1824_0000, end_addr: 64'h0000_0000_1825_FFFF},
+  //   '{idx: '{x: 3, y: 4}, start_addr: 64'h0000_0000_1826_0000, end_addr: 64'h0000_0000_1827_FFFF},
+  //   '{idx: '{x: 4, y: 0}, start_addr: 64'h0000_0000_1828_0000, end_addr: 64'h0000_0000_1829_FFFF},
+  //   '{idx: '{x: 4, y: 1}, start_addr: 64'h0000_0000_182A_0000, end_addr: 64'h0000_0000_182B_FFFF},
+  //   '{idx: '{x: 4, y: 2}, start_addr: 64'h0000_0000_182C_0000, end_addr: 64'h0000_0000_182D_FFFF},
+  //   '{idx: '{x: 4, y: 3}, start_addr: 64'h0000_0000_182E_0000, end_addr: 64'h0000_0000_182F_FFFF},
+  //   '{idx: '{x: 4, y: 4}, start_addr: 64'h0000_0000_1830_0000, end_addr: 64'h0000_0000_1831_FFFF}
+  // };
 
   ////////////////////////
   //   Flits Typedefs   //
