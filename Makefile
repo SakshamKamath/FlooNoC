@@ -115,7 +115,8 @@ VSIM_FLAGS += -t 1ps
 VSIM_FLAGS += -sv_seed 0
 VSIM_FLAGS += -quiet
 VSIM_FLAGS += -work $(WORK)
-
+VSIM_FLAGS += -suppress vsim-3009
+VSIM_FLAGS += -suppress vsim-8386
 
 # Automatically open the waveform if a wave.tcl file is present
 VSIM_FLAGS_GUI += -do "log -r /*"
