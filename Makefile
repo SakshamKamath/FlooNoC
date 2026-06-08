@@ -33,14 +33,14 @@ PYTHON	  	?= python
 BENDER_FLAGS += -t rtl
 BENDER_FLAGS += -t test
 BENDER_FLAGS += -t floo_test
-BENDER_FLAGS += -t nw_mesh
+BENDER_FLAGS += -t axi_mesh
 BENDER_FLAGS += -t snitch_cluster
 BENDER_FLAGS += -t idma_test
 BENDER_FLAGS := $(BENDER_FLAGS) $(EXTRA_BENDER_FLAGS)
 
 WORK 	 		?= work
-TB_DUT 			?= tb_floo_nw_mesh
-FLOO_CFG  		?= $(FLOO_ROOT)/floogen/examples/nw_mesh_xy.yml
+TB_DUT 			?= tb_floo_axi_mesh
+FLOO_CFG  		?= $(FLOO_ROOT)/floogen/examples/axi_mesh_xy.yml
 
 ###########
 # FlooGen #
