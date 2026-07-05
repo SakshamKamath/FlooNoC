@@ -7,9 +7,12 @@
 
 
 `include "common_cells/registers.svh"
+`include "axi/typedef.svh"
+`include "axi/assign.svh"
 
 module floo_burst_splitter_gran_ax_chan #(
   parameter type         chan_t  = logic,
+  parameter type         hdr_t   = logic,
   parameter int unsigned IdWidth = 32'd0,
   parameter int unsigned MaxTxns = 32'd0,
   parameter bit          CutPath =  1'b0,
@@ -21,11 +24,12 @@ module floo_burst_splitter_gran_ax_chan #(
 
   // length
   input  axi_pkg::len_t len_limit_i,
-
   input  chan_t         ax_i,
+  input  hdr_t          ax_i_hdr,
   input  logic          ax_valid_i,
   output logic          ax_ready_o,
   output chan_t         ax_o,
+  output hdr_t          ax_o_hdr,
   output logic          ax_valid_o,
   input  logic          ax_ready_i,
 
@@ -42,13 +46,17 @@ module floo_burst_splitter_gran_ax_chan #(
   typedef logic[axi_pkg::LenWidth:0] num_beats_t;
 
   chan_t      ax_d, ax_q;
+  hdr_t       ax_o_hdr_d, ax_o_hdr_q;
+
   // keep the number of remaining beats. != len
   num_beats_t num_beats_d, num_beats_q;
+
   // maximum number of beats to subtract in one go
   num_beats_t max_beats;
 
 
   logic cnt_alloc_req, cnt_alloc_gnt;
+
   floo_burst_splitter_gran_counters #(
     .MaxTxns ( MaxTxns  ),
     .IdWidth ( IdWidth  ),
@@ -75,59 +83,61 @@ module floo_burst_splitter_gran_ax_chan #(
   // limit = 0 means one beat each AX
   assign max_beats = {1'b0, len_limit_i} + 9'h001;
 
-  enum logic {Idle, Busy} state_d, state_q;
+  enum logic {Idle, Send_Flit} state_d, state_q;
   always_comb begin
     cnt_alloc_req = 1'b0;
     ax_d          = ax_q;
     state_d       = state_q;
     num_beats_d   = num_beats_q;
     ax_o          = '0;
+    ax_o_hdr      = '0;
     ax_valid_o    = 1'b0;
     ax_ready_o    = 1'b0;
-    unique case (state_q)
-      Idle: begin
-        if (ax_valid_i && cnt_alloc_gnt) begin
 
-          // No splitting required -> feed through.
+    unique case (state_q)
+      Idle: begin   // Propagate Addr flit directly
+        if (ax_valid_i && cnt_alloc_gnt) begin
+          ax_o_hdr            = ax_i_hdr;
           if (ax_i.len <= len_limit_i) begin
-            ax_o          = ax_i;
-            ax_valid_o    = 1'b1;
+            ax_o                = ax_i;
+            ax_valid_o          = 1'b1;
             // As soon as downstream is ready, allocate a counter and acknowledge upstream.
             if (ax_ready_i) begin
               cnt_alloc_req = 1'b1;
               ax_ready_o    = 1'b1;
             end
-
-          // Splitting required.
-          end else begin
+          end
+          else begin
             // Store Ax, allocate a counter, and acknowledge upstream.
             ax_d          = ax_i;
+            ax_o_hdr_d    = ax_i_hdr;
             cnt_alloc_req = 1'b1;
             ax_ready_o    = 1'b1;
             // As burst is too long, we will need to send multiple
-            state_d = Busy;
+            state_d = Send_Flit;
             num_beats_d = ({1'b0, ax_i.len} + 9'h001);
             // Try to feed first burst through.
             ax_o          = ax_d;
+            ax_o_hdr      = ax_o_hdr_d;
+
             // if we are here we can send the length limit once for sure
             ax_o.len      = len_limit_i;
             ax_valid_o    = 1'b1;
+
             if (ax_ready_i) begin
               // Reduce number of bursts still to be sent by one and increment address.
-              num_beats_d = ({1'b0, ax_i.len} + 9'h001) - max_beats;
-              if (ax_d.burst == axi_pkg::BURST_INCR) begin
-                // Align
-                ax_d.addr = axi_pkg::aligned_addr(axi_pkg::largest_addr_t'(ax_d.addr), ax_d.size);
-                // modify the address
-                ax_d.addr += (1 << ax_d.size) * max_beats;
-              end
+              num_beats_d = ({1'b0, ax_i.len} + 9'h001);
             end
           end
         end
+
+
       end
-      Busy: begin
-        // Sent next burst from split.
+
+
+      Send_Flit: begin 
         ax_o       = ax_q;
+        ax_o_hdr   = ax_i_hdr;
         ax_valid_o = 1'b1;
         // emit the proper length
         if (num_beats_q <= max_beats) begin
@@ -151,14 +161,103 @@ module floo_burst_splitter_gran_ax_chan #(
           end
         end
       end
+
+
       default: /*do nothing*/;
     endcase
   end
 
   // registers
   `FFARN(ax_q, ax_d, '0, clk_i, rst_ni)
+  `FFARN(ax_o_hdr_q, ax_o_hdr_d, '0, clk_i, rst_ni)
   `FFARN(state_q, state_d, Idle, clk_i, rst_ni)
   `FFARN(num_beats_q, num_beats_d, 9'h000, clk_i, rst_ni)
+
+
+
+
+  //   unique case (state_q)
+  //     Idle: begin
+  //       if (ax_valid_i && cnt_alloc_gnt) begin
+
+  //         // No splitting required -> feed through. No AX type Flit request generation required.
+  //         if (ax_i.len <= len_limit_i) begin
+  //           ax_o          = ax_i;
+  //           ax_o_hdr      = ax_i_hdr;
+  //           ax_valid_o    = 1'b1;
+
+  //           // As soon as downstream is ready, allocate a counter and acknowledge upstream.
+  //           if (ax_ready_i) begin
+  //             cnt_alloc_req = 1'b1;
+  //             ax_ready_o    = 1'b1;
+  //           end
+
+  //         // Splitting required. AX Type Flit request generation required.
+  //         end else begin
+  //           // Store Ax, allocate a counter, and acknowledge upstream.
+  //           ax_d          = ax_i;
+  //           ax_o_hdr_d    = ax_i_hdr;
+  //           cnt_alloc_req = 1'b1;
+  //           ax_ready_o    = 1'b1;
+  //           // As burst is too long, we will need to send multiple
+  //           state_d = Busy;
+  //           num_beats_d = ({1'b0, ax_i.len} + 9'h001);
+  //           // Try to feed first burst through.
+  //           ax_o          = ax_d;
+  //           ax_o_hdr      = ax_o_hdr_d;
+  //           // if we are here we can send the length limit once for sure
+  //           ax_o.len      = len_limit_i;
+  //           ax_valid_o    = 1'b1;
+  //           if (ax_ready_i) begin
+  //             // Reduce number of bursts still to be sent by one and increment address.
+  //             num_beats_d = ({1'b0, ax_i.len} + 9'h001) - max_beats;
+  //             if (ax_d.burst == axi_pkg::BURST_INCR) begin
+  //               // Align
+  //               ax_d.addr = axi_pkg::aligned_addr(axi_pkg::largest_addr_t'(ax_d.addr), ax_d.size);
+  //               // modify the address
+  //               ax_d.addr += (1 << ax_d.size) * max_beats;
+  //             end
+  //           end
+  //         end
+  //       end
+  //     end
+
+  //     Busy: begin
+  //       // Sent next burst from split.
+  //       ax_o       = ax_q;
+  //       ax_o_hdr   = ax_o_hdr_q;
+  //       ax_valid_o = 1'b1;
+  //       // emit the proper length
+  //       if (num_beats_q <= max_beats) begin
+  //         // this is the remainder
+  //         ax_o.len = axi_pkg::len_t'(num_beats_q - 9'h001);
+  //       end else begin
+  //         ax_o.len = len_limit_i;
+  //       end
+  //       // next state
+  //       if (ax_ready_i) begin
+  //         if (num_beats_q <= max_beats) begin
+  //           // If this was the last burst, go back to idle.
+  //           state_d = Idle;
+  //         end else begin
+  //           // Otherwise, continue with the next burst.
+  //           num_beats_d = num_beats_q - max_beats;
+  //           if (ax_q.burst == axi_pkg::BURST_INCR) begin
+  //             ax_d.addr = axi_pkg::aligned_addr(axi_pkg::largest_addr_t'(ax_q.addr), ax_q.size);
+  //             ax_d.addr += (1 << ax_q.size) * max_beats;
+  //           end
+  //         end
+  //       end
+  //     end
+  //     default: /*do nothing*/;
+  //   endcase
+  // end
+
+  // // registers
+  // `FFARN(ax_q, ax_d, '0, clk_i, rst_ni)
+  // `FFARN(ax_o_hdr_q, ax_o_hdr_d, '0, clk_i, rst_ni)
+  // `FFARN(state_q, state_d, Idle, clk_i, rst_ni)
+  // `FFARN(num_beats_q, num_beats_d, 9'h000, clk_i, rst_ni)
 endmodule
 
 
