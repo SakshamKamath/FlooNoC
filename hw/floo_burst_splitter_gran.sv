@@ -216,6 +216,7 @@ assign mst_floo_req_o.ready = demux_mstreq_i__b_chan_ready;
     if (len_limit_i != 8'h00) begin
 
       // In the case we are in the granular mode: last is from req or when w_len valid and '0.
+      demux_mstreq_i__w_chan_hdr.last = (w_len_vld_q & (w_len_q == 8'h00)) | cut_o__slv_req_w_chan.last;
       demux_mstreq_i__w_chan_payload.last = (w_len_vld_q & (w_len_q == 8'h00)) | cut_o__slv_req_w_chan.last;
 
       // only advance the machine if w ready and valid
@@ -239,6 +240,7 @@ assign mst_floo_req_o.ready = demux_mstreq_i__b_chan_ready;
       end
     end else begin
       // we operate in the legacy mode -> every w is last
+      demux_mstreq_i__w_chan_hdr.last = 1'b1;
       demux_mstreq_i__w_chan_payload.last = 1'b1;
     end
   end
