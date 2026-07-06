@@ -32,18 +32,6 @@ module floo_burst_splitter #(
   input  floo_rsp_t mst_resp_i
 );
 
-//  typedef logic [AxiCfg.AddrWidth-1:0]   addr_t;
-//  typedef logic [AxiCfg.DataWidth-1:0]   data_t;
-//  typedef logic [AxiCfg.DataWidth/8-1:0] strb_t;
-//  typedef logic [AxiCfg.IdWidth-1:0]     id_t;
-//  typedef logic [AxiCfg.UserWidth-1:0]   user_t;
-
-//  `AXI_TYPEDEF_AW_CHAN_T(axi_aw_chan_t, addr_t, id_t, user_t)
-//  `AXI_TYPEDEF_W_CHAN_T (axi_w_chan_t, data_t, strb_t, user_t)
-// `AXI_TYPEDEF_B_CHAN_T (axi_b_chan_t, id_t, user_t)
-//  `AXI_TYPEDEF_AR_CHAN_T(axi_ar_chan_t, addr_t, id_t, user_t)
-//  `AXI_TYPEDEF_R_CHAN_T (axi_r_chan_t, data_t, id_t, user_t)
-
 
   typedef logic [AxiCfg.AddrWidth-1:0] axi_addr_t;
   typedef logic [AxiCfg.InIdWidth-1:0] axi_in_id_t;
@@ -54,7 +42,6 @@ module floo_burst_splitter #(
 
 
   `AXI_TYPEDEF_ALL_CT(axi, axi_req_t, axi_rsp_t, axi_addr_t, axi_in_id_t, axi_data_t, axi_strb_t, axi_user_t)
-//  `AXI_TYPEDEF_AW_CHAN_T(axi_out_aw_chan_t, axi_addr_t, axi_out_id_t, axi_user_t)
   `FLOO_TYPEDEF_AXI_CHAN_ALL(axi, req, rsp, axi, AxiCfg, hdr_t)
 
 
@@ -80,11 +67,12 @@ module floo_burst_splitter #(
     .floo_axi_w_flit_t  (floo_axi_w_flit_t),
     .floo_axi_b_flit_t  (floo_axi_b_flit_t),
     .floo_req_chan_t (floo_req_chan_t),
-    .floo_rsp_chan_t (floo_rsp_chan_t)
+    .floo_rsp_chan_t (floo_rsp_chan_t),
+    .hdr_t        ( hdr_t         )
   ) i_floo_burst_splitter_gran (
     .clk_i,
     .rst_ni,
-    .len_limit_i ( 8'h00 ),
+    .len_limit_i ( 8'h04 ),
     .slv_floo_req_i(slv_req_i),
     .slv_floo_rsp_o(slv_resp_o),
     .mst_floo_req_o(mst_req_o),
