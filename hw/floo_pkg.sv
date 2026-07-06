@@ -642,4 +642,18 @@ package floo_pkg;
     return be;
   endfunction
 
+
+  // function automatic bit is_flit_aw_req(floo_req_t floo_req);
+  //   return (floo_req.req.generic.hdr.axi_ch == AxiAw);
+  // endfunction
+
+  // function automatic bit is_flit_w_req(floo_req_t floo_req);
+  //   return (floo_req.req.generic.hdr.axi_ch == AxiW);
+  // endfunction
+
+  // function automatic bit is_flit_b_rsp(floo_rsp_t floo_rsp);
+  //   return (floo_rsp.rsp.generic.hdr.axi_ch == AxiB);
+  // endfunction
+
+
 endpackage

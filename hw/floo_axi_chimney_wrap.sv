@@ -136,7 +136,7 @@ floo_axi_chimney  #(
   .axi_out_rsp_t(axi_out_rsp_t),
   .floo_req_t(floo_req_t),
   .floo_rsp_t(floo_rsp_t)
-) cluster_ni_0_0 (
+) i_axi_chimney (
   .clk_i,
   .rst_ni,
   .test_enable_i,
