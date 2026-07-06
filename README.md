@@ -9,31 +9,48 @@
 <img src="docs/img/pulp_logo_icon.svg" alt="Logo" width="100" align="right">
 </a>
 
-This repository provides modules for the FlooNoC, a Network-on-Chip (NoC) which is part of the [PULP (Parallel Ultra-Low Power) Platform](https://pulp-platform.org/). The repository includes Network Interface IPs (named chimneys), Routers and further NoC components to build a complete NoC. FlooNoC mainly supports [AXI4+ATOPs](https://github.com/pulp-platform/axi/tree/master), but can be easily extended to other On-Chip protocols. Arbitrary topologies are supported with several routing algorithms. FlooNoC is designed to be scalable and modular, and can be easily extended with new components. Additionally, FlooNoC provides a generation framework for creating customized NoC configurations.
+_FlooNoC_ is a configurable, open-source Network-on-Chip (NoC) architecture designed for high-bandwidth, non-coherent multi-core clusters and AI accelerators. It addresses the bandwidth bottlenecks of traditional serialized NoCs by deploying **wide physical channels** that transport entire AXI4 messages (header + data) in a single flit, eliminating serialization latency.
+
+Designed for the [PULP Platform](https://pulp-platform.org/), _FlooNoC_ decouples the low-complexity transport layer (routers) from the protocol handling (Network Interfaces), enabling high scalability. It supports **end-to-end AXI4** with multiple outstanding transactions and separates traffic into parallel physical streams—isolating bulk DMA transfers from latency-sensitive control messages.
+
+Included is **_FlooGen_**, a Python-based generation framework that produces fully connected SystemVerilog RTL, routing information and tables from a simple high-level configuration file.
 
 <div align="center">
 
 [![CI status](https://github.com/pulp-platform/FlooNoC/actions/workflows/gitlab-ci.yml/badge.svg?branch=main)](https://github.com/pulp-platform/FlooNoC/actions/workflows/gitlab-ci.yml?query=branch%3Amain)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/pulp-platform/FlooNoC?color=blue&label=current&sort=semver)](CHANGELOG.md)
-![License](https://img.shields.io/badge/license-Apache--2.0-green)
-![License](https://img.shields.io/badge/license-SHL--0.51-green)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE-APACHE)
+[![License](https://img.shields.io/badge/license-SHL--0.51-green)](LICENSE-SHL)
+[![Static Badge](https://img.shields.io/badge/IEEE_TVLSI-blue?style=flat&label=DOI&color=00629b)](https://doi.org/10.1109/TVLSI.2025.3527225)
+[![Static Badge](https://img.shields.io/badge/2409.17606-blue?style=flat&label=arXiv&color=b31b1b)](https://arxiv.org/abs/2409.17606)
 
+[Read the Documentation](https://pulp-platform.github.io/FlooNoC/) •
 [Design Principles](#-design-principles) •
-[Getting started](#-getting-started) •
-[List of IPs](#-list-of-ips) •
-[Generation](#%EF%B8%8F-generation) •
+[Publication](#-publication) •
 [License](#-license)
 </div>
 
+## 📚 Documentation
+
+The full [documentation](https://pulp-platform.github.io/FlooNoC/) is available online.
+
+We provide detailed guides for both the hardware IPs (FlooNoC) and the generation tool (FlooGen):
+
+* [View Hardware Docs ➔](https://pulp-platform.github.io/FlooNoC/floonoc/overview/) Learn how to simulate and integrate the SystemVerilog IPs.
+* [View Generator Docs ➔](https://pulp-platform.github.io/FlooNoC/floogen/overview/) Learn how to install the tool and generate custom network topologies.
+
 ## 💡 Design Principles
+_FlooNoC_ is built on five key principles to achieve high bandwidth and low latency:
 
-Our NoC design is grounded in the following key principles:
+1. **Wide Physical Channels**: Unlike traditional NoCs that serialize packets into narrow flits, _FlooNoC_ uses wide links to send entire messages (header + data) in a single cycle. This allows endpoints to utilize their full bandwidth without being constrained by NoC frequency or serialization overhead.
 
-1. **Full AXI4 Support**: Our design fully supports AXI4+ATOPs from AXI5 as outlined [here](https://github.com/pulp-platform/axi/tree/master), particularly multiple outstanding burst transactions. It utilizes low-complexity routers and a decoupled link-level protocol to ensure scalability, thereby enabling tolerance to high-latency off-chip accesses.
-1. **Decoupled Links and Networks**: We use a link-level protocol that is decoupled from the network-level protocol. This allows us to move the complexity of the network-level protocol into the network interfaces, while deploying low-complexity routers in the network, that enable better scalability.
-1. **Wide Physical Channels**: We incorporate wide physical channels in order to meet the high-bandwidth requirements at network endpoints without being constrained by the operating frequency. This is in contrast to the traditional narrow link approach. Further, the NoC avoids any kind of serialization and sends entire messages in a single flit including header and tail information.
-1. **Separation of traffic**: Our design acknowledges the diversity in traffic patterns, as it decouples links and networks to handle wide, high-bandwidth, burst-based traffic and narrow, latency-sensitive traffic with separate physical channels.
-1. **Modularity:** Our design principles also emphasize modularity. We have developed a set of IPs that can be instantiated together to build a NoC. This approach not only promotes reusability but also facilitates flexibility in designing custom NoCs to cater to a variety of specific system requirements.
+2. **Full AXI4 Support**: The architecture fully supports AXI4+ATOPs (AXI5), handling bursts and multiple outstanding transactions efficiently. It provides end-to-end ordering and ID tracking, ensuring seamless integration with standard IP blocks.
+
+3. **Decoupled Architecture**: Complexity is moved to the edges (Network Interfaces/Chimneys), keeping the routers simple and fast. This decoupling allows the network to scale to hundreds of cores without timing degradation.
+
+4. **Traffic Separation**: _FlooNoC_ can physically separate traffic classes. High-bandwidth, burst-based traffic (e.g., DMA) travels on wide links, while latency-sensitive control traffic travels on separate narrow links, preventing head-of-line blocking.
+
+5. **Modularity**: The system is composed of modular building blocks—Routers, Links, and Chimneys (Network Interfaces). This modularity allows _FlooGen_ to assemble arbitrary topologies (Mesh, Tree, Irregular) tailored to specific system requirements.
 
 ## 🔮 Origin of the name
 
@@ -44,187 +61,25 @@ The names of the IPs are inspired by the [Harry Potter](https://en.wikipedia.org
 ## 🔐 License
 All code checked into this repository is made available under a permissive license. All software sources are licensed under the Apache License 2.0 (see [`LICENSE-APACHE`](LICENSE-APACHE)), and all hardware sources in the `hw` folder are licensed under the Solderpad Hardware License 0.51 (see [`LICENSE-SHL`](LICENSE-SHL)).
 
-## 📚 Publication
+## 📖 Publication
 If you use FlooNoC in your research, please cite the following paper:
 <details>
-<summary><b>FlooNoC: A Multi-Tbps Wide NoC for Heterogeneous AXI4 Traffic</b></summary>
+<summary><b>FlooNoC: A 645 Gbps/link 0.15 pJ/B/hop Open-Source NoC with Wide Physical Links and End-to-End AXI4 Parallel Multi-Stream Support</b></summary>
 <p>
 
 ```
-@misc{fischer2023floonoc,
-      title={FlooNoC: A Multi-Tbps Wide NoC for Heterogeneous AXI4 Traffic},
-      author={Tim Fischer and Michael Rogenmoser and Matheus Cavalcante and Frank K. Gürkaynak and Luca Benini},
-      year={2023},
-      eprint={2305.08562},
-      archivePrefix={arXiv},
-      primaryClass={cs.AR}
-}
+@ARTICLE{10848526,
+  author={Fischer, Tim and Rogenmoser, Michael and Benz, Thomas and Gürkaynak, Frank K. and Benini, Luca},
+  journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
+  title={FlooNoC: A 645-Gb/s/link 0.15-pJ/B/hop Open-Source NoC With Wide Physical Links and End-to-End AXI4 Parallel Multistream Support},
+  year={2025},
+  volume={33},
+  number={4},
+  pages={1094-1107},
+  keywords={Bandwidth;Very large scale integration;Data transfer;Routing;Complexity theory;Scalability;Nickel;Memory management;Engines;Europe;Advanced extensible interface (AXI);network interface (NI);network-on-chip (NoC);physical design;very large scale integration},
+  doi={10.1109/TVLSI.2025.3527225}}
+
 ```
 
 </p>
 </details>
-
-## ⭐ Getting Started
-
-### Pre-requisites
-
-FlooNoC uses [bender](https://github.com/pulp-platform/bender) to manage its dependencies and to automatically generate compilation scripts. Further `Python >= 3.10` is required to install the generation framework.
-
-### Simulation
-Currently, we do not provide any open-source simulation setup. Internally, the FlooNoC was tested using QuestaSim, which can be launched with the following command:
-
-```sh
-# Compile the sources
-make compile-sim
-# Run the simulation
-make run-sim-batch VSIM_TB_DUT=tb_floo_dut
-```
-
-or in the GUI, with prepared waveforms:
-
-```sh
-# Compile the sources
-make compile-sim
-# Run the simulation
-make run-sim VSIM_TB_DUT=tb_floo_dut
-```
-By replacing `tb_floo_dut` with the name of the testbench you want to simulate.
-
-## 🧰 List of IPs
-
-This repository includes the following NoC IPs:
-
-1. **Routers:** A collection of different NoC router designs with varying features such as virtual channels, input/output buffering, and adaptive routing algorithms.
-1. **Network Interfaces (NIs)**: A set of NoC network interfaces for connecting IPs to the NoC.
-1. **Topologies:** A collection of NoC topologies, such as mesh, to enable the creation of various on-chip interconnects.
-1. **Common IPs** A set of IPs used by the NoC IPs, such as FIFOs, Cuts and arbiters.
-1. **Verification IPs (VIPs):** A set of VIPs to verify the correct functionality of the NoC IPs.
-1. **Testbenches:** A set of testbenches to evaluate the performance of the NoC IPs, including throughput, latency.
-
-### Routers
-| Name | Description | Doc |
-| --- | --- | --- |
-| [floo_router](hw/floo_router.sv) | A simple router with configurable number of ports, physical and virtual channels, and input/output buffers |  |
-| [floo_narrow_wide_router](hw/floo_narrow_wide_router.sv) | Wrapper of a multi-link router for narrow and wide links |  |
-
-### Network Interfaces
-| Name | Description | Doc |
-| --- | --- | --- |
-| [floo_axi_chimney](hw/floo_axi_chimney.sv) | A bidirectional network interface for connecting AXI4 Buses to the NoC |  |
-| [floo_narrow_wide_chimney](hw/floo_narrow_wide_chimney.sv) | A bidirectional network interface for connecting narrow & wide AXI Buses to the multi-link NoC |  |
-
-### Topologies
-| Name | Description | Doc |
-| --- | --- | --- |
-| [floo_mesh](hw/floo_mesh.sv) | A mesh topology with configurable number of rows and columns |  |
-| [floo_mesh_ruche](hw/floo_mesh_ruche.sv) | A mesh topology with ruche channels and a configurable number of rows and columns |  |
-
-### Common IPs
-| Name | Description | Doc |
-| --- | --- | --- |
-| [floo_fifo](hw/floo_fifo.sv) | A FIFO buffer with configurable depth |  |
-| [floo_cut](hw/floo_cut.sv) | Elastic buffers for cuting timing paths |  |
-| [floo_cdc](hw/floo_cdc.sv) | A Clock-Domain-Crossing (CDC) module implemented with a gray-counter based FIFO. |  |
-| [floo_wormhole_arbiter](hw/floo_wormhole_arbiter.sv) | A wormhole arbiter |  |
-| [floo_vc_arbiter](hw/floo_vc_arbiter.sv) | A virtual channel arbiter |  |
-| [floo_route_comp](hw/floo_route_comp.sv) | A helper module to compute the packet destination |  |
-| [floo_rob](hw/floo_rob.sv) | A table-based Reorder Buffer |  |
-| [floo_simple_rob](hw/floo_simple_rob.sv) | A simplistic low-complexity Reorder Buffer |  |
-| [floo_rob_wrapper](hw/floo_simple_rob.sv) | A wrapper of all available types of RoBs including RoB-less version |  |
-| [floo_narrow_wide_join](hw/floo_narrow_wide_join.sv) | A mux for joining a narrow and wide AXI bus a single wide bus |  |
-
-### Verification IPs
-| Name | Description | Doc |
-| --- | --- | --- |
-| [axi_bw_monitor](hw/test/axi_bw_monitor.sv) | A AXI4 Bus Monitor for measuring the throughput and latency of the AXI4 Bus |  |
-| [axi_reorder_compare](hw/test/axi_reorder_compare.sv) | A AXI4 Bus Monitor for verifying the order of AXI transactions with the same ID |  |
-| [floo_axi_rand_slave](hw/test/floo_axi_rand_slave.sv) | A AXI4 Bus Multi-Slave generating random AXI respones with configurable response time |  |
-| [floo_axi_test_node](hw/test/floo_axi_test_node.sv) | A AXI4 Bus Master-Slave Node for generating random AXI transactions |  |
-| [floo_dma_test_node](hw/test/floo_dma_test_node.sv) | An endpoint node with a DMA master port and a Simulation Memory Slave port |  |
-| [floo_hbm_model](hw/test/floo_hbm_model.sv) | A very simple model of the HBM memory controller with configurable delay |  |
-
-## 🛠️ Generation
-
-FlooNoC comes with a generation framework called `floogen`. It allows to create complex network configurations with a simple configuration file.
-
-### Capabilities
-
-`floogen` has a graph-based internal representation of the network configuration. This allows to easily add new features and capabilities to the generation framework. The following list shows the a couple of the current capabilities of `floogen`:
-
-- **Validation**: The configuration is validated before the generation to ensure that the configuration is valid. For instance, the configuration is checked for invalid user input, overlapping address ranges
-- **Routing**: XY-Routing and ID-Table routing are supported. `floogen` automatically generates the routing tables for the routers, as well as the address map for the network interfaces.
-- **Package Generation**: `floogen` automatically generates a SystemVerilog package with all the needed types and constants for the network configuration.
-- **Top Module Generation**: `floogen` automatically generates a top module that contains all router and network interfaces. The interfaces of the top module are AXI4 interfaces for all the enpdoints specified in the configuration.
-
-### Example
-
-The following example shows the configuration for a simple mesh topology with 4x4 routers and 4x4 chimneys with XY-Routing.
-
-```yaml
-  name: example_system
-  description: "Example of a configuration file"
-
-  routing:
-    route_algo: "XY"
-    use_id_table: true
-
-  protocols:
-    - name: "example_axi"
-      type: "AXI4"
-      direction: "manager"
-      data_width: 64
-      addr_width: 32
-      id_width: 3
-      user_width: 1
-    - name: "example_axi"
-      type: "AXI4"
-      direction: "subordinate"
-      data_width: 64
-      addr_width: 32
-      id_width: 3
-      user_width: 1
-
-  endpoints:
-    - name: "cluster"
-      array: [4, 4]
-      addr_range:
-        base: 0x1000_0000
-        size: 0x0004_0000
-      mgr_port_protocol:
-        - "example_axi"
-      sbr_port_protocol:
-        - "example_axi"
-
-  routers:
-    - name: "router"
-      array: [4, 4]
-
-  connections:
-    - src: "cluster"
-      dst: "router"
-      src_range:
-      - [0, 3]
-      - [0, 3]
-      dst_range:
-      - [0, 3]
-      - [0, 3]
-      bidirectional: true
-```
-
-### Usage
-
-To install `floogen` run the following command:
-
-```sh
-pip install .
-```
-
-which allows you to use `floogen` with the following command:
-
-```sh
-floogen -c <config_file> -o <output_dir>
-```
-
-### Configuration
-
-The example configuration above shows the basic structure of a configuration file. A more detailed description of the configuration file can be found in the [documentation](docs/floogen.md).

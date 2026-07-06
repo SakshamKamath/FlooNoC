@@ -9,21 +9,22 @@
 # Common #
 ##########
 
-MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-MKFILE_DIR  := $(dir $(MKFILE_PATH))
-
-.PHONY: all clean
-all: compile-sim
-clean: clean-sim clean-spyglass clean-jobs clean-sources
+FLOO_ROOT ?= $(shell pwd)
 
 ############
 # Programs #
 ############
 
+QUESTA_SEPP ?=
+VCS_SEPP    ?=
+
 BENDER     	?= bender
-VSIM       	?= questa-2023.4 vsim
+VSIM       	?= $(QUESTA_SEPP) vsim
 SPYGLASS   	?= sg_shell
 VERIBLE_FMT	?= verible-verilog-format
+VCS		      ?= $(VCS_SEPP) vcs
+VLOGAN  	  ?= $(VCS_SEPP) vlogan
+PYTHON	  	?= python
 
 #####################
 # Compilation Flags #
@@ -31,115 +32,160 @@ VERIBLE_FMT	?= verible-verilog-format
 
 BENDER_FLAGS += -t rtl
 BENDER_FLAGS += -t test
+BENDER_FLAGS += -t floo_test
+BENDER_FLAGS += -t axi_mesh
+BENDER_FLAGS += -t snitch_cluster
+BENDER_FLAGS += -t idma_test
+BENDER_FLAGS := $(BENDER_FLAGS) $(EXTRA_BENDER_FLAGS)
 
-VLOG_ARGS += -suppress vlog-2583
-VLOG_ARGS += -suppress vlog-13314
-VLOG_ARGS += -suppress vlog-13233
-VLOG_ARGS += -timescale \"1 ns / 1 ps\"
-
-VSIM_TB_DUT ?= floo_noc_router_test
-
-VSIM_FLAGS += -64
-VSIM_FLAGS += -t 1ps
-VSIM_FLAGS += -sv_seed 0
-
-# Set the job name and directory if specified
-ifdef JOB_NAME
-		VSIM_FLAGS += +JOB_NAME=$(JOB_NAME)
-endif
-ifdef JOB_DIR
-		VSIM_FLAGS += +JOB_DIR=$(JOB_DIR)
-endif
-ifdef LOG_FILE
-		VSIM_FLAGS += -l $(LOG_FILE)
-		VSIM_FLAGS += -nostdout
-endif
-
-# Automatically open the waveform if a wave.tcl file is present
-VSIM_FLAGS_GUI += -do "log -r /*"
-VSIM_FLAGS_GUI += -voptargs=+acc
-ifneq ("$(wildcard hw/tb/wave/$(VSIM_TB_DUT).wave.tcl)","")
-    VSIM_FLAGS_GUI += -do "source hw/tb/wave/$(VSIM_TB_DUT).wave.tcl"
-endif
+WORK 	 		?= work
+TB_DUT 			?= tb_floo_axi_mesh
+FLOO_CFG  		?= $(FLOO_ROOT)/floogen/examples/axi_mesh_xy.yml
 
 ###########
 # FlooGen #
 ###########
 
-FLOOGEN ?= floogen
-
-FLOOGEN_OUT_DIR ?= $(MKFILE_DIR)generated
-FLOOGEN_PKG_OUT_DIR ?= $(MKFILE_DIR)hw
-FLOOGEN_CFG_DIR ?= $(MKFILE_DIR)floogen/examples
-FLOOGEN_TPL_DIR ?= $(MKFILE_DIR)floogen/templates
-
-FLOOGEN_PKG_CFG ?= $(shell find $(FLOOGEN_CFG_DIR) -name "*_pkg.yml")
-FLOOGEN_PKG_SRC ?= $(patsubst $(FLOOGEN_CFG_DIR)/%_pkg.yml,$(FLOOGEN_PKG_OUT_DIR)/floo_%_pkg.sv,$(FLOOGEN_PKG_CFG))
-FLOOGEN_TPL ?= $(shell find $(FLOOGEN_TPL_DIR) -name "*.mako")
-
-.PHONY: install-floogen pkg-sources sources clean-sources
-
-check-floogen:
-	@which $(FLOOGEN) > /dev/null || (echo "Error: floogen not found. Please install floogen." && exit 1)
-
-install-floogen:
-	@which $(FLOOGEN) > /dev/null || (echo "Installing floogen..." && pip install .)
-
-pkg-sources: check-floogen $(FLOOGEN_PKG_SRC)
-$(FLOOGEN_PKG_OUT_DIR)/floo_%_pkg.sv: $(FLOOGEN_CFG_DIR)/%_pkg.yml $(FLOOGEN_TPL)
-	$(FLOOGEN) -c $< --only-pkg --pkg-outdir $(FLOOGEN_PKG_OUT_DIR) $(FLOOGEN_ARGS)
-
-sources: check-floogen
-	$(FLOOGEN) -c $(FLOOGEN_CFG) -o $(FLOOGEN_OUT_DIR) --pkg-outdir $(FLOOGEN_PKG_OUT_DIR) $(FLOOGEN_ARGS)
-
-clean-sources:
-	rm -rf $(FLOOGEN_OUT_DIR)
-	rm -f $(FLOOGEN_PKG_SRC)
+run-floogen:
+	floogen rtl -c $(FLOO_CFG) -o $(FLOO_ROOT)/generated 
 
 ######################
 # Traffic Generation #
 ######################
 
-TRAFFIC_GEN ?= util/gen_jobs.py
-TRAFFIC_TB ?= dma_mesh
-TRAFFIC_TYPE ?= random
-TRAFFIC_RW ?= read
-TRAFFIC_OUTDIR ?= hw/test/jobs
+TRAFFIC_GEN 	?= util/gen_jobs.py
+TRAFFIC_NAME 	?= $(basename $(notdir $(FLOO_CFG)))
+TRAFFIC_OUTDIR 	?= $(FLOO_ROOT)/hw/test/jobs
+TRAFFIC_TB 		?= import_traffic_cfg
+TRAFFIC_TYPE 	?= hbm
+TRAFFIC_RW 		?= write
+TRAFFIC_CFG 	?= $(FLOO_ROOT)/hw/test/traffic_cfg/$(basename $(notdir $(FLOO_CFG))).yml
+
+NARROW_BURST_NUM 	?= 4
+WIDE_BURST_NUM 		?= 4
+NARROW_BURST_LENGTH ?= 256
+WIDE_BURST_LENGTH 	?= 256
 
 .PHONY: jobs clean-jobs
 jobs: $(TRAFFIC_GEN)
 	mkdir -p $(TRAFFIC_OUTDIR)
-	$(TRAFFIC_GEN) --out_dir $(TRAFFIC_OUTDIR) --tb $(TRAFFIC_TB) --traffic_type $(TRAFFIC_TYPE) --rw $(TRAFFIC_RW)
+	$(PYTHON) $(TRAFFIC_GEN) \
+		--out_dir $(TRAFFIC_OUTDIR) \
+		--num_narrow_bursts=$(NARROW_BURST_NUM) \
+		--num_wide_bursts=$(WIDE_BURST_NUM) \
+		--narrow_burst_length=$(NARROW_BURST_LENGTH) \
+		--wide_burst_length=$(WIDE_BURST_LENGTH) \
+		--tb $(TRAFFIC_TB) \
+		--traffic_name $(TRAFFIC_NAME) \
+		--traffic_type $(TRAFFIC_TYPE) \
+		--rw $(TRAFFIC_RW) \
+		--traffic_cfg $(TRAFFIC_CFG) \
+		--floonoc_cfg $(FLOO_CFG)
 
 clean-jobs:
 	rm -rf $(TRAFFIC_OUTDIR)
+
+# Set the job name and directory if specified
+ifdef TRAFFIC_NAME
+VSIM_FLAGS += +JOB_NAME=$(TRAFFIC_NAME)
+endif
+ifdef TRAFFIC_INJ_RATIO
+VSIM_FLAGS += +TRAFFIC_INJ_RATIO=$(TRAFFIC_INJ_RATIO)
+endif
+ifdef TRAFFIC_OUTDIR
+VSIM_FLAGS += +JOB_DIR=$(TRAFFIC_OUTDIR)
+endif
+ifdef LOG_FILE
+VSIM_FLAGS += -l $(LOG_FILE)
+VSIM_FLAGS += -nostdout
+endif
 
 ########################
 # QuestaSim Simulation #
 ########################
 
-.PHONY: compile-sim run-sim run-sim-batch clean-sim
+VLOG_ARGS += -suppress vlog-2583
+VLOG_ARGS += -suppress vlog-13314
+VLOG_ARGS += -suppress vlog-13233
+VLOG_ARGS += -timescale \"1 ns / 1 ps\"
+VLOG_ARGS += -work $(WORK)
+
+VSIM_FLAGS += -64
+VSIM_FLAGS += -t 1ps
+VSIM_FLAGS += -sv_seed 0
+VSIM_FLAGS += -quiet
+VSIM_FLAGS += -work $(WORK)
+VSIM_FLAGS += -suppress vsim-3009
+VSIM_FLAGS += -suppress vsim-8386
+
+# Automatically open the waveform if a wave.tcl file is present
+VSIM_FLAGS_GUI += -do "log -r /*"
+VSIM_FLAGS_GUI += -voptargs=+acc
+ifneq ("$(wildcard hw/tb/wave/$(TB_DUT).wave.tcl)","")
+    VSIM_FLAGS_GUI += -do "source hw/tb/wave/$(TB_DUT).wave.tcl"
+endif
+
+.PHONY: compile-vsim run-vsim run-vsim-batch clean-vsim
 
 scripts/compile_vsim.tcl: Bender.yml
 	mkdir -p scripts
-	echo 'set ROOT [file normalize [file dirname [info script]]/..]' > scripts/compile_vsim.tcl
-	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" $(BENDER_FLAGS) | grep -v "set ROOT" >> scripts/compile_vsim.tcl
-	echo >> scripts/compile_vsim.tcl
+	echo 'set ROOT [file normalize [file dirname [info script]]/..]' > $@
+	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" $(BENDER_FLAGS) | grep -v "set ROOT" >> $@
+	echo >> $@
 
-compile-sim: scripts/compile_vsim.tcl $(FLOOGEN_PKG_SRC)
+compile-vsim: scripts/compile_vsim.tcl
 	$(VSIM) -64 -c -do "source scripts/compile_vsim.tcl; quit"
 
-run-sim:
-	$(VSIM) $(VSIM_FLAGS) $(VSIM_FLAGS_GUI) $(VSIM_TB_DUT)
+run-vsim:
+	$(VSIM) $(VSIM_FLAGS) $(VSIM_FLAGS_GUI) $(TB_DUT)
 
-run-sim-batch:
-	$(VSIM) -c $(VSIM_FLAGS) $(VSIM_TB_DUT) -do "run -all; quit"
+run-vsim-batch:
+	$(VSIM) -c $(VSIM_FLAGS) $(TB_DUT) -do "run -all; quit"
 
-clean-sim:
+clean-vsim:
 	rm -rf scripts/compile_vsim.tcl
 	rm -rf modelsim.ini
 	rm -rf transcript
 	rm -rf work*
+
+##################
+# VCS Simulation #
+##################
+
+VLOGAN_ARGS := -assert svaext
+VLOGAN_ARGS += -assert disable_cover
+VLOGAN_ARGS += -timescale=1ns/1ps
+
+VCS_ARGS    += -Mlib=$(WORK)
+VCS_ARGS    += -Mdir=$(WORK)
+VCS_ARGS    += -j 8
+
+.PHONY: compile-vcs clean-vcs run-vcs run-vcs-batch
+
+scripts/compile_vcs.sh: Bender.yml Bender.lock
+	@mkdir -p scripts
+	$(BENDER) script vcs --vlog-arg "\$(VLOGAN_ARGS)" $(BENDER_FLAGS) --vlogan-bin "$(VLOGAN)" > $@
+	chmod +x $@
+
+bin/%.vcs: scripts/compile_vcs.sh
+	$< | tee scripts/compile_vcs.log
+	mkdir -p bin
+	$(VCS) $(VCS_ARGS) $(VCS_PARAMS) $* -o $@
+
+compile-vcs: bin/$(TB_DUT).vcs
+
+run-vcs run-vcs-batch:
+	bin/$(TB_DUT).vcs +permissive -exitstatus +permissive-off
+
+clean-vcs:
+	@rm -rf AN.DB
+	@rm -f  scripts/compile_vcs.sh
+	@rm -rf bin
+	@rm -rf work-vcs
+	@rm -f  ucli.key
+	@rm -f  vc_hdrs.h
+	@rm -f  logs/*.vcs.log
+	@rm -f  scripts/compile_vcs.log
 
 ####################
 # Spyglass Linting #
@@ -164,3 +210,31 @@ clean-spyglass:
 	rm -rf spyglass/floo_noc*
 	rm -f spyglass/sg_shell_command.log
 	rm -f spyglass/set_top.tcl
+
+###################
+# Physical Design #
+###################
+
+PD_REMOTE ?= git@iis-git.ee.ethz.ch:axi-noc/floo_noc_pd.git
+PD_BRANCH ?= 85eaa6f8dcf8142457668b4e6aa9b7e20ee90339
+PD_DIR = $(FLOO_ROOT)/pd
+
+.PHONY: init-pd
+
+init-pd:
+	rm -rf $(PD_DIR)
+	git clone $(PD_REMOTE) $(PD_DIR) 
+	cd $(PD_DIR) && git checkout $(PD_BRANCH)
+
+-include $(PD_DIR)/pd.mk
+
+#################
+# Phony targets #
+#################
+
+.PHONY: all clean build
+
+all: compile-vsim run-sim-batch
+clean: clean-vsim clean-spyglass clean-jobs clean-sources clean-vcs
+build: compile-vsim
+run: run-vsim

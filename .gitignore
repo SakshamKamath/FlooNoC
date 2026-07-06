@@ -46,13 +46,14 @@ sdist/*
 docs/api/*
 docs/_rst/*
 docs/_build/*
+docs/CHANGELOG.md
 cover/*
 MANIFEST
+site
 
 # Per-project virtualenvs
 .venv*/
 .conda*/
-.python-version
 
 # bender
 .bender
@@ -63,15 +64,24 @@ deps
 # Auto generated sources
 generated
 *.png
+!util/traffic_visualizations/*.png
 hw/test/jobs
 
 # QuestaSim
 work
+work_*
 work-vsim
 modelsim.ini
 transcript
 vsim.wlf
 scripts/compile_vsim.tcl
+
+# VCS
+AN.DB
+bin
+ucli.key
+vc_hdrs.h
+scripts/compile_vcs.sh
 
 # Verible
 verible*
@@ -79,7 +89,14 @@ verible*
 # spyglass
 scripts/spyglass/*
 
+# experiment outputs
+util/output/*
+measurements
+
 # Misc
 *.csv
 **/*.log
 reviewdog
+
+# Physical design repository
+pd
