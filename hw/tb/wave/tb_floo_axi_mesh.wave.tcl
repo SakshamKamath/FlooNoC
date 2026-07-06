@@ -16,7 +16,7 @@ set num_x [expr {[llength $routers] / $num_y}]
 for {set y 0} {$y < $num_y} {incr y} {
   for {set x 0} {$x < $num_x} {incr x} {
     set groups [list Node X=${x} Y=${y}]
-    floo_axi_chimney_wave $tb_name/$noc_name/cluster_ni_${x}_${y} [concat $groups [list Chimney]]
+    floo_axi_chimney_wave $tb_name/$noc_name/cluster_ni_${x}_${y}/i_axi_chimney [concat $groups [list Chimney]]
     floo_router_wave $tb_name/$noc_name/router_${x}_${y} [concat $groups [list Router]]
 
     floo_add_wave $tb_name/gen_x[$x]/gen_y[$y]/i_axi_bw_monitor/*in_flight_o $groups 1
@@ -24,7 +24,7 @@ for {set y 0} {$y < $num_y} {incr y} {
 }
 
 for {set y 0} {$y < $num_y} {incr y} {
-  floo_axi_chimney_wave $tb_name/$noc_name/hbm_ni_${y} [list HBM West "Channel ${y}" Chimney] 1
+  floo_axi_chimney_wave $tb_name/$noc_name/hbm_ni_${y}/i_axi_chimney [list HBM West "Channel ${y}" Chimney] 1
 }
 
 floo_wave_style
