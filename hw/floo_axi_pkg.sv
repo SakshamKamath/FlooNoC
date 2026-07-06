@@ -24,25 +24,20 @@ package floo_axi_pkg;
   } axi_ch_e;
 
 
-  localparam int unsigned AxiInAddrWidth = 32;
-  localparam int unsigned AxiInDataWidth = 64;
-  localparam int unsigned AxiInIdWidth = 3;
-  localparam int unsigned AxiInUserWidth = 1;
+  localparam int unsigned AddrWidth = 32;
+  localparam int unsigned DataWidth = 64;
+  localparam int unsigned IdWidth = 3;
+  localparam int unsigned UserWidth = 1;
 
 
-  localparam int unsigned AxiOutAddrWidth = 32;
-  localparam int unsigned AxiOutDataWidth = 64;
-  localparam int unsigned AxiOutIdWidth = 3;
-  localparam int unsigned AxiOutUserWidth = 1;
 
-
-  typedef logic [31:0] axi_in_addr_t;
-  typedef logic [63:0] axi_in_data_t;
-  typedef logic [7:0] axi_in_strb_t;
-  typedef logic [2:0] axi_in_id_t;
-  typedef logic [0:0] axi_in_user_t;
-  `AXI_TYPEDEF_ALL_CT(axi_in, axi_in_req_t, axi_in_rsp_t, axi_in_addr_t, axi_in_id_t, axi_in_data_t,
-                      axi_in_strb_t, axi_in_user_t)
+  typedef logic [31:0] axi_addr_t;
+  typedef logic [63:0] axi_data_t;
+  typedef logic [7:0] axi_strb_t;
+  typedef logic [2:0] axi_id_t;
+  typedef logic [0:0] axi_user_t;
+  `AXI_TYPEDEF_ALL_CT(axi, axi_req_t, axi_rsp_t, axi_addr_t, axi_id_t, axi_data_t,
+                      axi_strb_t, axi_user_t)
 
 
   typedef logic [31:0] axi_out_addr_t;
@@ -106,30 +101,30 @@ package floo_axi_pkg;
 
   typedef struct packed {
     hdr_t hdr;
-    axi_in_aw_chan_t aw;
+    axi_aw_chan_t aw;
     logic [2:0] rsvd;
   } floo_axi_aw_flit_t;
 
   typedef struct packed {
     hdr_t hdr;
-    axi_in_w_chan_t w;
+    axi_w_chan_t w;
   } floo_axi_w_flit_t;
 
   typedef struct packed {
     hdr_t hdr;
-    axi_in_b_chan_t b;
+    axi_b_chan_t b;
     logic [64:0] rsvd;
   } floo_axi_b_flit_t;
 
   typedef struct packed {
     hdr_t hdr;
-    axi_in_ar_chan_t ar;
+    axi_ar_chan_t ar;
     logic [8:0] rsvd;
   } floo_axi_ar_flit_t;
 
   typedef struct packed {
     hdr_t hdr;
-    axi_in_r_chan_t r;
+    axi_r_chan_t r;
   } floo_axi_r_flit_t;
 
   typedef struct packed {
@@ -181,3 +176,4 @@ package floo_axi_pkg;
 
 
 endpackage
+
