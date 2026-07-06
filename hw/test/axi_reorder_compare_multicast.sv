@@ -5,13 +5,15 @@
 // Tim Fischer <fischeti@iis.ee.ethz.ch>
 
 /// A AXI4 Bus Monitor for verifying the order of AXI transactions with the same ID
-module axi_reorder_compare #(
+module axi_reorder_compare_multicast #(
   parameter int unsigned NumSlaves = 4,
   parameter int unsigned AxiIdWidth = 4,
   parameter int unsigned NumAddrRegions  = 1,
   parameter type addr_t = logic,
   parameter type rule_t = logic,
   parameter rule_t [NumAddrRegions-1:0] AddrRegions = '0,
+  parameter type mask_rule_t = logic,
+  parameter rule_t [NumAddrRegions-1:0] MaskAddrRegions = '0,
   parameter bit Verbose = 0,
   parameter type aw_chan_t = logic,
   parameter type w_chan_t = logic,
@@ -50,7 +52,7 @@ module axi_reorder_compare #(
       $display("prot:   | %64d | %64d", aw_expected.prot, aw_received.prot);
       $display("qos:    | %64d | %64d", aw_expected.qos, aw_received.qos);
       $display("region: | %64d | %64d", aw_expected.region, aw_received.region);
-      $display("user:   | %64d | %64d", aw_expected.user, aw_received.user);
+      $display("user:   | %64x | %64x", aw_expected.user, aw_received.user);
       $display("atop:   | %64d | %64d", aw_expected.atop, aw_received.atop);
       $display("--------|------------------------------------------------------------------|-----------------------------------------------------------------");
       // verilog_lint: waive-stop line-length
@@ -73,7 +75,7 @@ module axi_reorder_compare #(
       $display("prot:   | %64d | %64d", ar_expected.prot, ar_received.prot);
       $display("qos:    | %64d | %64d", ar_expected.qos, ar_received.qos);
       $display("region: | %64d | %64d", ar_expected.region, ar_received.region);
-      $display("user:   | %64d | %64d", ar_expected.user, ar_received.user);
+      $display("user:   | %64x | %64x", ar_expected.user, ar_received.user);
       $display("--------|------------------------------------------------------------------|-----------------------------------------------------------------");
       // verilog_lint: waive-stop line-length
   endfunction
@@ -88,7 +90,7 @@ module axi_reorder_compare #(
       $display("data:   | %64x | %64x", w_expected.data, w_received.data);
       $display("strb:   | %64d | %64d", w_expected.strb, w_received.strb);
       $display("last:   | %64d | %64d", w_expected.last, w_received.last);
-      $display("user:   | %64d | %64d", w_expected.user, w_received.user);
+      $display("user:   | %64x | %64x", w_expected.user, w_received.user);
       $display("--------|------------------------------------------------------------------|-----------------------------------------------------------------");
       // verilog_lint: waive-stop line-length
   endfunction
@@ -102,7 +104,7 @@ module axi_reorder_compare #(
       $display("--------|------------------------------------------------------------------|-----------------------------------------------------------------");
       $display("id:     | %64d | %64d", b_expected.id, b_received.id);
       $display("resp:   | %64d | %64d", b_expected.resp, b_received.resp);
-      $display("user:   | %64d | %64d", b_expected.user, b_received.user);
+      $display("user:   | %64x | %64x", b_expected.user, b_received.user);
       $display("--------|------------------------------------------------------------------|-----------------------------------------------------------------");
       // verilog_lint: waive-stop line-length
   endfunction
@@ -118,7 +120,7 @@ module axi_reorder_compare #(
       $display("data:   | %64x | %64x", r_expected.data, r_received.data);
       $display("resp:   | %64d | %64d", r_expected.resp, r_received.resp);
       $display("last:   | %64d | %64d", r_expected.last, r_received.last);
-      $display("user:   | %64d | %64d", r_expected.user, r_received.user);
+      $display("user:   | %64x | %64x", r_expected.user, r_received.user);
       $display("--------|------------------------------------------------------------------|-----------------------------------------------------------------");
       // verilog_lint: waive-stop line-length
   endfunction
@@ -143,6 +145,8 @@ module axi_reorder_compare #(
   typedef logic [$clog2(NumSlaves)-1:0] slv_id_t;
   slv_id_t w_slv_idx[$];
   slv_id_t aw_slv_idx, ar_slv_idx;
+  logic [NumAddrRegions-1:0] multiaddr_decode_sel;
+
 
   addr_decode #(
     .NoIndices  ( NumAddrRegions  ),
@@ -157,6 +161,24 @@ module axi_reorder_compare #(
     .default_idx_i    ( '0                    ),
     .en_default_idx_i ( 1'b0                  ),
     .idx_o            ( aw_slv_idx            )
+  );
+
+  multiaddr_decode #(
+    .NoIndices  ( NumAddrRegions  ),
+    .NoRules    ( NumAddrRegions  ),
+    .addr_t     ( addr_t          ),
+    .rule_t     ( mask_rule_t     )
+  ) i_aw_multiaddr_decode (
+    .addr_i           ( mon_mst_req_i.aw.addr ),
+    .mask_i           ( mon_mst_req_i.aw.user ),
+    .addr_map_i       ( MaskAddrRegions       ),
+    .select_o         ( multiaddr_decode_sel  ),
+    .addr_o           (),
+    .mask_o           (),
+    .dec_valid_o      (),
+    .dec_error_o      (),
+    .en_default_idx_i ( '0                    ),
+    .default_idx_i    ( '0                    )
   );
 
   addr_decode #(
@@ -176,24 +198,47 @@ module axi_reorder_compare #(
 
   always_ff @(posedge clk_i) begin : step_1
     if (mon_mst_req_i.aw_valid && mon_mst_rsp_i.aw_ready) begin
-      aw_queue[aw_slv_idx].push_back(mon_mst_req_i.aw);
-      w_slv_idx.push_back(aw_slv_idx);
-      b_out_rsp_queue[mon_mst_req_i.aw.id].push_back('{slv_id: aw_slv_idx, num_rsp: 0});
-      if (Verbose) $info("Issued AW: id=%0d, len=%0d", mon_mst_req_i.aw.id, mon_mst_req_i.aw.len+1);
+      // for (int i=0; i<w_slv_idx.size(); i++) begin
+      //   $display("before new aw issued: w_slv_idx[%0d]=%0d",i,w_slv_idx[i]);
+      // end
+      if(mon_mst_req_i.aw.user=='0) begin
+        aw_queue[aw_slv_idx].push_back(mon_mst_req_i.aw);
+        w_slv_idx.push_back(aw_slv_idx);
+        b_out_rsp_queue[mon_mst_req_i.aw.id].push_back('{slv_id: aw_slv_idx, num_rsp: 0});
+      end else begin
+        for (int i = 0; i < $bits(multiaddr_decode_sel); i++) begin
+          if (multiaddr_decode_sel[i]==1) begin
+            aw_queue[i].push_back(mon_mst_req_i.aw);
+            w_slv_idx.push_back(i);
+          end
+        end
+        b_out_rsp_queue[mon_mst_req_i.aw.id].push_back('{slv_id: 0, num_rsp: multiaddr_decode_sel});
+      end
+      // for (int i=0; i<w_slv_idx.size(); i++) begin
+      //   $display("after new aw issued: w_slv_idx[%0d]=%0d",i,w_slv_idx[i]);
+      // end
+      if (Verbose) $info("Issued AW: id=%0d, len=%0d, route_mask=%0b",
+                          mon_mst_req_i.aw.id, mon_mst_req_i.aw.len+1, multiaddr_decode_sel);
     end
     if (mon_mst_req_i.w_valid && mon_mst_rsp_i.w_ready) begin
-      w_queue[w_slv_idx[0]].push_back(mon_mst_req_i.w);
+      // w_queue[w_slv_idx[0]].push_back(mon_mst_req_i.w);
+      foreach (w_slv_idx[i]) begin
+        w_queue[w_slv_idx[i]].push_back(mon_mst_req_i.w);
+        // $display("insert into expected queue %0d:", w_slv_idx[i]);
+        // print_w('0,mon_mst_req_i.w);
+      end
       if (Verbose) $info("Issued W");
       if (mon_mst_req_i.w.last) begin
-        void'(w_slv_idx.pop_front());
+        // void'(w_slv_idx.pop_front()); // before: every AW only has 1 single slave so just safely pop front
+        w_slv_idx.delete(); // now: need to pop all slaves. TODO: is delete all correct?
       end
     end
     if (mon_mst_req_i.ar_valid && mon_mst_rsp_i.ar_ready) begin
       ar_queue[ar_slv_idx].push_back(mon_mst_req_i.ar);
       r_out_rsp_queue[mon_mst_req_i.ar.id].push_back(
         '{slv_id: ar_slv_idx, num_rsp: mon_mst_req_i.ar.len});
-      if (Verbose) $info("Issued AR: id=%0d, len=%0d",
-                         mon_mst_req_i.ar.id, mon_mst_req_i.ar.len+1);
+      if (Verbose) $info("Issued AR: id=%0d, len=%0d, route_dir=%0d",
+                         mon_mst_req_i.ar.id, mon_mst_req_i.ar.len+1, ar_slv_idx);
     end
   end
 
@@ -212,6 +257,8 @@ module axi_reorder_compare #(
         aw_exp.id = 'X;
         if (aw_exp !== aw_act) begin
           $error("AW mismatch");
+          $info("Slave[%0d] port output AW: id=%0d, len=%0d (not added to compare queue)",
+                  i, aw_id, aw_exp.len+1);
           print_aw(aw_exp, aw_act);
         end else begin
           aw_id_queue[i].push_back(aw_id);
@@ -261,7 +308,7 @@ module axi_reorder_compare #(
         b = mon_slv_rsp_i[i].b;
         b.id = aw_id_queue[i].pop_front();
         b_queue[i][b.id].push_back(b);
-        if (Verbose) $info("Slave[%0d] Issued B: id=%0d", i, b.id);
+        if (Verbose) $info("Slave[%0d] Issued B: id=%0d, user=%0x", i, b.id, b.user);
       end
       if (mon_slv_rsp_i[i].r_valid && mon_slv_req_i[i].r_ready) begin
         automatic r_chan_t r;
@@ -282,24 +329,60 @@ module axi_reorder_compare #(
       automatic b_chan_t b_exp, b_act;
       automatic id_t b_id;
       automatic int unsigned slv_id;
+      automatic b_chan_t b_mcast_exp [NumSlaves];
+      automatic int find_flag=0;
       b_act = mon_mst_rsp_i.b;
       b_id = b_act.id;
-      if (Verbose) $info("Received B: id=%0d", b_id);
+      if (Verbose) $info("Received B: id=%0d, user=%0x", b_id, b_act.user);
       if (b_out_rsp_queue[b_id].size() == 0) $error("B: id=%0d out rsp queue is empty!", b_id);
-      slv_id = b_out_rsp_queue[b_id][0].slv_id;
-      if (b_queue[slv_id][b_id].size() == 0) $error("Slave [%0d] B queue is empty!", slv_id);
-      b_exp = b_queue[slv_id][b_id].pop_front();
-      if (b_exp !== b_act) begin
-        $error("B mismatch");
-        print_b(b_exp, b_act);
-      end else begin
-        // This should always be true for B
-        if (b_out_rsp_queue[b_id][0].num_rsp == 0) begin
-          if (b_out_rsp_queue[b_id].size() == 0)
-            $error("B: id=%0d out response queue is empty!", b_id);
-          void'(b_out_rsp_queue[b_id].pop_front());
+      // slv_id = b_out_rsp_queue[b_id][0].slv_id;
+      // if (b_queue[slv_id][b_id].size() == 0) $error("Slave [%0d] B queue is empty!", slv_id);
+      // b_exp = b_queue[slv_id][b_id].pop_front();
+      if(b_out_rsp_queue[b_id][0].num_rsp==0) begin
+        $display("This is a normal B");
+        slv_id = b_out_rsp_queue[b_id][0].slv_id;
+        if (b_queue[slv_id][b_id].size() == 0) $error("Slave [%0d] B queue is empty!", slv_id);
+        b_exp = b_queue[slv_id][b_id].pop_front();
+        if (b_exp !== b_act) begin
+          $error("B mismatch");
+          print_b(b_exp, b_act);
         end else begin
-          b_out_rsp_queue[b_id][0].num_rsp--;
+          $display("B matched!");
+          print_b(b_exp, b_act);
+          // This should always be true for B
+          if (b_out_rsp_queue[b_id][0].num_rsp == 0) begin
+            if (b_out_rsp_queue[b_id].size() == 0)
+              $error("B: id=%0d out response queue is empty!", b_id);
+            void'(b_out_rsp_queue[b_id].pop_front());
+          end else begin
+            b_out_rsp_queue[b_id][0].num_rsp--;
+          end
+        end
+      end else begin
+        $display("This is a mcast B");
+        for(int i=0; i<$bits(multiaddr_decode_sel); i++) begin
+          if(b_out_rsp_queue[b_id][0].num_rsp[i]==1 && b_queue[i][b_id][0]==b_act) begin
+            find_flag = 1;
+            $display("B matched with slave[%0d]",i);
+            break;
+          end
+        end
+        if(!find_flag) begin
+          $error("mcast B mismatch");
+        end else begin
+          // $display("B matched!");
+          $display("b_out_rsp_queue[b_id].size()=%0d",b_out_rsp_queue[b_id].size());
+          if (b_out_rsp_queue[b_id].size() == 0)
+              $error("B: id=%0d out response queue is empty!", b_id);
+          for(int i=0; i<$bits(multiaddr_decode_sel); i++) begin
+            if(b_out_rsp_queue[b_id][0].num_rsp[i]==1) begin
+              if (b_queue[i][b_id].size() == 0) $error("Slave [%0d] B queue is empty!", i);
+              void'(b_queue[i][b_id].pop_front());
+              $display("pop b_queue[%0d]",i);
+            end
+          end
+          void'(b_out_rsp_queue[b_id].pop_front());
+          $display("b_out_rsp_queue[b_id].size()=%0d",b_out_rsp_queue[b_id].size());
         end
       end
     end
