@@ -26,6 +26,7 @@ export_include_dirs:
 
 sources:
   # Level 0
+  - hw/axi_pkg.sv
   - hw/floo_pkg.sv
   # Level 1
   - hw/floo_cut.sv
@@ -49,10 +50,16 @@ sources:
   - hw/floo_reduction_unit.sv
   # Level 3
   - hw/floo_output_arbiter.sv
+  - hw/floo_cut.sv
+  - hw/floo_multicut.sv
+  - hw/floo_burst_splitter_gran_ax_chan.sv
+  - hw/floo_burst_splitter_gran.sv
   # Level 4
   - hw/floo_nw_join.sv
     # TODO(lleone): Put back and fis axi_chimney
+  - hw/floo_burst_splitter.sv
   - hw/floo_axi_chimney.sv
+  - hw/floo_axi_chimney_wrap.sv
   - hw/floo_nw_chimney.sv
   - hw/floo_router.sv
   # Level 5 (Wrappers)
