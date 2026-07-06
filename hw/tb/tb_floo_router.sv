@@ -16,7 +16,6 @@
 module tb_floo_router;
 
   import floo_pkg::*;
-  import floo_axi_pkg::*;
 
   localparam time CyclTime = 10ns;
   localparam time ApplTime = 2ns;
@@ -41,6 +40,12 @@ module tb_floo_router;
   localparam int unsigned IdWidth = $clog2(NumPorts);
   localparam int unsigned FlitWidth = 123;
   localparam int unsigned MaxPacketLength = 32;
+
+  typedef logic [FlitWidth-1:0] payload_t;
+  typedef logic [IdWidth-1:0] id_t;
+
+  `FLOO_TYPEDEF_HDR_T(hdr_t, id_t, id_t, logic, logic)
+  `FLOO_TYPEDEF_GENERIC_FLIT_T(req, hdr_t, payload_t)
 
   logic clk, rst_n;
 
@@ -116,7 +121,7 @@ module tb_floo_router;
               rand_data.data_mod_id_c.constraint_mode(1);
               if (rand_data.randomize()) begin
                 automatic floo_req_generic_flit_t next_flit = '0;
-                next_flit.rsvd = rand_data.data;
+                next_flit.payload = rand_data.data;
                 next_flit.hdr.src_id = port;
                 next_flit.hdr.dst_id = stimuli.id;
                 next_flit.hdr.last = j == stimuli.len-1;
@@ -216,33 +221,38 @@ module tb_floo_router;
 
       .valid_o ( valid_in[port] ),
       .ready_i ( ready_in[port] ),
-      .data_o  ( data_in [port] )
+      .data_o  ( data_in [port] ),
+      .credit_i( '0             )
     );
   end
 
 
   floo_router #(
-    .NumRoutes       ( NumPorts        ),
-    .NumVirtChannels ( NumVirtChannels ),
-    .flit_t          ( floo_req_generic_flit_t     ),
-    .ChannelFifoDepth( 4               ),
-    .RouteAlgo       ( IdIsPort        ),
-    .IdWidth         ( IdWidth         )
+    .NumRoutes        ( NumPorts                ),
+    .NumVirtChannels  ( NumVirtChannels         ),
+    .flit_t           ( floo_req_generic_flit_t ),
+    .InFifoDepth      ( 4                       ),
+    .RouteAlgo        ( SourceRouting           ),
+    .IdWidth          ( IdWidth                 )
   ) i_dut (
     .clk_i         ( clk   ),
     .rst_ni        ( rst_n ),
     .test_enable_i ( '0 ),
 
-    .xy_id_i       ( '0 ), // Unused for IdIsPort
-    .id_route_map_i( '0 ), // Unused for IdIsPort
+    .xy_id_i       ( '0 ), // Unused for `SourceRouting`
+    .id_route_map_i( '0 ), // Unused for `SourceRouting`
 
     .valid_i       ( valid_in  ),
     .ready_o       ( ready_in  ),
     .data_i        ( data_in   ),
+    .credit_o      (           ),
 
     .valid_o       ( valid_out ),
     .ready_i       ( ready_out ),
-    .data_o        ( data_out  )
+    .data_o        ( data_out  ),
+    .credit_i      ( '0        ),
+    .offload_req_o (           ),
+    .offload_rsp_i ( '0        )
   );
 
   logic       [NumPorts-1:0][NumVirtChannels-1:0] fall_valid_out;
@@ -343,7 +353,7 @@ module tb_floo_router;
         golden = golden_queue[result.hdr.src_id][virt_channel][port].pop_front();
       end
 
-      if (result.rsvd != golden.rsvd) begin
+      if (result.payload != golden.payload) begin
         $error("ERROR! Mismatch for port %d channel %d (from %d, target port %d)",
                port, virt_channel, result.hdr.src_id, result.hdr.dst_id);
       end
