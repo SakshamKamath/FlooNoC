@@ -61,6 +61,13 @@ TRAFFIC_TYPE 	?= hbm
 TRAFFIC_RW 		?= write
 TRAFFIC_CFG 	?= $(FLOO_ROOT)/hw/test/traffic_cfg/$(basename $(notdir $(FLOO_CFG))).yml
 
+## For Local Interface Evaluation 
+#TRAFFIC_CFG 	?= $(FLOO_ROOT)/hw/test/traffic_cfg/floorealm_local_intf.yml
+
+## For overhead evaluation
+#TRAFFIC_CFG 	?= $(FLOO_ROOT)/hw/test/traffic_cfg/floorealm_overhead.yml
+
+
 NARROW_BURST_NUM 	?= 4
 WIDE_BURST_NUM 		?= 4
 NARROW_BURST_LENGTH ?= 256
