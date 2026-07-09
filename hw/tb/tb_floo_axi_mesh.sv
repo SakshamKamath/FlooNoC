@@ -59,6 +59,51 @@ module tb_floo_axi_mesh;
   axi_in_req_t [NumX-1:0][NumY-1:0] cluster_in_buf_req;
   axi_in_rsp_t [NumX-1:0][NumY-1:0] cluster_in_buf_rsp;
 
+  ///////////////
+  //   Timer   //
+  ///////////////
+
+  // Timer counter (used during RTL simulation of the FPGA top)
+  typedef struct packed {
+    logic        write_counter_i; // [Input] Counter overwrite control
+    logic [31:0] counter_value_i; // [Input] Counter value to set
+    logic        reset_count_i; // [Input] Counter reset control
+    logic        enable_count_i; // [Input] Counter enable control - to increase the counter value
+    logic [31:0] compare_value_i; // [Input] Comparator value - to compare with the counter value
+    // logic [32-1:0] counter_value_o; // [Output] Counter value
+    // logic          target_reached_o; // [Output] Comparator value flag
+  } timer_cfg_t;
+
+  // Timer value
+  typedef struct packed {
+    logic [31:0] t0;
+    logic [31:0] t1;
+  } timer_val_t;
+
+  timer_cfg_t tb_timer_cfg; // Timer configuration
+  timer_val_t t_total; // Total execution time [clock cycles]
+  timer_val_t t_critical; // Critical task execution time [clock cycles]
+  timer_val_t t_interferer; // Interferer execution time [clock cycles]
+
+  logic target_reached_o; // Comparator value flag
+  logic [31:0] tb_timer_cnt_value, tb_timer_cnt_value_old; // Timer output counter value - Experiment latency
+
+  ///////////
+  // Timer //
+  ///////////
+
+  // TB counter
+  timer_unit_counter timer_i (
+    .clk_i            (clk),
+    .rst_ni           (rst_n),
+    .write_counter_i  (tb_timer_cfg.write_counter_i),
+    .counter_value_i  (tb_timer_cfg.counter_value_i),
+    .reset_count_i    (tb_timer_cfg.reset_count_i),
+    .enable_count_i   (tb_timer_cfg.enable_count_i),
+    .compare_value_i  (tb_timer_cfg.compare_value_i),
+    .counter_value_o  (tb_timer_cnt_value),
+    .target_reached_o (target_reached_o)
+  );
 
   ///////////////////
   //   HBM Model   //
@@ -160,7 +205,7 @@ module tb_floo_axi_mesh;
         );
     end
   end
-
+  
   /////////////////////////
   //   Network-on-Chip   //
   /////////////////////////
@@ -177,25 +222,88 @@ module tb_floo_axi_mesh;
     .hbm_axi_out_rsp_i      ( hbm_rsp             )
   );
 
+  // int BLenMin = 32'd1; // burstless (single-beat)
+  // int BLenMax = 32'd256; // max allowed by axi4
+
+  int BLen = 32'd2; // modify this for best-effort burst length
+
   initial begin
     $timeformat(-9, 0, "ns", 10);
     $display ("[tb_floo_axi_mesh][%0t] Simulation start.", $time);
     // Init signals
     start_of_sim = '{default: '0};
-    end_of_sim = '{default: '0};
+    // end_of_sim = '{default: '0};
+    tb_timer_cfg = '{default: '0};
+
+    // reset and init timer
+    // Reset the timer first
+    @(posedge clk);
+    tb_timer_cfg.write_counter_i = 1'b0;
+    tb_timer_cfg.counter_value_i = 32'b0;
+    tb_timer_cfg.reset_count_i = 1'b1;
+    tb_timer_cfg.enable_count_i = 1'b0;
+    tb_timer_cfg.compare_value_i = 32'b0;
+    
+    // Release reset and initialize to known state
+    @(posedge clk);
+    tb_timer_cfg.write_counter_i = 1'b0;
+    tb_timer_cfg.counter_value_i = 32'b0;
+    tb_timer_cfg.reset_count_i = 1'b0;
+    tb_timer_cfg.enable_count_i = 1'b0;
+    tb_timer_cfg.compare_value_i = 32'b0;
+
     // Wait for reset
     wait(rst_n);
+
+    // start timer
+    @(posedge clk);
+    tb_timer_cfg.write_counter_i = 1'b0;
+    tb_timer_cfg.counter_value_i = 32'b0;
+    tb_timer_cfg.reset_count_i = 1'b0;
+    tb_timer_cfg.enable_count_i = 1'b1;
+    tb_timer_cfg.compare_value_i = 32'b0;
+    @(posedge clk);
+
+    // for (int BLen = BLenMin; BLen <= BLenMax; BLen = BLen * 2) begin
+    // Force burst length in the chimney wrapper
+    i_floo_axi_mesh_noc.cluster_ni_1_1.len_limit_i = (BLen - 1) & 8'hFF;
+    i_floo_axi_mesh_noc.cluster_ni_2_2.len_limit_i = (BLen - 1) & 8'hFF;
+    i_floo_axi_mesh_noc.cluster_ni_3_1.len_limit_i = (BLen - 1) & 8'hFF;
+
+    i_floo_axi_mesh_noc.cluster_ni_2_0.len_limit_i = (256 - 1) & 8'hFF;
+
+    // Store total start time
+    t_total.t0 = tb_timer_cnt_value;
+
     // Trigger DMA transfers start
     $display ("[tb_floo_axi_mesh][%0t] Trigger DMA transfers start.", $time);
     start_of_sim = '1;
     repeat (1) @(posedge clk);
     start_of_sim = '0;
-    // Wait for all DMA transfers to terminate
+
+    // Wait for DMA transfers to terminate
     $display ("[tb_floo_axi_mesh][%0t] Waiting for DMA transfers to terminate...", $time);
-    wait(&end_of_sim);
+
+    // // all
+    // wait(&end_of_sim);
+
+    // local_intf case
+    wait(&end_of_sim[2][0]);
+
+    // // overhead case
+    // wait(&end_of_sim[1][1]);
+
     $display ("[tb_floo_axi_mesh][%0t] All DMA transfers have terminated!", $time);
     // Wait for some time
     repeat (2) @(posedge clk);
+    // end
+
+    // Store total start time
+    t_total.t1 = tb_timer_cnt_value;
+
+    // print latency result
+    $display (" - Results -- Latency:       %8d", t_total.t1 - t_total.t0);
+
     // Stop the simulation
     $display ("[tb_floo_axi_mesh][%0t] Simulation end.", $time);
     $stop;
