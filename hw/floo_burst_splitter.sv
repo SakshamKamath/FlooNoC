@@ -23,6 +23,8 @@ module floo_burst_splitter #(
   input  logic  clk_i,
   input  logic  rst_ni,
 
+  input  axi_pkg::len_t len_limit_i,
+
   // interface to noc ni
   input floo_req_t floo_req_i_ni_splitter,
   output floo_rsp_t floo_rsp_o_ni_splitter,
@@ -34,19 +36,6 @@ module floo_burst_splitter #(
   output floo_rsp_t floo_rsp_o_router_splitter,
   output floo_req_t floo_req_o_router_splitter,
   input floo_rsp_t floo_rsp_i_router_splitter
-
-  // // input  floo_req_t  slv_req_i,
-  // input  floo_req_t  floo_req_i_ni_splitter,
-
-  // // output floo_rsp_t slv_resp_o,
-  // output floo_rsp_t floo_rsp_o_ni_splitter,
-
-
-  // // output floo_req_t  mst_req_o,
-  // output floo_req_t  floo_req_o_router_splitter,
-
-
-  // input  floo_rsp_t mst_resp_i,
 
 );
 
@@ -90,18 +79,14 @@ module floo_burst_splitter #(
   ) i_floo_burst_splitter_gran (
     .clk_i,
     .rst_ni,
-    .len_limit_i ( 8'h00 ),
-    // .slv_floo_req_i(slv_req_i),
-    // .slv_floo_rsp_o(slv_resp_o),
-    // .mst_floo_req_o(mst_req_o),
-    // .mst_floo_rsp_i(mst_resp_i)
-
+    .len_limit_i,
     
     // interface to noc ni
     .floo_req_i_ni_splitter,
     .floo_rsp_o_ni_splitter,
     .floo_req_o_ni_splitter,
     .floo_rsp_i_ni_splitter,
+    
     // interface to noc router
     .floo_req_i_router_splitter,
     .floo_rsp_o_router_splitter,
