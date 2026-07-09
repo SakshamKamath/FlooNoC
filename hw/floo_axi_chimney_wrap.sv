@@ -103,6 +103,8 @@ module floo_axi_chimney_wrap
   floo_req_t floo_req_o_router_splitter;
   floo_rsp_t floo_rsp_i_router_splitter;
 
+  axi_pkg::len_t len_limit_i;
+
   floo_axi_chimney  #(
     .AxiCfg(AxiCfg),
     .ChimneyCfg(set_ports(ChimneyDefaultCfg, 1'b1, 1'b1)),
@@ -150,6 +152,7 @@ module floo_axi_chimney_wrap
   ) i_floo_burst_splitter (
     .clk_i,
     .rst_ni,
+    .len_limit_i,
     // interface to noc ni
     .floo_req_i_ni_splitter,
     .floo_rsp_o_ni_splitter,
